@@ -1,5 +1,5 @@
 # SuperKinkList
-Easily create a kink list. This project combines the best of all forks of this project (in my opinion anyway), featuring over 200 preferences. Genderfriendly.
+Easily create a kink list. This project combines the best of all forks of this project (in my opinion anyway), featuring over 200 preferences. Gender and body friendly.
 
 [Make yours here](https://ac-0rn.github.io/SuperKinkList/kinklist.html)
 

@@ -1028,15 +1028,20 @@
                         (function(){
                             
                            var lastResize = 0;
-                            $(window).on('resize', function(){
-                               var curTime = (new Date()).getTime();
-                               lastResize = curTime;
-                               setTimeout(function(){
-                                   if(lastResize < curTime) {
-                                      inputKinks.fillInputList();
-                                      inputKinks.parseHash();
-                                    }
-                                }, 500);
+			   var width = $(window).width();
+
+                           $(window).on('resize', function(){
+			   	if ($(this).width() !== width) {
+ 				       width = $(this).width();
+				       var curTime = (new Date()).getTime();
+				       lastResize = curTime;
+				       setTimeout(function(){
+					   if(lastResize === curTime) {
+					      inputKinks.fillInputList();
+					      inputKinks.parseHash();
+					    }
+					}, 500);
+				}
                             });
                             
                         })();

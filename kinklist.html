@@ -1025,19 +1025,19 @@
                         $('#URL').on('click', function(){ this.select(); });
                         
                         // On resize, redo columns
-                        // (function(){
+                        (function(){
                             
-                         //   var lastResize = 0;
-                         //   $(window).on('resize', function(){
-                          //      var curTime = (new Date()).getTime();
-                          //      lastResize = curTime;
-                          //      setTimeout(function(){
-                           //         if(lastResize === curTime) {
-                           //            inputKinks.fillInputList();
-                          //              inputKinks.parseHash();
-                          //          }
-                         //       }, 500);
-                        //    });
+                           var lastResize = 0;
+                            $(window).on('resize', function(){
+                               var curTime = (new Date()).getTime();
+                               lastResize = curTime;
+                               setTimeout(function(){
+                                   if(lastResize < curTime) {
+                                      inputKinks.fillInputList();
+                                      inputKinks.parseHash();
+                                    }
+                                }, 500);
+                            });
                             
                         })();
                     },

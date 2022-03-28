@@ -1,5 +1,7 @@
 # KinkList
-Easily create kink list
+Easily create a visually easy to parse infographic of turn-ons, turn-offs, kinks, and more. 
+Edit what's on the list with a text based editor.
+Export the list to an image with a single button press.
 
 [Make yours here](https://rawgit.com/coreyzev/KinkList/master/kinklist.html)
 

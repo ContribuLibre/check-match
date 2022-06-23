@@ -1,271 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 	<head>
 		<title>Kinklist</title>
 		<meta charset="UTF-8">
+		<link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAbFBMVEUAAACFJIRfLKl7Jo2OInuqHF+EJIRbLaytG1xbLaytG1z///+VIHRnKqGjHWd1JpKLIn7HpdOAJYn06/Tarcy1d7GYN4no0uSxgr6oeb2tZaacWKWqUZTdw927k8eTa77Ynr2IUKzKgau8ap9GZ/26AAAAC3RSTlMAVcbGxsaqVVWqqh+VAvAAAACMSURBVBgZBcHBboJAAAXA2bcUAT0ZD/7//zVpIxWUFTpTOG1nCPN+KMYOBNX8zqlz7bpbjEndp1KP3vb+1G18fD7nTcsZuDyY/hgCfK30G02A79X1oBEChhcNEWDtNCQBA68eESAXayGECsdgHoLMFTxHlhtLt9un6rT83H/t1KKfaAi0Z6HUAcFSV/8xnzFuH7zptQAAAABJRU5ErkJggg==" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTAvMjEvMTV5ehY1AAAAZElEQVQ4jaWTwQ3AIAwDbcT+I9f9hjYQA/mAkO7igKAACWdFAF0A2gb0hP0uCyTATyAJSoaK5xGyEmTC9lktmORUdAQvBQ5cJshktoDk0HkmKRNUEmuE6ztYVXe7bT+jW7z9zi8qYiodCjCHKgAAAABJRU5ErkJggg==">
-		<link rel="stylesheet" type="text/css" href="./assets/style.css">
-		<script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.js"></script>
+		<link type="text/css" rel="stylesheet" href="./style.css">
+		<script src="./script.js"></script>
 	</head>
 	<body>
-		<div class="widthWrapper">
-			<button id="Edit"></button>
-			<h1>The All-Encompassing Kinklist!</h1>
-			<div class="legend">
-				<div><span data-color="#920000" class="choice no"></span> <span class="legend-text">No or N/A</span></div>
-				<div><span data-color="#DB6C00" class="choice maybe"></span> <span class="legend-text">Maybe</span></div>
-				<div><span data-color="#FDFD6B" class="choice okay"></span> <span class="legend-text">Okay</span></div>
-				<div><span data-color="#23FD22" class="choice like"></span> <span class="legend-text">Like</span></div>
-				<div><span data-color="#6DB5FE" class="choice favorite"></span> <span class="legend-text">Favorite</span></div>
-				<div><span data-color="#CC99CC" class="choice try"></span> <span class="legend-text">Want To Try</span></div>
-			</div>
-			<div id="ExportWrapper">
-				<input type="text" id="URL">
-				<button id="Export">Export</button>
-				<div id="Loading">Loading</div>
-			</div>
-			<button id="StartBtn"></button>
-			<div id="InputList"></div>
-		</div>
-		<div id="EditOverlay" class="overlay">
-			<textarea id="Kinks">
-#Body Types
-(General)
-* Anorexic/Bonespo
-* Skinny
-* Muscular
-* Normal
-* Curvy
-* Chubby
-* BBW/BHM
-* Super-Size BBW/BHM
-
-#Body Parts
-(General)
-* Small Ass
-* Big Ass
-* Small Breasts
-* Large Breasts
-* Small Cocks
-* Large Cocks
-
-#Play/Sex contacts
-(General)
-* You and 1 Male
-* You and 1 Female
-* You and MtF
-* You and FtM
-* You and 1 Male, 1 Female
-* You and 2 Males
-* You and 2 Females
-* You and 3+ Males
-* You and 3+ Females
-* Orgy
-
-#Open for Relationships
-(General)
-* LTR
-* Poly-partners
-* FwB
-* Playpartners
-* Friends
-
-
-#Non-Sexual
-(Giving, Receiving)
-* Romance/Affection
-* Hugs
-* Bear Hugs
-* Kisses
-* Sloppy Kisses
-* Neck Kisses
-* Cuddles
-* Polyamory Cuddles
-* Spooning (G=Big R=Little)
-* Headpats
-
-#Clothing
-(Self, Partner)
-* Clothed Sex
-* Lingerie
-* Stockings
-* Heels
-* Leather
-* Latex
-* Uniform/Costume
-* Cross-dressing
-
-#General Sex Acts
-(Giving, Receiving)
-* Handjob
-* Fingering
-* Fisting
-* Cunnilingus
-* Blowjob
-* Deep throat
-* Facials
-* Swallowing
-* Face-sitting
-* Edging
-* Teasing
-* JOI/SI
-* Anal Sex
-
-#Restrictive
-(Self, Partner)
-* Gag
-* Collar
-* Leash
-* Chastity
-* Rope Play
-* Spread Bars
-* Bondage (Light)
-* Bondage (Heavy)
-* Encasement
-
-#Insertion & Toys
-(Self, Partner)
-* Vibrators
-* Dildos
-* Butt Plugs
-* Anal Beads
-* Anal Probes
-* Anal Douche
-* Inflatable Toys
-* Improvised Toys
-* Breast Pumps
-* Nipple Clamps
-* Pegging
-* Sounding
-
-#Domination & Submission
-(Dom, Sub)
-* Domestic Servitude
-* Slavery
-* Pet Play
-* CG/L
-* Discipline
-* Begging
-* Forced Orgasm
-* Ruined Orgasm
-* Orgasm Control
-* Orgasm Denial
-
-#No Consent
-(Actor, Subject)
-* Non-con/Rape Play
-* Blackmail/Coercion
-* Kidnapping
-* Drugs
-* Alcohol
-* Sleep Play
-
-#Taboo
-(General)
-* Incest
-* Ageplay
-* Bestiality
-* Necrophilia
-* Cheating
-* Exhibitionism
-* Voyeurism
-* Blood
-* Watersports
-* Scat
-
-#Degradation
-(Dominant, Submissive)
-* Glory Hole
-* Name Calling
-* Humiliation
-* Public Use
-* Forced Exhibitionism
-
-#Touch
-(Giving, Receiving)
-* Cock Play/Worship
-* Pussy Play/Worship
-* Ass Play/Worship
-* Breast Play/Worship
-* Belly Play/Worship
-* Foot Play/Worship
-* Sensation Play
-* Tickling
-* Licking
-
-#Pain
-(Giving, Receiving)
-* Light Pain
-* Heavy Pain
-* Biting
-* Scratching
-* Nipple Clamps
-* Caning
-* Flogging
-* Beating
-* Spanking
-* Cock/Pussy Slapping
-* Cock/Pussy Torture
-* Hot Wax
-* Electro Stimulation
-* Blade Play
-
-#Surrealism & IRL Impossibilities
-(Self, Partner)
-* Futanari
-* Furries
-* Scalies
-* Vore
-* Unbirth
-* Inflation/Expansion
-* Hypersized Breasts
-* Hypersized Ass
-* Hypersized Belly
-* Misc. Hypersized Bodyparts
-* Hyper Muscular
-* Tentacles
-* Monster or Alien
-* Extreme Uber Super Size BBW+
-* Extreme Uber Super Size  +
-* Immobility
-
-#Extreme
-(Giving, Receiving)
-* Fireplay
-* Meathooks
-* Waterboarding
-
-#Other
-(Self/Receiving, Partner/Giving)
-* Rimming
-* Gangbang
-* Breath Play
-* Impregnation
-* Pregnancy
-* Lactation
-* Cum Play
-* Feminization
-* Bimbofication
-* Enemas
-* Diapers
-* Cuckold/Cuckqueen
-			</textarea>
-			<button id="KinksOK">Accept</button>
-		</div>
-		<div id="InputOverlay" class="overlay">
-			<div class="widthWrapper">
-				<div id="InputPrevious"></div>
-				<div id="InputCurrent">
-					<h2 id="InputCategory"></h2>
-					<h3 id="InputField"></h3>
-					<button class="closePopup">&times;</button>
-					<div id="InputValues"></div>
+		<div class="contentWrapper widthWrapper body">
+			<header>
+				<div class="title">
+					<span>Kinklist</span>
 				</div>
-				<div id="InputNext"></div>
+				<div class="export">
+					<div class="export-field">
+						<input class="export-link invisible" type="url">
+						<span class="export-loading hidden">Loading</span>
+					</div>
+					<button class="export-button invisible">Export to Imgur</button>
+					<button class="generate-button">Generate</button>
+				</div>
+				<div class="menu">
+					<button class="input-button"></button>
+					<button class="reset-button"></button>
+					<div class="tooltip-container">
+						<button class="settings-button"></button>
+						<div class="menu-tooltip settings-button-tooltip">
+							<button class="preset-settings">Presets</button>
+							<button class="exported-images">Exported Images</button>
+							<button class="help">Help</button>
+						</div>
+					</div>
+				</div>
+				<div class="legend"></div>
+			</header>
+			<div class="error hidden">
+				<p>It seems that there was an error trying to execute the script.</p>
+				<p>You can <a href="https://github.com/MobButcher/KinkList/issues">check if this issue was reported already</a> and try to use <a href="https://rawcdn.githack.com/Goctionni/KinkList/aa4cbd332326eeae6a97369a75bfe75b219de18e/v1.0.2.html">this page</a> instead.</p>
+			</div>
+			<div class="kinklist"></div>
+			<footer>
+				<p>Original idea by <a target="_blank" rel="noopener noreferrer" href="https://github.com/Goctionni/KinkList">Goctionni</a>.</p>
+				<p>Complete rewrite by MobButcher. <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/MobButcherDev">Twitter</a></p>
+				<p>If you want to access original project's website, <a target="_blank" rel="noopener noreferrer" href="https://rawcdn.githack.com/Goctionni/KinkList/aa4cbd332326eeae6a97369a75bfe75b219de18e/v1.0.2.html">here's a link for you</a>.</p>
+				<p>Visit official <a target="_blank" rel="noopener noreferrer" href="https://github.com/MobButcher/KinkList">GitHub</a> page to learn how you can make new suggestions, report any issues, and more!</p>
+				<p><a rel="license" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAPAgMAAAAOp6AcAAAADFBMVEUAAAD///+7v7p1dnVTvlT+AAAAf0lEQVQY02PACkRDMUAIg9Qq09CiFSjqWBikVlwNjVmNLrgGqP7VATTBxQkz1LUaRFlYGAQEAhgYAwLAgm4Xt2s1CDgKMIgIsjCwMLKABV0Dw4EqGRxCBAUZRBkdQ5BUOjgwCASyMDAIssDMBKsEm8nqyIKwnbA7sfoIu9+xAQA32DGfdbaF4wAAAABJRU5ErkJggg==" /></a> This work is licensed under a <a rel="license" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+				<p>Attribution to "MobButcher".</p>
+				<p>You are free to use images produced by this tool however you want: they're yours.</p>
+				<p>CC license logo was modified by MobButcher.</p>
+				<p>Version 2.2.1, released on January 24, 2021.</p>
+			</footer>
+		</div>
+		<div class="carousel overlay hidden">
+			<div class="overlay-wrapper">
+				<div class="previous"></div>
+				<div class="current">
+					<header>
+						<h2 class="category"></h2>
+						<div class="selection">
+							<h3 class="kink"></h3>
+							<h3 class="column"></h3>
+						</div>
+						<button class="close-overlay">&times;</button>
+					</header>
+					<div class="values"></div>
+				</div>
+				<div class="next"></div>
 			</div>
 		</div>
-		<footer id="footer">Data stolen with ♥ from Herald</footer>
-		<script type="text/javascript" src="./assets/script.js"></script>
+		<div class="presets overlay hidden">
+			<div class="overlay-wrapper">
+				<div class="preset-background">
+					<div class="preset-header">
+						<select name="preset">
+							<option disabled>Built-in presets</option>
+							<option value="default">Default</option>
+							<option disabled>Custom presets</option>
+						</select>
+						<button class="close-overlay">&times;</button>
+					</div>
+					<button class="create">Create</button>
+					<button class="rename disable-on-default">Rename</button>
+					<button class="duplicate">Duplicate</button>
+					<button class="delete disable-on-default">Delete</button>
+					<textarea class="disable-on-default"></textarea>
+					<button class="save disable-on-default">Save</button>
+					<button class="select">Select</button>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

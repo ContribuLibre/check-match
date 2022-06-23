@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
-
-  <head>
+    <head>
         <title>Kinklist</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -557,12 +556,6 @@
 * Androgynous
 * Skinny
 * Chubby
-* Small breasts
-* Medium breasts
-* Large breasts
-* Small cocks
-* Medium cocks
-* Large cocks
 * Muscular
 * Small Breasts
 * Large Breasts
@@ -620,11 +613,6 @@
 * Facials
 * Cunnilingus
 * Face-sitting
-* Edging
-* Teasing
-* Mastrubation Instructions(JOI/SI)
-* PIV
-* PIA
 * JOI, SI
 
 #Ass play
@@ -664,14 +652,6 @@
 * Dominant / Submissive
 * Domestic Servitude
 * Slavery
-* Pet play
-* Care giver/ little
-* Discipline
-* Begging
-* Forced orgasm
-* Edging
-* Ruined Orgasms
-* Power exchange(Outside Scene)
 * Bratting
 * Wrestling
 * Pet Play
@@ -685,7 +665,6 @@
 * Edge Holding
 * Ruined Orgasms
 * Power Exchange
-* Findom
 
 #Ageplay
 (Be, Have)
@@ -712,6 +691,8 @@
 (General)
 * Incest
 * Interracial / Raceplay
+* Bestiality
+* Necrophilia
 * Cheating
 * Exhibitionism
 * Voyeurism
@@ -747,13 +728,6 @@
 
 #Humiliation & Degradation
 (Giving, Receiving)
-* Name calling
-* Humiliation
-* Genitalia Mockery
-* Slut Shaming
-* Body Shaming
-* Race
-* Gender Stereotypes
 * Glory Hole
 * Name Calling
 * Humiliation
@@ -773,10 +747,7 @@
 * Fondling
 
 #Misc. Fetish
-(Giving, Receiving)
-* Fisting
-* Gangbang
-* Breath play(Choking)
+(Top, Bottom)
 * Petplay
 * Feral Play
 * Impregnation
@@ -784,26 +755,7 @@
 * Oviposition
 * Feminization
 * Cuckold / Cuckquean
-* Fire play
-* Food play
-* Hair pulling
-* Crying
-* Glory hole
-* Body Writing
-* Bimboification
-* Forniphilia
-
-
-#Sensations
-(Giving, Receiving)
-* Cock Pain
-* Ballbusting
-* Pussy Torture
-* Rough Anal Play
-* Hot Wax
-* Scratching
-* Biting
-* Cutting
+* Findom
 
 #Pain
 (Giving, Receiving)
@@ -815,35 +767,15 @@
 * Flogging
 * Beating
 * Spanking
-* Cock/Pussy pain(light)
-* Cock/Pussy pain(heavy)
+* Cock Pain
+* Ballbusting
+* Pussy Torture
+* Rough Anal Play
 * Hot Wax
 * Scratching
 * Biting
 * Cutting
-* Slapping
-* Ice
-* Feathers
-* Head Petting/Stroking Hair
 
-#Aftercare
-(Giving, Receiving)
-* Cuddling
-* Snacks
-* Sex
-* TV
-* Food
-* Other
-
-#Sharing Photos/Videos
-(Giving, Receiving)
-* Ass
-* Genitalia
-* Face
-* Full Body(Clothed)
-* Full Body(Unclothed)
-* Feet
-* Other
             </textarea>
             <button id="KinksOK">Accept</button>
         </div>
@@ -1431,11 +1363,13 @@
                     parseKinksText: function(kinksText){
                         var newKinks = {};
                         var lines = kinksText.replace(/\r/g, '').split("\n");
+
                         var cat = null;
                         var catName = null;
                         for(var i = 0; i < lines.length; i++){
                             var line = lines[i];
                             if(!line.length) continue;
+
                             if(line[0] === '#') {
                                 if(catName){
                                     if(!(cat.fields instanceof Array) || cat.fields.length < 1){
@@ -1477,6 +1411,7 @@
                         return newKinks;
                     }
                 };
+
                 $('#Edit').on('click', function(){
                     var KinksText = inputKinks.inputListToText();
                     $('#Kinks').val(KinksText.trim());
@@ -1523,28 +1458,35 @@
                     var $popup = $('#InputOverlay');
                     var $previous = $('#InputPrevious');
                     var $next = $('#InputNext');
+
                     // current
                     var $category = $('#InputCategory');
                     var $field = $('#InputField');
                     var $options = $('#InputValues');
+
                     function getChoiceValue($choices){
                         var $selected = $choices.find('.choice.selected');
                         return $selected.data('level');
                     }
+
                     function getChoicesElement(category, kink, field){
                         var selector = '.cat-' + strToClass(category);
                         selector += ' .kink-' + strToClass(kink);
                         selector += ' .choice-' + strToClass(field);
+
                         var $choices = $(selector);
                         return $choices;
                     }
+
                     inputKinks.getAllKinks = function(){
                         var list = [];
+
                         var categories = Object.keys(kinks);
                         for(var i = 0; i < categories.length; i++){
                             var category = categories[i];
                             var fields = kinks[category].fields;
                             var kinkArr = kinks[category].kinks;
+
                             for(var j = 0; j < fields.length; j++) {
                                 var field = fields[j];
                                 for(var k = 0; k < kinkArr.length; k++){
@@ -1555,9 +1497,11 @@
                                     list.push(obj);
                                 }
                             }
+
                         }
                         return list;
                     };
+
                     inputKinks.inputPopup = {
                         numPrev: 3,
                         numNext: 3,
@@ -1574,14 +1518,17 @@
                                 var $btn = $(this).clone();
                                 $btn.addClass('big-choice');
                                 $btn.appendTo($container);
+
                                 $('<span>')
                                         .addClass('btn-num-text')
                                         .text(btnIndex++)
                                         .appendTo($btn)
+
                                 var text = $btn.text().trim().replace(/[0-9]/g, '');
                                 if(kink.value === text) {
                                     $btn.addClass('selected');
                                 }
+
                                 $btn.on('click', function(){
                                     $container.find('.big-choice').removeClass('selected');
                                     $btn.addClass('selected');
@@ -1611,6 +1558,7 @@
                             $next.html('');
                             $options.html('');
                             $popup.data('index', index);
+
                             // Current
                             var currentKink = inputKinks.inputPopup.kinkByIndex(index);
                             var $currentKink = inputKinks.inputPopup.generatePrimary(currentKink);
@@ -1618,6 +1566,7 @@
                             $category.text(currentKink.category);
                             $field.text((currentKink.showField ? '(' + currentKink.field + ') ' : '') + currentKink.kink);
                             $options.append($currentKink);
+
                             // Prev
                             for(var i = inputKinks.inputPopup.numPrev; i > 0; i--){
                                 var prevKink = inputKinks.inputPopup.kinkByIndex(index - i);
@@ -1661,9 +1610,11 @@
                             $popup.fadeIn();
                         }
                     };
+
                     $(window).on('keydown', function(e){
                         if(e.altKey || e.shiftKey || e.ctrlKey) return;
                         if(!$popup.is(':visible')) return;
+
                         if(e.keyCode === 38) {
                             inputKinks.inputPopup.showPrev();
                             e.preventDefault();
@@ -1674,6 +1625,7 @@
                             e.preventDefault();
                             e.stopPropagation();
                         }
+
                         var btn = -1;
                         if(e.keyCode >= 96 && e.keyCode <= 101) {
                             btn = e.keyCode - 96;
@@ -1684,6 +1636,7 @@
                         else {
                             return;
                         }
+
                         var $btn = $options.find('.big-choice').eq(btn);
                         $btn.click();
                     });

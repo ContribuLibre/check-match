@@ -1,5 +1,8 @@
 "use strict";
 
+const defaultUsername = "Anonymous";
+
+
 function createHTMLElement(cssSelector, inner, attributes) {
   /* Separates tag from additional componenets.
    * Permitted components, in any order:
@@ -70,7 +73,6 @@ function toCSSClassName(str) {
                   .join('');
   return decapitalize(className);
 }
-
 
 
 function hide(element) {
@@ -216,20 +218,6 @@ function spreadAcrossColumns(array, partitioning) {
 
 const cssStylesheet = document.styleSheets[0];
 
-const defaultSettings = {
-  legend: [
-    ['Not Entered', '#FFFFFF'],
-    ['Favorite'   , '#6DB5FE'],
-    ['Like'       , '#23FD22'],
-    ['Okay'       , '#FDFD6B'],
-    ['Maybe'      , '#DB6C00'],
-    ['No'         , '#920000'],
-  ],
-  data: "#Bodies\n(General)\n* Skinny\n* Chubby\n* Small breasts\n* Large breasts\n* Small cocks\n* Large cocks\n\n#Clothing\n(Self, Partner)\n* Clothed sex\n* Lingerie\n* Stockings\n* Heels\n* Leather\n* Latex\n* Uniform / costume\n* Cross-dressing\n\n#Groupings\n(General)\n* You and 1 male\n* You and 1 female\n* You and MtF trans\n* You and FtM trans\n* You and 1 male, 1 female\n* You and 2 males\n* You and 2 females\n* Orgy\n\n#General\n(Giving, Receiving)\n* Romance / Affection\n* Handjob / fingering\n* Blowjob\n* Deep throat\n* Swallowing\n* Facials\n* Cunnilingus\n* Face-sitting\n* Edging\n* Teasing\n* JOI, SI\n\n#Ass play\n(Giving, Receiving)\n* Anal toys\n* Anal sex, pegging\n* Rimming\n* Double penetration\n* Anal fisting\n\n#Restrictive\n(Self, Partner)\n* Gag\n* Collar\n* Leash\n* Chastity\n* Bondage (Light)\n* Bondage (Heavy)\n* Encasement\n\n#Toys\n(Self, Partner)\n* Dildos\n* Plugs\n* Vibrators\n* Sounding\n\n#Domination\n(Dominant, Submissive)\n* Dominant / Submissive\n* Domestic servitude\n* Slavery\n* Pet play\n* DD/lg, MD/lb\n* Discipline\n* Begging\n* Forced orgasm\n* Orgasm control\n* Orgasm denial\n* Power exchange\n\n#No consent\n(Aggressor, Target)\n* Non-con / rape\n* Blackmail / coercion\n* Kidnapping\n* Drugs / alcohol\n* Sleep play\n\n#Taboo\n(General)\n* Incest\n* Ageplay\n* Interracial / Raceplay\n* Bestiality\n* Necrophilia\n* Cheating\n* Exhibitionism\n* Voyeurism\n\n#Surrealism\n(Self, Partner)\n* Futanari\n* Furry\n* Vore\n* Transformation\n* Tentacles\n* Monster or Alien\n\n#Fluids\n(General)\n* Blood\n* Watersports\n* Scat\n* Lactation\n* Diapers\n* Cum play\n\n#Degradation\n(Giving, Receiving)\n* Glory hole\n* Name calling\n* Humiliation\n\n#Touch & Stimulation\n(Actor, Subject)\n* Cock/Pussy worship\n* Ass worship\n* Foot play\n* Tickling\n* Sensation play\n* Electro stimulation\n\n#Misc. Fetish\n(Giving, Receiving)\n* Fisting\n* Gangbang\n* Breath play\n* Impregnation\n* Pregnancy\n* Feminization\n* Cuckold / Cuckquean\n\n#Pain\n(Giving, Receiving)\n* Light pain\n* Heavy pain\n* Nipple clamps\n* Clothes pins\n* Caning\n* Flogging\n* Beating\n* Spanking\n* Cock/Pussy slapping\n* Cock/Pussy torture\n* Hot Wax\n* Scratching\n* Biting\n* Cutting",
-  state: '',
-  username: "Anonymous",
-}
-
 
 
 class KinklistError extends Error {
@@ -241,7 +229,6 @@ class KinklistError extends Error {
     }
   }
 }
-
 
 
 class Interface {
@@ -387,7 +374,7 @@ class CategoryInterface extends Interface {
       clone.style.visibility = "hidden";
       document.body.append(clone);
       height = clone.clientHeight;
-      clone.remove(); 
+      clone.remove();
     } else {
       const margins = 20;
       const h2 = 27;
@@ -669,7 +656,7 @@ class Kinklist {
       }
     }
   }
- 
+
   parseKinklistSettings(inputString) {
     if (!inputString) {
       throw new KinklistError("Input string empty.");
@@ -695,8 +682,8 @@ class Kinklist {
     categories.forEach(categoryData => {
       let {name, columns, kinks} = categoryData;
       categoryNames.push(name);
-      kinks = kinks.map(kinkName => 
-                        this.kinks.find(kinkObject => 
+      kinks = kinks.map(kinkName =>
+                        this.kinks.find(kinkObject =>
                                         kinkObject.name == kinkName)
                           || new Kink(kinkName)
                        );
@@ -724,7 +711,6 @@ class Kinklist {
     return sanitized;
   }
 }
-
 
 
 class Font {
@@ -903,7 +889,7 @@ class KinklistCanvasDrawer {
     // {kinkObject: {selections[]: {apparentValue: {color}}, name} / margin}
     const circle = this.settings.circle;
     for (const selection of drawcall.kinkObject.selections) {
-      const circleDrawcall = 
+      const circleDrawcall =
           new Drawcall(drawcall.x, drawcall.y,
                        {color: selection.apparentValue.color});
       this.drawCircle(circleDrawcall, context);
@@ -915,7 +901,7 @@ class KinklistCanvasDrawer {
                   ? drawcall.margin : this.settings.margins.kinkText;
     drawcall.y -= this.settings.text.kinkTitle.size / 2;
     const textDrawcall =
-        new Drawcall(drawcall.x, drawcall.y, 
+        new Drawcall(drawcall.x, drawcall.y,
                      {text: drawcall.kinkObject.name,
                       font: drawcall.font || this.settings.text.kinkTitle,
                       baseline: "top"});
@@ -1059,7 +1045,6 @@ class KinklistCanvasDrawer {
     return columns.filter(column => column.length);
   }
 }
-
 
 
 class Carousel {
@@ -1281,7 +1266,6 @@ function uploadToImgur(blob, filename) {
 }
 
 
-
 class Preset {
   constructor(displayName, manager, data, legend, state) {
     this.manager = manager;
@@ -1349,6 +1333,18 @@ class Preset {
   }
 }
 
+const defaultSettings = {
+  legend: [
+    ['Not Entered', '#FFF'],
+    ['No Way',      '#900'],
+    ["Don't know",  '#B70'],
+    ['Love'   ,     '#A6B'],
+  ],
+  data: "#Kink categorie\n(Giving, Receving, Look, Anything Else)\n* First kink\n* 2nd kink\n* Etc...\n",
+  state: '',
+}
+
+
 class PresetManager {
   constructor(storageHandler) {
     this.storage = storageHandler;
@@ -1378,9 +1374,10 @@ class PresetManager {
   }
 
   create(displayName,
-         data = defaultSettings.data,
-         legend = defaultSettings.legend,
-         state = defaultSettings.state) {
+         data = "",//defaultSettings.data,
+         legend = [],//defaultSettings.legend,
+         state = ""//defaultSettings.state
+  ) {
     const name = toCSSClassName(displayName);
     this.sanitizeInput(name);
     if (this.presets.has(name)) {
@@ -1407,6 +1404,15 @@ class PresetManager {
       throw new KinklistError(`Preset "${preset.name}" already exists.`);
     }
     this.presets.set(name, preset);
+    this.save();
+  }
+  addDefault(preset) {
+    const name = preset.name;
+    //this.sanitizeInput(name);
+    if (this.storage.defaults.presetList.has(name)) {
+      throw new KinklistError(`Preset "${preset.name}" already exists.`);
+    }
+    this.storage.defaults.presetList.set(name, preset);
     this.save();
   }
 
@@ -1586,7 +1592,7 @@ function init() {
   }
   function generateButtonEventHandler() {
     const username =
-        window.prompt("Enter nickname:", defaultSettings.username);
+        window.prompt("Enter nickname:", defaultUsername);
     if (username) {
       kinklistCanvasDrawer = new KinklistCanvasDrawer(kinklist, username);
       kinklistCanvasDrawer.drawKinklist();
@@ -1599,7 +1605,7 @@ function init() {
       if (!exportButtonElement.style.display) {
         fadeIn(exportButtonElement, "inline-block");
       }
-    } 
+    }
   }
 
   function fadeInEventHandler(event) {
@@ -1608,7 +1614,7 @@ function init() {
   function fadeOutEventHandler(event) {
     fadeOut(event.currentTarget);
   }
-  
+
   const presetControlElementList =
       [].concat(...presetOverlayElement
                 .querySelectorAll(".preset-background > button"))
@@ -1850,18 +1856,23 @@ function init() {
     });
   })
 }
+function loadPreset(name,settings){
+  console.log(name,settings);
+}
 
-function attemptInit() {
+function attemptInit(args) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ()=>attemptInit(args));
+    return;
+  }
   try {
     init();
+    for(let name in args) if (args.hasOwnProperty(name)){
+      loadPreset(name,args[name]);
+    }
   } catch (error) {
     console.error(error);
     unhide(document.querySelector(".error"));
   }
 }
-
-if (document.readyState === 'loading') { 
-  document.addEventListener('DOMContentLoaded', attemptInit);
-} else {
-  attemptInit();
-}
+export default attemptInit;

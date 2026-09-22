@@ -5,13 +5,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        <script src="//cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
->>>>>>> pr/2
-=======
->>>>>>> pr/8
         <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTAvMjEvMTV5ehY1AAAAZElEQVQ4jaWTwQ3AIAwDbcT+I9f9hjYQA/mAkO7igKAACWdFAF0A2gb0hP0uCyTATyAJSoaK5xGyEmTC9lktmORUdAQvBQ5cJshktoDk0HkmKRNUEmuE6ztYVXe7bT+jW7z9zi8qYiodCjCHKgAAAABJRU5ErkJggg==">
         <style>
             body {
@@ -40,15 +33,7 @@
             }
             th.choicesCol {
                 box-sizing: border-box;
-<<<<<<< HEAD
-<<<<<<< HEAD
-                width: 125px;
-=======
-                width: 146px;
->>>>>>> pr/2
-=======
-                width: 125px;
->>>>>>> pr/8
+                width: 175px;
             }
             th + th {
                 border-left: none;
@@ -64,18 +49,18 @@
                 padding: 4px;
                 padding-right: 2px;
             }
-            @-moz-document url-prefix() { 
+            @-moz-document url-prefix() {
               td {
                  padding: 3.3px;
               }
-            }            
+            }
             td + td {
                 border-left-style: none;
             }
             .choice {
                 box-sizing: border-box;
-                width: 15px;
-                height: 15px;
+                width: 12px;
+                height: 12px;
                 opacity: 0.35;
                 overflow: hidden;
                 text-indent: 100px;
@@ -101,7 +86,7 @@
                 opacity: 1;
                 border-width: 2px;
             }
-            
+
             .legend {
                 vertical-align: middle;
                 font-size: 14px;
@@ -116,7 +101,7 @@
             .legend-text {
                 vertical-align: middle;
             }
-            
+
             #ExportWrapper {
                 width: 460px;
                 height: 36px;
@@ -265,14 +250,14 @@
                 0% {transform: rotate(0deg);}
                 100% {transform: rotate(-360deg);}
             }
-            
+
             #ExportWrapper :last-child:after {
                 content: '';
                 display: block;
                 clear: both;
             }
             .kinkCategory {
-                
+
             }
             .col {
                 float: left;
@@ -307,7 +292,7 @@
             #Edit:hover {
                 opacity: 1;
             }
-            
+
             .overlay {
                 position: fixed;
                 top: 0;
@@ -322,9 +307,10 @@
                 position: absolute;
                 top: 10px;
                 bottom: 50px;
-                width: 330px;
+                width: 500px;
+                height: 400px;
                 left: 50%;
-                margin-left: -165px;
+                margin-left: -250px;
                 resize: none;
                 padding: 10px;
                 border-radius: 5px;
@@ -346,7 +332,7 @@
                 border-radius: 5px;
                 cursor: pointer;
             }
-            
+
             #InputOverlay {
                 text-align: center;
                 white-space: nowrap;
@@ -402,7 +388,7 @@
             #InputOverlay .widthWrapper .kink-simple .txt-field:after {
                 content: ') ';
             }
-            
+
             #InputOverlay .widthWrapper #InputPrevious .kink-simple:first-child,
             #InputOverlay .widthWrapper #InputNext .kink-simple:nth-child(3) {
                 background-color: #BBB;
@@ -439,7 +425,7 @@
             #InputOverlay .widthWrapper #InputNext .kink-simple:nth-child(2) {
                 padding-top: 7px;
             }
-            
+
             #InputPrevious .kink-simple {
                 border-top-left-radius: 2px;
                 border-top-right-radius: 2px;
@@ -448,7 +434,7 @@
                 border-bottom-left-radius: 2px;
                 border-bottom-right-radius: 2px;
             }
-            
+
             #InputOverlay .widthWrapper #InputCurrent {
                 position: relative;
             }
@@ -535,13 +521,10 @@
                 <div><span data-color="#FDFD6B" class="choice okay"></span> <span class="legend-text">Okay</span></div>
                 <div><span data-color="#DB6C00" class="choice maybe"></span> <span class="legend-text">Maybe</span></div>
                 <div><span data-color="#920000" class="choice no"></span> <span class="legend-text">No</span></div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                <div><span data-color="pattern" class="choice try"></span> <span class="legend-text">Want To Try</span></div>
->>>>>>> pr/2
-=======
->>>>>>> pr/8
+                <div><span data-color="#8CE2C1" class="choice trywant"></span> <span class="legend-text">Want to try</span></div>
+                <div><span data-color="#F7CF76" class="choice trymight"></span> <span class="legend-text">Might try</span></div>
+                <div><span data-color="#B81B78" class="choice tryno"></span> <span class="legend-text">Won't try</span></div>
+                <div><span data-color="#A97EDD" class="choice confused"></span> <span class="legend-text">Confused</span></div>
             </div>
             <div id="ExportWrapper">
                 <input type="text" id="URL">
@@ -556,34 +539,61 @@
 #Bodies
 (General)
 * Skinny
+* Athletic
 * Chubby
+* Short
+* Tall
+* Short hair
+* Long hair
+* Body hair
 * Small breasts
 * Large breasts
 * Small cocks
 * Large cocks
+* Small asses
+* Large asses
+* Tattoos
+* Piercings
+
+#Erogenous zones
+(Self, Partner)
+* Hair
+* Eyes
+* Nose
+* Ears
+* Lips
+* Neck
+* Armpits
+* Breasts
+* Nipples
+* Arms
+* Hands
+* Chest
+* Shoulders
+* Ribcage
+* Lower back
+* Stomach
+* Genitals
+* Hips / Ass / Pelvis
+* Thighs
+* Calfs
+* Feet
 
 #Clothing
 (Self, Partner)
 * Clothed sex
 * Lingerie
+* Masks
+* Gloves
 * Stockings
 * Heels
 * Leather
 * Latex
 * Uniform / costume
 * Cross-dressing
+* Zentai
+* Fursuit
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-#Partners
-(General)
-* Partner sharing
-* Cuckold/Cuckquean
-* Threesome: MFM
-* Threesome: FMF
-=======
-=======
->>>>>>> pr/8
 #Groupings
 (General)
 * You and 1 male
@@ -593,45 +603,28 @@
 * You and 1 male, 1 female
 * You and 2 males
 * You and 2 females
-<<<<<<< HEAD
->>>>>>> pr/2
-=======
->>>>>>> pr/8
 * Orgy
 
 #General
 (Giving, Receiving)
+
 * Romance / Affection
 * Handjob / fingering
-* Blowjob
-* Deep throat
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-* Swallowing
-* Facials
->>>>>>> pr/2
-=======
-* Swallowing
-* Facials
->>>>>>> pr/8
-* Cunnilingus
-* Face-sitting
+* Attention
+* Deference
 * Edging
 * Teasing
-* JOI, SI
-<<<<<<< HEAD
-<<<<<<< HEAD
-                
-#Cum
-(Giving, Receiving)
+
+* Massages
+* Blowjob
+* Cunnilingus
+* Deep throat
 * Swallowing
 * Facials
-* Cum Play
-=======
->>>>>>> pr/2
-=======
->>>>>>> pr/8
+* Face sitting
+* Rimming
+* Anal sex / Pegging
+* JOI, SI
 
 #Ass play
 (Giving, Receiving)
@@ -643,86 +636,128 @@
 
 #Restrictive
 (Self, Partner)
+* Earplugs / Headphones
+* Blindfold
+* Hood
 * Gag
 * Collar
 * Leash
+* Mitts
+* Manacles / Cuffs
+* Breast binder
+* Armbinder
+* Straight jacket
 * Chastity
-* Bondage (Light)
-* Bondage (Heavy)
+* Frame
+* Cage
+* Bondage tape
+* Self bondage
+* Metal bondage
+* Rope bondage
+* Shibari
+* Suspension
 * Encasement
 
 #Toys
 (Self, Partner)
-* Dildos
+* Clamps
+* Needles
+* Cilice
+* Crop
+* Canes
+* Paddles
+* Floggers
+* Whips
 * Plugs
+* Dildos
 * Vibrators
-* Sounding
+* Fucking machine / Sybian
+* Urethra play / Sounding
 
 #Domination
 (Dominant, Submissive)
 * Dominant / Submissive
-* Domestic servitude
-* Slavery
-* Pet play
-* DD/lg, MD/lb
-* Discipline
+* Bondage
+* Degradation
 * Begging
-* Forced orgasm
-* Orgasm control
-* Orgasm denial
+* Discipline / ”Brat”
+* CGL
+* DD/lg, MD/lb
+* Pet play
+* Domestic servitude
+* Servitude
+* Slavery
 * Power exchange
+* Sadomasochism
+* Primal
 
-#No consent
+#Degradation & Control
+(Giving, Receiving)
+* Name calling
+* Embarrassment
+* Body Writing
+* Humiliation
+* Feminization
+* Objectification
+* Glory hole
+* JOI, SI
+* Medical play
+* Cuckold / Cuckqueen
+* Orgasm control
+* Forced orgasm
+* Orgasm denial
+
+#Risk Aware Consensual Kink
 (Aggressor, Target)
-* Non-con / rape
-* Blackmail / coercion
-* Kidnapping
-* Drugs / alcohol
 * Sleep play
+* Hypnosis
+* Gang / Anonymous sex
+* Forced consumption
+* Drug play (alcohol)
+* Beating
+* Cutting
+* Breath play
+* Blackmail / Coercion
+* Kidnapping
+* Non-con / Rapeplay
 
 #Taboo
 (General)
-* Incest
-* Ageplay
-<<<<<<< HEAD
-<<<<<<< HEAD
-* Raceplay
-=======
-* Interracial / Raceplay
->>>>>>> pr/2
-* Bestiality
-* Necrophilia
-=======
-* Interracial / Raceplay
->>>>>>> pr/8
-* Cheating
+* Experimentalism
 * Exhibitionism
 * Voyeurism
+* Cheating
+* Ageplay
+* Raceplay (Interracial Humiliation)
+* Incest
+* Bestiality
+* Necrophilia
 
 #Surrealism
 (Self, Partner)
 * Futanari
-* Furry
-* Vore
-* Transformation
+* Furry / Scalie
+* Android
 * Tentacles
 * Monster or Alien
+* Transformation
+* Hyper / Inflation
+* Snuff
+* Vore / Cannibalism
+* Amputee
 
 #Fluids
-(General)
+(Self, Partner)
+* Cum
+* Drool
+* Sweat
+* Tears
 * Blood
+* Urine
 * Watersports
 * Scat
 * Lactation
 * Diapers
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-* Cum play
->>>>>>> pr/2
-=======
-* Cum play
->>>>>>> pr/8
 
 #Degradation
 (Giving, Receiving)
@@ -730,31 +765,52 @@
 * Name calling
 * Humiliation
 
-#Touch & Stimulation
-(Actor, Subject)
-* Cock/Pussy worship
-* Ass worship
-* Foot play
-* Tickling
-* Sensation play
-* Electro stimulation
-
 #Misc. Fetish
 (Giving, Receiving)
+* Food play
+* Enema
 * Fisting
+* Double penetration
 * Gangbang
-* Breath play
 * Impregnation
 * Pregnancy
+* Breath play
 * Feminization
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-* Cuckold / Cuckquean
->>>>>>> pr/2
-=======
-* Cuckold / Cuckquean
->>>>>>> pr/8
+* Cuckold / Cuckqueen
+
+#Sensation play
+(Self, Partner)
+* Leather
+* Silk, Satin
+* Lace
+* Fur
+* Latex
+* Body odor
+* Wet and messy
+* Genital Cock/Pussy worship
+* Ass worship
+* Body worship
+* Foot play
+* Scratching
+* Biting
+* Spanking
+* Sensory deprivation
+* Duct tape
+* Electrical tape
+* Thick metal (Chain)
+* Thin metal (Knife)
+* Ice
+* Fire
+* Wax
+* Rope
+* Scrub brush
+* Sandpaper
+* Chemical
+* Tickling
+* Electro stimulation (Shock, Tens)
+* Genital slapping
+* Genital torture
+* Anal torture
 
 #Pain
 (Giving, Receiving)
@@ -771,7 +827,15 @@
 * Hot Wax
 * Scratching
 * Biting
-* Cutting                
+* Cutting
+
+#Online
+(Giving, Receiving)
+* Roleplay
+* Voice
+* Selfies
+* Videos
+* Nudes
             </textarea>
             <button id="KinksOK">Accept</button>
         </div>
@@ -788,14 +852,7 @@
             </div>
         </div>
         <script>
-<<<<<<< HEAD
-<<<<<<< HEAD
-            
-=======
->>>>>>> pr/2
-=======
-            
->>>>>>> pr/8
+
             var log = function(val, base) {
                 return Math.log(val) / Math.log(base);
             };
@@ -826,47 +883,16 @@
                     sheet.addRule(selector, rules, 0);
                 }
             };
-            
+
             var kinks = {};
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> pr/8
             var inputKinks = {}
             var colors = {}
             var level = {};
-            
-<<<<<<< HEAD
-=======
-            var inputKinks = {};
-            var colors = {};
-            var level = {};
-            
-            var hatchPattern = function(patCanvas, x1, y1, dx, dy, delta){
-               var patContext = patCanvas.getContext('2d');
-               patContext.rect(x1, y1, dx, dy);
-               patContext.save();
-               patContext.clip();
-               var majorAxe = _.max([dx, dy]);
-               patContext.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-  
-              _.each(_.range(-1*(majorAxe) , majorAxe, delta), function(n, i){
-  
-                patContext.beginPath();
-                patContext.moveTo(dy - n + x1 , y1);
-                patContext.lineTo(-n + x1, y1+ dy);
-                patContext.stroke();
-              })
-              patContext.restore();
-            };
-            
->>>>>>> pr/2
-=======
->>>>>>> pr/8
+
             $(function(){
-                
+
                 var imgurClientId = '9db53e5936cd02f';
-                
+
                 inputKinks = {
                     $columns: [],
                     createCategory: function(name, fields){
@@ -875,7 +901,7 @@
                                 .data('category', name)
                                 .append($('<h2>')
                                 .text(name));
-                        
+
                         var $table = $('<table class="kinkGroup">').data('fields', fields);
                         var $thead = $('<thead>').appendTo($table);
                         for(var i = 0; i < fields.length; i++) {
@@ -884,7 +910,7 @@
                         $('<th>').appendTo($thead);
                         $('<tbody>').appendTo($table);
                         $category.append($table);
-                        
+
                         return $category;
                     },
                     createChoice: function(){
@@ -919,12 +945,12 @@
                     },
                     createColumns: function(){
                         var colClasses = ['100', '50', '33', '25'];
-                        
+
                         var numCols = Math.floor((document.body.scrollWidth - 20) / 400);
                         if(!numCols) numCols = 1;
                         if(numCols > 4) numCols = 4;
                         var colClass = 'col' + colClasses[numCols - 1];
-                        
+
                         inputKinks.$columns = [];
                         for(var i = 0; i < numCols; i++){
                             inputKinks.$columns.push($('<div>').addClass('col ' + colClass).appendTo($('#InputList')));
@@ -939,7 +965,7 @@
                             totalHeight += height;
                             $clone.remove();
                         }
-                        
+
                         var colHeight = totalHeight / (inputKinks.$columns.length);
                         var colIndex = 0;
                         for(var i = 0; i < $categories.length; i++) {
@@ -955,7 +981,7 @@
                     fillInputList: function(){
                         $('#InputList').empty();
                         inputKinks.createColumns();
-                        
+
                         var $categories = [];
                         var kinkCats = Object.keys(kinks);
                         for(var i = 0; i < kinkCats.length; i++) {
@@ -963,17 +989,17 @@
                             var category = kinks[catName];
                             var fields = category.fields;
                             var kinkArr = category.kinks;
-                            
+
                             var $category = inputKinks.createCategory(catName, fields);
                             var $tbody = $category.find('tbody');
                             for(var k = 0; k < kinkArr.length; k++) {
                                 $tbody.append(inputKinks.createKink(fields, kinkArr[k]));
                             }
-                            
+
                             $categories.push($category);
                         }
                         inputKinks.placeCategories($categories);
-                        
+
                         // Make things update hash
                         $('#InputList').find('button.choice').on('click', function(){
                             location.hash = inputKinks.updateHash();
@@ -982,45 +1008,17 @@
                     init: function(){
                         // Set up DOM
                         inputKinks.fillInputList();
-                        
+
                         // Read hash
                         inputKinks.parseHash();
-                        
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                        var patCanvas = document.createElement('canvas');
-                        patCanvas.height = 30;
-                        patCanvas.width = 30;
-                        hatchPattern(patCanvas, 0,0,30,30,5);
-                        patCanvas.toBlob(function(blob) {
-                          var patternImg = document.createElement('img');
-                          patternImg.crossOrigin = 'Anonymous';
-                          var url = URL.createObjectURL(blob);
 
-                          patternImg.onload = function() {
-                            // no longer need to read the blob so it's revoked
-                            URL.revokeObjectURL(url);
-                          };
-
-                          patternImg.src = url;
-                          patternImg.setAttribute('id', 'patternImg');
-                          patternImg.setAttribute('hidden','true');
-//                        var body = document.getElementsByTagName('body')[0]
-                          document.body.appendChild(patternImg);
-                        },'image/png');
-
-                        
->>>>>>> pr/2
-=======
->>>>>>> pr/8
                         // Make export button work
                         $('#Export').on('click', inputKinks.export);
                         $('#URL').on('click', function(){ this.select(); });
-                        
+
                         // On resize, redo columns
                         (function(){
-                            
+
                             var lastResize = 0;
                             $(window).on('resize', function(){
                                 var curTime = (new Date()).getTime();
@@ -1032,7 +1030,7 @@
                                     }
                                 }, 500);
                             });
-                            
+
                         })();
                     },
                     hashChars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.=+*^!@",
@@ -1052,80 +1050,43 @@
                     drawLegend: function(context){
                         context.font = "bold 13px Arial";
                         context.fillStyle = '#000000';
-                        
+
                         var levels = Object.keys(colors);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> pr/8
                         var x = context.canvas.width - 15 - (120 * levels.length);
                         for(var i = 0; i < levels.length; i++) {
                             context.beginPath();
                             context.arc(x + (120 * i), 17, 8, 0, 2 * Math.PI, false);
                             context.fillStyle = colors[levels[i]];
-<<<<<<< HEAD
-=======
-                        var x = context.canvas.width - 15 - (120 * levels.length);                      
-                        var patternImg = document.getElementById('patternImg');
-                        var pattern = context.createPattern(patternImg,'repeat');
-                        for(var i = 0; i < levels.length; i++) {
-                            context.beginPath();
-                            context.arc(x + (120 * i), 17, 8, 0, 2 * Math.PI, false);
-                            if (colors[levels[i]] != 'pattern') {
-                                context.fillStyle = colors[levels[i]];
-                            }
-                            else {
-                                context.fillStyle = pattern;
-                            }
->>>>>>> pr/2
-=======
->>>>>>> pr/8
                             context.fill();
                             context.strokeStyle = 'rgba(0, 0, 0, 0.5)'
                             context.lineWidth = 1;
                             context.stroke();
-                            
+
                             context.fillStyle = '#000000';
                             context.fillText(levels[i], x + 15 + (i * 120), 22);
                         }
                     },
                     setupCanvas: function(width, height, username){
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> pr/8
                         $('canvas').remove();
                         var canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = height;
-                        
+
                         var $canvas = $(canvas);
-<<<<<<< HEAD
-=======
-                        $('#mainCanvas').remove();
-                        var canvas = document.createElement('canvas');
-                        canvas.setAttribute('id', 'mainCanvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        
-                        var $canvas = $('#mainCanvas');
->>>>>>> pr/2
-=======
->>>>>>> pr/8
                         $canvas.css({
                             width: width,
                             height: height
                         });
                         // $canvas.insertBefore($('#InputList'));
-                        
+
                         var context = canvas.getContext('2d');
                         context.fillStyle = '#FFFFFF';
                         context.fillRect(0, 0, canvas.width, canvas.height);
-                        
+
                         context.font = "bold 24px Arial";
                         context.fillStyle = '#000000';
                         context.fillText('Kinklist ' + username, 5, 25);
-                        
+
                         inputKinks.drawLegend(context);
                         return { context: context, canvas: canvas };
                     },
@@ -1139,7 +1100,7 @@
                             context.fillStyle = '#000000';
                             context.font = "bold 18px Arial";
                             context.fillText(drawCall.data.category, drawCall.x, drawCall.y + 5);
-                            
+
                             var fieldsStr = drawCall.data.fields.join(', ');
                             context.font = "italic 12px Arial";
                             context.fillText(fieldsStr, drawCall.x, drawCall.y + 20);
@@ -1147,60 +1108,38 @@
                         kinkRow: function(context, drawCall){
                             context.fillStyle = '#000000';
                             context.font = "12px Arial";
-                            
+
                             var x = drawCall.x + 5 + (drawCall.data.choices.length * 20);
                             var y = drawCall.y - 6;
                             context.fillText(drawCall.data.text, x, y);
-<<<<<<< HEAD
-<<<<<<< HEAD
-                            
-=======
-                            var patternImg = document.getElementById('patternImg');
-                            var pattern = context.createPattern(patternImg,'repeat');
->>>>>>> pr/2
-=======
-                            
->>>>>>> pr/8
+
                             // Circles
                             for(var i = 0; i < drawCall.data.choices.length; i++){
                                 var choice = drawCall.data.choices[i];
                                 var color = colors[choice];
-                                
+
                                 var x = 10 + drawCall.x + (i * 20);
                                 var y = drawCall.y - 10;
-                                
+
                                 context.beginPath();
                                 context.arc(x, y, 8, 0, 2 * Math.PI, false);
-<<<<<<< HEAD
-<<<<<<< HEAD
                                 context.fillStyle = color;
-=======
-                                if (color != 'pattern') {
-                                    context.fillStyle = color;
-                                }
-                                else {
-                                    context.fillStyle = pattern;
-                                }
->>>>>>> pr/2
-=======
-                                context.fillStyle = color;
->>>>>>> pr/8
                                 context.fill();
                                 context.strokeStyle = 'rgba(0, 0, 0, 0.5)'
                                 context.lineWidth = 1;
                                 context.stroke();
                             }
-                            
+
                         }
                     },
                     export: function(){
                         var username = prompt("Please enter your name");
                         if(typeof username !== 'string') return;
                         else if (username.length ) username = '(' + username + ')';
-                        
+
                         $('#Loading').fadeIn();
                         $('#URL').fadeOut();
-                        
+
                         // Constants
                         var numCols = 6;
                         var columnWidth = 250;
@@ -1213,26 +1152,26 @@
                             top: 50,
                             bottom: 10
                         };
-                        
+
                         // Find out how many we have of everything
                         var numCats = $('.kinkCategory').length;
                         var dualCats = $('.kinkCategory th + th + th').length;
                         var simpleCats = numCats - dualCats;
                         var numKinks = $('.kinkRow').length;
-                        
+
                         // Determine the height required for all categories and kinks
                         var totalHeight = (
                                 (numKinks * rowHeight) +
                                 (dualCats * titleSubtitleHeight) +
                                 (simpleCats * simpleTitleHeight)
                         );
-                        
+
                         // Initialize columns and drawStacks
                         var columns = [];
                         for(var i = 0; i < numCols; i++){
                             columns.push({ height: 0, drawStack: []});
                         }
-                        
+
                         // Create drawcalls and place them in the drawStack
                         // for the appropriate column
                         var avgColHeight = totalHeight / numCols;
@@ -1243,16 +1182,16 @@
                             var category = kinks[catName];
                             var fields = category.fields;
                             var catKinks = category.kinks;
-                            
+
                             var catHeight = 0;
                             catHeight += (fields.length === 1) ? simpleTitleHeight : titleSubtitleHeight;
                             catHeight += (catKinks.length * rowHeight);
-                            
+
                             // Determine which column to place this category in
                             if((columns[columnIndex].height + (catHeight / 2)) > avgColHeight) columnIndex++;
                             while(columnIndex >= numCols) columnIndex--;
                             var column = columns[columnIndex];
-                            
+
                             // Drawcall for title
                             var drawCall = { y: column.height };
                             column.drawStack.push(drawCall);
@@ -1269,7 +1208,7 @@
                                     fields: fields
                                 };
                             }
-                            
+
                             // Drawcalls for kinks
                             $cat.find('.kinkRow').each(function(){
                                 var $kinkRow = $(this);
@@ -1279,36 +1218,36 @@
                                 }};
                                 column.drawStack.push(drawCall);
                                 column.height += rowHeight;
-                                
+
                                 // Add choices
                                 $kinkRow.find('.choices').each(function(){
                                     var $selection = $(this).find('.choice.selected');
                                     var selection = ($selection.length > 0)
                                             ? $selection.data('level')
                                             : Object.keys(level)[0];
-                                    
+
                                     drawCall.data.choices.push(selection);
                                 });
                             });
                         });
-                        
+
                         var tallestColumnHeight = 0;
                         for(var i = 0; i < columns.length; i++){
                             if(tallestColumnHeight < columns[i].height) {
                                 tallestColumnHeight = columns[i].height;
                             }
                         }
-                        
+
                         var canvasWidth = offsets.left + offsets.right + (columnWidth * numCols);
                         var canvasHeight = offsets.top + offsets.bottom + tallestColumnHeight;
                         var setup = inputKinks.setupCanvas(canvasWidth, canvasHeight, username);
                         var context = setup.context;
                         var canvas = setup.canvas;
-                        
+
                         for(var i = 0; i < columns.length; i++) {
                             var column = columns[i];
                             var drawStack = column.drawStack;
-                            
+
                             var drawX = offsets.left + (columnWidth * i);
                             for(var j = 0; j < drawStack.length; j++){
                                 var drawCall = drawStack[j];
@@ -1317,17 +1256,9 @@
                                 inputKinks.drawCallHandlers[drawCall.type](context, drawCall);
                             }
                         }
-                        
-<<<<<<< HEAD
-<<<<<<< HEAD
+
                         //return $(canvas).insertBefore($('#InputList'));
-=======
-                        // return $(canvas).insertBefore($('#InputList'));
->>>>>>> pr/2
-=======
-                        //return $(canvas).insertBefore($('#InputList'));
->>>>>>> pr/8
-                        
+
                         // Send canvas to imgur
                         $.ajax({
                             url: 'https://api.imgur.com/3/image',
@@ -1357,7 +1288,7 @@
                         var hashBase = inputKinks.hashChars.length;
                         var outputPow = inputKinks.maxPow(hashBase, Number.MAX_SAFE_INTEGER);
                         var inputPow = inputKinks.maxPow(base, Math.pow(hashBase, outputPow));
-                        
+
                         var output = "";
                         var numChunks = Math.ceil(input.length / inputPow);
                         var inputIndex = 0;
@@ -1369,7 +1300,7 @@
                                 var val = inputVal * Math.pow(base, pow);
                                 inputIntValue += val;
                             }
-                            
+
                             var outputCharValue = "";
                             while(inputIntValue > 0) {
                                 var maxPow = Math.floor(log(inputIntValue, hashBase));
@@ -1388,7 +1319,7 @@
                     decode: function(base, output){
                         var hashBase = inputKinks.hashChars.length;
                         var outputPow = inputKinks.maxPow(hashBase, Number.MAX_SAFE_INTEGER);
-                        
+
                         var values = [];
                         var numChunks = Math.max(output.length / outputPow)
                         for(var i = 0; i < numChunks; i++){
@@ -1404,7 +1335,7 @@
                         var hashBase = inputKinks.hashChars.length;
                         var outputPow = inputKinks.maxPow(hashBase, Number.MAX_SAFE_INTEGER);
                         var inputPow = inputKinks.maxPow(base, Math.pow(hashBase, outputPow));
-                        
+
                         var chunkInt = 0;
                         for(var i = 0; i < chunk.length; i++) {
                             var char = chunk[i];
@@ -1414,7 +1345,7 @@
                             chunkInt += intVal;
                         }
                         var chunkIntCopy = chunkInt;
-                        
+
                         var output = [];
                         for(var pow = inputPow - 1; pow >= 0; pow--) {
                             var posBase = Math.floor(Math.pow(base, pow));
@@ -1439,7 +1370,7 @@
                     parseHash: function(){
                         var hash = location.hash.substring(1);
                         if(hash.length < 10) return;
-                        
+
                         var values = inputKinks.decode(Object.keys(colors).length, hash);
                         var valueIndex = 0;
                         $('#InputList .choices').each(function(){
@@ -1566,7 +1497,7 @@
                 $('.overlay > *').on('click', function(e){
                     e.stopPropagation();
                 });
-        
+
                 var stylesheet = document.styleSheets[0];
                 $('.legend .choice').each(function(){
                     var $choice = $(this);
@@ -1574,32 +1505,15 @@
                     var text = $parent.text().trim();
                     var color = $choice.data('color');
                     var cssClass = this.className.replace('choice ', '').trim();
-                    
-<<<<<<< HEAD
-<<<<<<< HEAD
+
                     addCssRule('.choice.' + cssClass, 'background-color: ' + color + ';');
                     colors[text] = color;
-=======
-                    if (color != 'pattern') {
-                        addCssRule('.choice.' + cssClass, 'background-color: ' + color + ';');
-                        colors[text] = color;
-                    }
-                    else {
-                    addCssRule('.choice.' + cssClass, 'background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNScgaGVpZ2h0PScxNSc+CiAgPHJlY3Qgd2lkdGg9JzE1JyBoZWlnaHQ9JzE1JyBmaWxsPSd3aGl0ZScvPgogIDxwYXRoIGQ9J00tMSwxIGwyLC0yCiAgICAgICAgICAgTTAsNSBsMTUsLTE1CiAgICAgICAgICAgTTAsMTAgbDE1LC0xNQogICAgICAgICAgIE0wLDE1IGwxNSwtMTUKICAgICAgICAgICBNMCwyMCBsMTUsLTE1CiAgICAgICAgICAgTTAsMjUgbDE1LC0xNQogICAgICAgICAgIE0xNCwxNiBsMiwtMicgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScxJy8+Cjwvc3ZnPgo="); background-repeat: repeat');
-                    
-                        colors[text] = 'pattern';
-                    }
->>>>>>> pr/2
-=======
-                    addCssRule('.choice.' + cssClass, 'background-color: ' + color + ';');
-                    colors[text] = color;
->>>>>>> pr/8
                     level[text] = cssClass;
                 });
-        
+
                 kinks = inputKinks.parseKinksText($('#Kinks').text().trim());
                 inputKinks.init();
-                
+
                 (function(){
                     var $popup = $('#InputOverlay');
                     var $previous = $('#InputPrevious');
@@ -1789,7 +1703,7 @@
                     $('#StartBtn').on('click', inputKinks.inputPopup.show);
                     $('#InputCurrent .closePopup, #InputOverlay').on('click', function(){
                         $popup.fadeOut();
-                    });                    
+                    });
                 })();
             });
         </script>

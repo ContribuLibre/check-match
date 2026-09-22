@@ -5,8 +5,14 @@
 		<meta charset="UTF-8">
 		<link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAbFBMVEUAAACFJIRfLKl7Jo2OInuqHF+EJIRbLaytG1xbLaytG1z///+VIHRnKqGjHWd1JpKLIn7HpdOAJYn06/Tarcy1d7GYN4no0uSxgr6oeb2tZaacWKWqUZTdw927k8eTa77Ynr2IUKzKgau8ap9GZ/26AAAAC3RSTlMAVcbGxsaqVVWqqh+VAvAAAACMSURBVBgZBcHBboJAAAXA2bcUAT0ZD/7//zVpIxWUFTpTOG1nCPN+KMYOBNX8zqlz7bpbjEndp1KP3vb+1G18fD7nTcsZuDyY/hgCfK30G02A79X1oBEChhcNEWDtNCQBA68eESAXayGECsdgHoLMFTxHlhtLt9un6rT83H/t1KKfaAi0Z6HUAcFSV/8xnzFuH7zptQAAAABJRU5ErkJggg==" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="./style.css">
-		<script src="./script.js"></script>
+		<link type="text/css" rel="stylesheet" href="style.css">
+		<script type="module">
+
+			import en_classic from "./kinkListData/en_classic.js"
+			import main from "./js/main.js"
+			main({en_classic});
+
+		</script>
 	</head>
 	<body>
 		<div class="contentWrapper widthWrapper body">

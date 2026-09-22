@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>check-match — indicator shapes</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			body { margin: 0; padding: 1rem; background: #14161a; color: #e8e9ec;
+			       font: 13px system-ui, sans-serif; }
+			h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+			     color: #9aa0aa; margin: 1rem 0 0.4rem; }
+			.row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+			.cell { width: 88px; text-align: center; color: #6db5fe; }
+			.cell svg { width: 72px; height: 72px; }
+			.cell b { display: block; color: #9aa0aa; font-weight: 400; font-size: 11px; }
+		</style>
+	</head>
+	<body>
+		<div id="out"></div>
+		<script type="module">
+			import {defineAnswerModel, defineCriterion, defineScale} from "./js/core/criteria.js";
+			import {indicatorSvg} from "./js/render/indicator.js";
+
+			const scale = defineScale({id: "s", levels: ["0", "1", "2", "3"]});
+			const colors = ["#4C8DFF","#FF4F81","#23C552","#F2A23C","#8A5CF6","#7A6A5B","#21C7C7","#D93636"];
+			const criterion = index => defineCriterion({
+				id: `c${index}`, label: `c${index}`, scale, color: colors[index % colors.length],
+			});
+			const model = (count, extra = {}) => defineAnswerModel({
+				id: `m${count}${extra.duoMode || ""}${extra.display || ""}`,
+				criteria: Array.from({length: count}, (_, index) => criterion(index)),
+				...extra,
+			});
+
+			const cell = (label, svg) => `<div class="cell">${svg}<b>${label}</b></div>`;
+			const values = (count, pick) => Object.fromEntries(
+				Array.from({length: count}, (_, index) => [`c${index}`, pick(index)]).filter(([, v]) => v !== null));
+
+			const blocks = [];
+
+			for (const count of [3, 5, 8]) {
+				const m = model(count);
+				blocks.push(`<h2>star — ${count} criteria</h2><div class="row">`
+					+ cell("empty", indicatorSvg(m, {}, {size: 72}))
+					+ cell("all 0", indicatorSvg(m, values(count, () => 0), {size: 72}))
+					+ cell("all max", indicatorSvg(m, values(count, () => 3), {size: 72}))
+					+ cell("varied", indicatorSvg(m, values(count, i => i % 4), {size: 72}))
+					+ cell("half filled", indicatorSvg(m, values(count, i => (i % 2 ? 3 : null)), {size: 72}))
+					+ `</div>`);
+			}
+
+			const one = model(1);
+			blocks.push(`<h2>gauge — 1 criterion</h2><div class="row">`
+				+ [null, 0, 1, 2, 3].map(v =>
+					cell(v === null ? "empty" : `level ${v}`,
+						indicatorSvg(one, v === null ? {} : {c0: v}, {size: 72}))).join("")
+				+ `</div>`);
+
+			const two = model(2);
+			blocks.push(`<h2>duo — yin/yang</h2><div class="row">`
+				+ [[null,null],[3,3],[3,0],[0,3],[1,1],[3,1]].map(([a, b]) =>
+					cell(a === null ? "empty" : `${a} / ${b}`,
+						indicatorSvg(two, a === null ? {} : {c0: a, c1: b}, {size: 72}))).join("")
+				+ `</div>`);
+
+			const amp = model(2, {duoMode: "amplitude"});
+			blocks.push(`<h2>duo — amplitude (c0 vertical, c1 horizontal)</h2><div class="row">`
+				+ [[null,null],[3,3],[3,0],[0,3],[1,3],[0,0]].map(([a, b]) =>
+					cell(a === null ? "empty" : `${a} / ${b}`,
+						indicatorSvg(amp, a === null ? {} : {c0: a, c1: b}, {size: 72}))).join("")
+				+ `</div>`);
+
+			document.getElementById("out").innerHTML = blocks.join("");
+		</script>
+	</body>
+</html>

@@ -3,3 +3,4 @@
 server.bat
 *.sublime*
 .coder
+node_modules

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>check-match — checklist</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="checklist.css">
+	</head>
+	<body>
+		<header class="app-header">
+			<h1>check-match</h1>
+			<label>
+				Answers of
+				<select data-person aria-label="Person answering"></select>
+			</label>
+			<button type="button" data-add-person>+ person</button>
+			<label>
+				Checklist
+				<select data-checklist aria-label="Checklist"></select>
+			</label>
+			<span class="progress" data-progress></span>
+		</header>
+
+		<noscript><p class="error">This page needs JavaScript: everything runs in your browser.</p></noscript>
+
+		<p class="error" data-error hidden></p>
+
+		<main data-questions></main>
+
+		<aside class="editor" data-editor hidden></aside>
+
+		<script type="module">
+			import checklists from "./checklists/index.js";
+			import {startApp} from "./js/app.js";
+
+			try {
+				startApp({checklists});
+			} catch (error) {
+				console.error(error);
+				const banner = document.querySelector("[data-error]");
+				banner.textContent = `Could not start: ${error.message}`;
+				banner.hidden = false;
+			}
+		</script>
+	</body>
+</html>

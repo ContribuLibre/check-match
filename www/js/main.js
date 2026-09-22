@@ -1344,6 +1344,40 @@ const defaultSettings = {
   state: '',
 }
 
+// Presets shipped with the page (see index.html), as opposed to those the user
+// creates. They are registered before init() so the StorageHandler can declare
+// them as defaults, which is what makes them read-only and survive a reset.
+const builtinPresets = new Map();
+
+function normalizePreset(name, definition) {
+  if (!definition || typeof definition !== "object") {
+    throw new KinklistError(`Preset "${name}" has no definition.`);
+  }
+  const displayName = definition.displayName || definition.name || name;
+  if (typeof definition.data !== "string" || !definition.data.trim()) {
+    throw new KinklistError(`Preset "${displayName}" has no data.`);
+  }
+  return {
+    displayName,
+    name: toCSSClassName(displayName),
+    data: definition.data,
+    legend: Array.isArray(definition.legend) && definition.legend.length
+        ? definition.legend
+        : defaultSettings.legend,
+    state: typeof definition.state === "string" ? definition.state : '',
+  };
+}
+
+/**
+ * Register a preset shipped with the page.
+ * Call before init(); addDefault() is the equivalent once the app is running.
+ */
+function loadPreset(name, definition) {
+  const preset = normalizePreset(name, definition);
+  builtinPresets.set(preset.name, preset);
+  return preset;
+}
+
 
 class PresetManager {
   constructor(storageHandler) {
@@ -1381,7 +1415,7 @@ class PresetManager {
     const name = toCSSClassName(displayName);
     this.sanitizeInput(name);
     if (this.presets.has(name)) {
-      throw new KinklistError(`Preset "${preset.name}" already exists.`);
+      throw new KinklistError(`Preset "${displayName}" already exists.`);
     }
     const preset = new Preset(displayName, this, data, legend);
     this.presets.set(name, preset);
@@ -1406,14 +1440,23 @@ class PresetManager {
     this.presets.set(name, preset);
     this.save();
   }
-  addDefault(preset) {
-    const name = preset.name;
-    //this.sanitizeInput(name);
-    if (this.storage.defaults.presetList.has(name)) {
-      throw new KinklistError(`Preset "${preset.name}" already exists.`);
+  /**
+   * Add a read-only preset shipped with the page, once the app is already running.
+   * Unlike add(), it does not go through sanitizeInput(): declaring a default is
+   * exactly the operation sanitizeInput() exists to forbid on user presets.
+   * Idempotent, so reloading the same preset is harmless.
+   */
+  addDefault(definition) {
+    const declaration = loadPreset(definition.name || definition.displayName, definition);
+    if (!this.storage.declareDefaultPreset(declaration)) {
+      return this.get(declaration.name) || null;
     }
-    this.storage.defaults.presetList.set(name, preset);
+    this.storage.initialize();
+    const preset = new Preset(declaration.displayName, this,
+                              declaration.data, declaration.legend, declaration.state);
+    this.presets.set(preset.name, preset);
     this.save();
+    return preset;
   }
 
   rename(preset, newDisplayName) {
@@ -1490,9 +1533,26 @@ class StorageHandler {
     };
     const presetList = this.defaults.presetDisplayNames
         .map(displayName => toCSSClassName(displayName));
+    // Non-enumerable so initialize()'s for..in does not try to persist it.
     Object.defineProperty(this.defaults, "presetList", {value: presetList});
+    for (const preset of builtinPresets.values()) this.declareDefaultPreset(preset);
     this.initialize();
     return this;
+  }
+
+  /**
+   * Declare a preset as a default: read-only, restored on reset, and present
+   * even for a browser whose localStorage predates it.
+   * @returns {boolean} false when it was already declared.
+   */
+  declareDefaultPreset({displayName, name, data, legend, state}) {
+    if (this.defaults.presetList.includes(name)) return false;
+    this.defaults.presetDisplayNames.push(displayName);
+    this.defaults.presetList.push(name);
+    this.defaults[`--preset-${name}`] = data;
+    this.defaults[`--legend-${name}`] = legend;
+    this.defaults[`--state-${name}`] = state;
+    return true;
   }
 
   store(key, data) {
@@ -1514,11 +1574,26 @@ class StorageHandler {
           this.store(key, this.defaults[key]);
         }
       }
+      this.mergeDefaultPresetNames();
     } catch (e) {
       console.error(e);
       console.warn("Resetting localStorage.");
       this.reset();
     }
+  }
+
+  /**
+   * A returning user already has a stored preset list that predates any preset
+   * added since; merge the missing defaults in without touching their own.
+   */
+  mergeDefaultPresetNames() {
+    const stored = this.retrieve("presetDisplayNames");
+    if (!Array.isArray(stored)) return;
+    const merged = stored.slice();
+    for (const displayName of this.defaults.presetDisplayNames) {
+      if (!merged.includes(displayName)) merged.push(displayName);
+    }
+    if (merged.length !== stored.length) this.store("presetDisplayNames", merged);
   }
 
   reset() {
@@ -1641,11 +1716,16 @@ function init() {
     const obsoletePresets =
         selectOptionsList.filter(option => !presetList.includes(option));
 
+    // The two disabled options act as group headers; a locked (built-in) preset
+    // belongs above the "Custom presets" one, or it reads as user-created.
+    const customSeparator = new Array(...selectElement.options)
+        .filter(option => option.disabled)[1];
+
     for (const presetName of newPresets) {
       const preset = presetManager.get(presetName);
       const option =
           createHTMLElement(`option[value=${preset.name}]`, preset.displayName);
-      selectElement.add(option);
+      selectElement.add(option, preset.locked ? customSeparator : null);
     }
 
     for (const presetName of obsoletePresets) {
@@ -1855,24 +1935,31 @@ function init() {
       }
     });
   })
-}
-function loadPreset(name,settings){
-  console.log(name,settings);
-}
 
+  // The markup ships a hard-coded "Default" option only; sync the selector now
+  // so presets loaded from modules are listed without opening the overlay first.
+  updatePresetSelector();
+
+  // Handed back so a caller can still register a preset after startup
+  // (presetManager.addDefault) or drive the list from the console.
+  return {storageHandler, presetManager, kinklist};
+}
 function attemptInit(args) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ()=>attemptInit(args));
     return;
   }
   try {
-    init();
-    for(let name in args) if (args.hasOwnProperty(name)){
-      loadPreset(name,args[name]);
+    // Register before init(): the StorageHandler reads the builtin presets when
+    // it builds its defaults, and the PresetManager loads them right after.
+    for (const name in args) if (Object.prototype.hasOwnProperty.call(args, name)) {
+      loadPreset(name, args[name]);
     }
+    return init();
   } catch (error) {
     console.error(error);
     unhide(document.querySelector(".error"));
   }
 }
 export default attemptInit;
+export {loadPreset, builtinPresets};

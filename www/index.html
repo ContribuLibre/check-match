@@ -10,7 +10,9 @@
 
 			import en_classic from "./kinkListData/en_classic.js"
 			import main from "./js/main.js"
-			main({en_classic});
+			// Exposed so further presets can be registered after startup:
+			// kinklist.presetManager.addDefault({name, data, legend})
+			window.kinklist = main({en_classic});
 
 		</script>
 	</head>

@@ -1,4 +1,25 @@
+# check-match
+
+Fill in a checklist of preferences, one item at a time, on several criteria at
+once — then (later) compare with someone else's.
+
+Everything runs in the browser from static files: open `www/checklist.html`, or
+`bun run serve` for a local preview. See [ARCHITECTURE.md](ARCHITECTURE.md) for
+how question identity, per-person storage and the indicator shapes work.
+
+- `www/checklist.html` — the app
+- `www/shapes.html` — visual reference for the answer indicators
+- `www/index.html` — the original single-scale kinklist, still working
+
+Run `bun test` before committing.
+
+---
+
+The rest of this file is the original KinkList documentation, kept because the
+item content and the text preset format still come from it.
+
 # KinkList
+
 Easily create a visually easy to parse infographic of turn-ons, turn-offs, kinks, and more.
 Edit what's on the list with a text based editor.
 Export the list to an image with a single button press.

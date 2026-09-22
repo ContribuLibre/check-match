@@ -1,0 +1,11 @@
+{
+  "name": "check-match",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Checklists comparables: canonical question ids, multi-criteria answers, static hosting.",
+  "scripts": {
+    "test": "bun test",
+    "serve": "bun run scripts/serve.js"
+  }
+}

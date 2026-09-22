@@ -7,7 +7,7 @@
 import {createAnswersStore} from "./core/answers-store.js";
 import {completion} from "./core/checklist.js";
 import {getCriterion, sanitizeValues} from "./core/criteria.js";
-import {indicatorSvg} from "./render/indicator.js";
+import {indicatorSvg, starDefs} from "./render/indicator.js";
 
 const html = (strings, ...values) =>
 	strings.reduce((out, chunk, index) => out + chunk + (values[index] ?? ""), "");
@@ -63,6 +63,31 @@ export function startApp({checklists, root = document, storage = globalThis.loca
 
 	// --- questions ----------------------------------------------------------
 
+	/**
+	 * Gradients are defined once for the whole page instead of inside each of the
+	 * couple hundred indicators: the ids are per model, so every star of a given
+	 * model points at the same definitions.
+	 */
+	function renderSharedDefs() {
+		const models = new Map();
+		for (const question of state.checklist.questions) {
+			if (question.answerModel.display === "star") {
+				models.set(question.answerModel.id, question.answerModel);
+			}
+		}
+		let holder = root.querySelector("[data-indicator-defs]");
+		if (!holder) {
+			holder = document.createElement("div");
+			holder.setAttribute("data-indicator-defs", "");
+			holder.hidden = true;
+			document.body.appendChild(holder);
+		}
+		holder.innerHTML = models.size
+			? `<svg width="0" height="0" aria-hidden="true">${
+				[...models.values()].map(starDefs).join("")}</svg>`
+			: "";
+	}
+
 	function valuesOf(questionId) {
 		const revision = state.personId ? store.latest(state.personId, questionId) : null;
 		return revision ? revision.values : {};
@@ -77,7 +102,7 @@ export function startApp({checklists, root = document, storage = globalThis.loca
 			<li class="question${state.openQuestionId === question.questionId ? " open" : ""}"
 			    data-question="${escapeHtml(question.questionId)}">
 				<button class="question-summary" type="button">
-					<span class="indicator-slot">${indicatorSvg(question.answerModel, values, {size: 44})}</span>
+					<span class="indicator-slot">${indicatorSvg(question.answerModel, values, {size: 44, defs: "external"})}</span>
 					<span class="question-label">${escapeHtml(question.label)}${role}</span>
 				</button>
 			</li>`;
@@ -119,10 +144,13 @@ export function startApp({checklists, root = document, storage = globalThis.loca
 
 		const criteria = question.answerModel.criteria.map(criterion => {
 			const current = values[criterion.id];
+			// The long text is what actually disambiguates a level, so it rides along
+			// as a tooltip rather than being dropped.
 			const levels = criterion.scale.levels.map(level => html`
 				<button type="button" class="level${current === level.value ? " selected" : ""}"
 				        data-criterion="${escapeHtml(criterion.id)}" data-level="${level.value}"
-				        style="--criterion-color: ${escapeHtml(criterion.color)}">
+				        ${level.hint ? `title="${escapeHtml(level.hint)}"` : ""}
+				        style="--criterion-color: ${escapeHtml(criterion.maxColor)}">
 					${escapeHtml(level.label)}
 				</button>`).join("");
 			return html`
@@ -151,7 +179,7 @@ export function startApp({checklists, root = document, storage = globalThis.loca
 		elements.editor.hidden = false;
 		elements.editor.innerHTML = html`
 			<header class="editor-header">
-				<span class="indicator-slot large">${indicatorSvg(question.answerModel, values, {size: 120})}</span>
+				<span class="indicator-slot large">${indicatorSvg(question.answerModel, values, {size: 120, defs: "external"})}</span>
 				<div>
 					<h3>${escapeHtml(question.label)}${question.role ? ` — ${escapeHtml(question.role)}` : ""}</h3>
 					<code class="question-id">${escapeHtml(question.questionId)}</code>
@@ -203,6 +231,7 @@ export function startApp({checklists, root = document, storage = globalThis.loca
 		ensurePerson();
 		renderPeople();
 		renderChecklists();
+		renderSharedDefs();
 		renderProgress();
 		renderQuestions();
 		renderEditor();

@@ -12,6 +12,7 @@
 			.row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 			.cell { width: 88px; text-align: center; color: #6db5fe; }
 			.cell svg { width: 72px; height: 72px; }
+			.cell[style] svg { width: 180px; height: 180px; }
 			.cell b { display: block; color: #9aa0aa; font-weight: 400; font-size: 11px; }
 		</style>
 	</head>
@@ -20,6 +21,7 @@
 		<script type="module">
 			import {defineAnswerModel, defineCriterion, defineScale} from "./js/core/criteria.js";
 			import {indicatorSvg} from "./js/render/indicator.js";
+			import {kinkAnswerModel} from "./checklists/kink-criteria.js";
 
 			const scale = defineScale({id: "s", levels: ["0", "1", "2", "3"]});
 			const colors = ["#4C8DFF","#FF4F81","#23C552","#F2A23C","#8A5CF6","#7A6A5B","#21C7C7","#D93636"];
@@ -37,6 +39,26 @@
 				Array.from({length: count}, (_, index) => [`c${index}`, pick(index)]).filter(([, v]) => v !== null));
 
 			const blocks = [];
+
+			// The real eight-criteria model, with the reference state
+			// [.5, 1, 0, 1, .8, 1, 0, 1] expressed as level indexes.
+			const reference = {experience: 3, excitment: 4, disgust: 0, exhibition: 6,
+				fear: 4, acceptance: 6, aftercare: 0, explicit: 8};
+			blocks.push(`<h2>reference model — 8 criteria</h2><div class="row">`
+				+ cell("empty", indicatorSvg(kinkAnswerModel, {}, {size: 72}))
+				+ cell("reference state", indicatorSvg(kinkAnswerModel, reference, {size: 72}))
+				+ cell("all lowest", indicatorSvg(kinkAnswerModel,
+					Object.fromEntries(kinkAnswerModel.criteria.map(c => [c.id, 0])), {size: 72}))
+				+ cell("all highest", indicatorSvg(kinkAnswerModel,
+					Object.fromEntries(kinkAnswerModel.criteria.map(c => [c.id, c.scale.levels.length - 1])), {size: 72}))
+				+ cell("partly filled", indicatorSvg(kinkAnswerModel,
+					{experience: 2, acceptance: 5, fear: 1}, {size: 72}))
+				+ `</div>`);
+
+			blocks.push(`<h2>reference state, large</h2><div class="row">`
+				+ `<div class="cell" style="width:200px">${
+					indicatorSvg(kinkAnswerModel, reference, {size: 180})}<b>180px</b></div>`
+				+ `</div>`);
 
 			for (const count of [3, 5, 8]) {
 				const m = model(count);

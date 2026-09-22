@@ -1,54 +1,69 @@
 import {describe, expect, test} from "bun:test";
-import {duoGeometry, gaugeGeometry, starAxes, starGeometry} from "../www/js/render/shapes.js";
+import {branchReach, duoGeometry, gaugeGeometry, starGeometry, starGradients} from "../www/js/render/shapes.js";
 
 const reach = tip => Math.hypot(tip.x, tip.y);
 
 describe("star", () => {
-	test("has exactly one branch per criterion, whatever the count", () => {
+	test("has exactly one sector per criterion, whatever the count", () => {
 		for (const count of [3, 5, 8, 13]) {
 			const star = starGeometry(new Array(count).fill(0.5));
 			expect(star.branches).toBe(count);
-			expect(star.tips).toHaveLength(count);
-			expect(star.valleys).toHaveLength(count);
-			// Outline alternates tip, valley, tip, valley...
-			expect(star.outline).toHaveLength(count * 2);
-			expect(star.path.startsWith("M ")).toBe(true);
-			expect(star.path.endsWith("Z")).toBe(true);
+			expect(star.sectors).toHaveLength(count);
+			// Each sector is a spike: centre, left edge, tip, right edge.
+			expect(star.sectors[0].track).toHaveLength(4);
+			expect(star.wide).toBeCloseTo((2 * Math.PI) / count, 6);
 		}
 	});
 
-	test("branch length grows with the value", () => {
+	test("sectors tile the full circle without gaps", () => {
+		const star = starGeometry([1, 1, 1, 1]);
+		const directions = star.sectors.map(sector => sector.direction);
+		for (let index = 1; index < directions.length; index++) {
+			expect(directions[index] - directions[index - 1]).toBeCloseTo(star.wide, 6);
+		}
+	});
+
+	test("branch length grows with the score", () => {
 		const star = starGeometry([0, 0.5, 1]);
-		expect(reach(star.tips[0])).toBeLessThan(reach(star.tips[1]));
-		expect(reach(star.tips[1])).toBeLessThan(reach(star.tips[2]));
+		expect(star.sectors[0].reach).toBeLessThan(star.sectors[1].reach);
+		expect(star.sectors[1].reach).toBeLessThan(star.sectors[2].reach);
 	});
 
-	test("a branch answered at zero stays visible", () => {
-		const star = starGeometry([0, 1, 1]);
-		expect(reach(star.tips[0])).toBeGreaterThan(star.hollow);
+	test("a zero answer keeps a quarter of the reach, and loses its tip", () => {
+		const star = starGeometry([0, 1, 1], {size: 100});
+		expect(branchReach(0)).toBeCloseTo(0.25, 6);
+		expect(star.sectors[0].reach).toBeCloseTo(12.5, 3);
+		// Truncated triangle: centre + two edges, no tip.
+		expect(star.sectors[0].fill).toHaveLength(3);
+		expect(star.sectors[1].fill).toHaveLength(4);
 	});
 
-	test("an unanswered branch collapses into the hollow, so it reads as absent", () => {
+	test("an unanswered branch has no fill at all, so it reads as absent", () => {
 		const star = starGeometry([null, 1, 1]);
-		expect(star.tips[0].answered).toBe(false);
-		expect(reach(star.tips[0])).toBeCloseTo(star.hollow, 3);
+		expect(star.sectors[0].answered).toBe(false);
+		expect(star.sectors[1].answered).toBe(true);
+		// The track is always there: the criterion exists even unanswered.
+		expect(star.sectors[0].trackPoints).toBeTruthy();
 	});
 
-	test("the first branch points up, so shapes stay comparable", () => {
-		const [first] = starGeometry([1, 1, 1]).tips;
-		expect(first.x).toBeCloseTo(0, 3);
-		expect(first.y).toBeLessThan(0); // SVG y grows downwards
+	test("the first sector points up, so shapes stay comparable", () => {
+		const [first] = starGeometry([1, 1, 1]).sectors;
+		expect(first.tip.x).toBeCloseTo(0, 3);
+		expect(first.tip.y).toBeLessThan(0); // SVG y grows downwards
 	});
 
 	test("a full answer reaches the outer radius", () => {
 		const star = starGeometry([1, 1, 1], {size: 100});
-		expect(reach(star.tips[0])).toBeCloseTo(50, 3);
+		expect(reach(star.sectors[0].tip)).toBeCloseTo(50, 3);
+		expect(branchReach(1)).toBe(1);
 	});
 
-	test("axes match the branches", () => {
-		const axes = starAxes(6, {size: 100});
-		expect(axes).toHaveLength(6);
-		expect(Math.hypot(axes[0].to.x, axes[0].to.y)).toBeCloseTo(50, 3);
+	test("gradients run along their own sector", () => {
+		const gradients = starGradients(4);
+		expect(gradients).toHaveLength(4);
+		// First sector points up: the gradient runs bottom-to-top.
+		expect(gradients[0].y1).toBeCloseTo(1, 6);
+		expect(gradients[0].y2).toBeCloseTo(0, 6);
 	});
 
 	test("refuses an empty star", () => {

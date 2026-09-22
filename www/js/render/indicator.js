@@ -5,7 +5,7 @@
 // itself defaults to the criteria count (1 gauge, 2 duo, 3+ star).
 
 import {answerVector, isAnswered} from "../core/criteria.js";
-import {duoGeometry, gaugeGeometry, starAxes, starGeometry} from "./shapes.js";
+import {duoGeometry, gaugeGeometry, starGeometry, starGradients} from "./shapes.js";
 
 const escapeXml = text => String(text).replace(/[&<>"']/g, character => ({
 	"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;",
@@ -29,27 +29,57 @@ function describe(model, values) {
 	}).join(", ");
 }
 
-function renderStar(model, values, {size, padding}) {
+/** Stable per-model gradient ids: identical across every star of one model. */
+const gradientId = (model, criterion) => `cm-grad-${model.id}-${criterion.id}`;
+
+/**
+ * The <defs> a star needs. Emitted inline by default so one SVG stands alone;
+ * pass `defs: "external"` and inject `starDefs(model)` once in the page when
+ * rendering hundreds of stars, to avoid repeating them in every item.
+ */
+export function starDefs(model) {
+	const gradients = starGradients(model.criteria.length);
+	return `<defs>${model.criteria.map((criterion, index) => {
+		const {x1, y1, x2, y2} = gradients[index];
+		return `<linearGradient id="${escapeXml(gradientId(model, criterion))}"`
+			+ ` x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">`
+			+ `<stop offset="0%" stop-color="${escapeXml(criterion.minColor)}"/>`
+			+ `<stop offset="100%" stop-color="${escapeXml(criterion.maxColor)}"/>`
+			+ `</linearGradient>`;
+	}).join("")}</defs>`;
+}
+
+function renderStar(model, values, {size, padding, defs}) {
 	const vector = answerVector(model, values);
-	const {path, tips} = starGeometry(vector, {size});
-	const axes = starAxes(vector.length, {size});
+	const {sectors} = starGeometry(vector, {size});
+	const stroke = size * 0.008;
 
-	const guides = axes.map(axis =>
-		`<line class="indicator-axis" x1="0" y1="0" x2="${axis.to.x}" y2="${axis.to.y}"`
-		+ ` stroke="${EMPTY_STROKE}" stroke-width="0.5"/>`).join("");
-
-	const shape = `<path class="indicator-shape" d="${path}" fill="currentColor"`
-		+ ` fill-opacity="0.35" stroke="currentColor" stroke-width="1.5"`
-		+ ` stroke-linejoin="round"/>`;
-
-	const points = tips.map((tip, index) => {
+	const tracks = sectors.map((sector, index) => {
 		const criterion = model.criteria[index];
-		if (!tip.answered) return "";
-		return `<circle class="indicator-tip" data-criterion="${escapeXml(criterion.id)}"`
-			+ ` cx="${tip.x}" cy="${tip.y}" r="${size * 0.045}" fill="${criterion.color}"/>`;
+		// Gradient, then a white veil over it: the empty slot stays legible as
+		// "this criterion exists, here is its direction" without competing with
+		// the answer drawn on top.
+		// The veil follows the page background rather than being hard-coded white,
+		// so the pale slot stays pale on a dark theme instead of glaring.
+		return `<polygon class="indicator-track" points="${sector.trackPoints}"`
+			+ ` fill="url(#${escapeXml(gradientId(model, criterion))})"/>`
+			+ `<polygon points="${sector.trackPoints}" fill="var(--indicator-veil, #ffffff)"`
+			+ ` fill-opacity="var(--indicator-veil-opacity, 0.8)"/>`;
 	}).join("");
 
-	return wrap(guides + shape + points, {size, padding, title: describe(model, values)});
+	const fills = sectors.map((sector, index) => {
+		if (!sector.answered) return "";
+		const criterion = model.criteria[index];
+		return `<polygon class="indicator-fill" data-criterion="${escapeXml(criterion.id)}"`
+			+ ` points="${sector.fillPoints}" fill="${escapeXml(criterion.maxColor)}"/>`;
+	}).join("");
+
+	const outlines = sectors.map(sector =>
+		`<polygon class="indicator-sector" points="${sector.trackPoints}" fill="none"`
+		+ ` stroke="var(--indicator-stroke, #000000)" stroke-width="${stroke}"/>`).join("");
+
+	const body = (defs === "external" ? "" : starDefs(model)) + tracks + fills + outlines;
+	return wrap(body, {size, padding, title: describe(model, values)});
 }
 
 function renderGauge(model, values, {size, padding}) {
@@ -106,12 +136,8 @@ function renderDuo(model, values, {size, padding, mode}) {
  * @param {object} model   answer model
  * @param {object} values  criterionId -> raw level (missing = unanswered)
  */
-export function indicatorSvg(model, values = {}, {size = 100, padding = 6, mode} = {}) {
-	const options = {size, padding, mode};
-	if (!isAnswered(model, values) && model.display === "star") {
-		// Keep the empty star readable as "nothing answered yet" rather than "all zero".
-		return renderStar(model, {}, options);
-	}
+export function indicatorSvg(model, values = {}, {size = 100, padding = 6, mode, defs} = {}) {
+	const options = {size, padding, mode, defs};
 	if (model.display === "gauge") return renderGauge(model, values, options);
 	if (model.display === "duo") return renderDuo(model, values, options);
 	return renderStar(model, values, options);

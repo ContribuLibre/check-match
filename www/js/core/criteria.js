@@ -15,26 +15,52 @@
 export const UNANSWERED = null;
 
 /**
- * An ordered scale. `levels[0]` is the low end; the index is the stored value,
- * which keeps stored answers readable and comparable across scales of different
- * lengths once normalized to 0..1.
+ * An ordered scale.
+ *
+ * The stored value is the level *index* — an integer, stable across history and
+ * exports. What the renderers consume is the level's `score` (0..1), which is
+ * deliberately NOT the index spread evenly: the gap between "ok" and "sometimes"
+ * is not the gap between "never" and "warning". Levels may be written in the
+ * authoring form `{short, long, score}`; `score` defaults to an even spread when
+ * a scale does not care about the distinction.
+ *
+ * `minColor`/`maxColor` are the two ends of the gradient a criterion is drawn
+ * with; `color` (the solid fill of an answered branch) defaults to maxColor.
  */
-export function defineScale({id, label = id, levels, color = "#888888"}) {
+export function defineScale({id, label = id, levels, minColor, maxColor, color}) {
 	if (!id) throw new TypeError("A scale needs an id.");
 	if (!Array.isArray(levels) || levels.length < 2) {
 		throw new TypeError(`Scale "${id}" needs at least 2 levels.`);
 	}
-	const normalized = levels.map((level, index) =>
-		typeof level === "string" ? {value: index, label: level} : {value: index, ...level});
-	return Object.freeze({id, label, color, levels: Object.freeze(normalized)});
+	const normalized = levels.map((level, index) => {
+		const raw = typeof level === "string" ? {short: level} : level;
+		const score = raw.score === undefined ? index / (levels.length - 1) : Number(raw.score);
+		if (!Number.isFinite(score) || score < 0 || score > 1) {
+			throw new TypeError(`Scale "${id}" level ${index} has a score outside 0..1.`);
+		}
+		return Object.freeze({
+			value: index,
+			label: raw.label ?? raw.short ?? String(index),
+			hint: raw.hint ?? raw.long ?? "",
+			score,
+		});
+	});
+	const high = maxColor || color || "#888888";
+	return Object.freeze({
+		id, label,
+		minColor: minColor || "#DDDDDD",
+		maxColor: high,
+		color: color || high,
+		levels: Object.freeze(normalized),
+	});
 }
 
-/** Position of a raw value on its scale, as 0..1 — the form every renderer consumes. */
+/** The 0..1 score of a stored level index — the form every renderer consumes. */
 export function normalizeValue(scale, value) {
 	if (value === UNANSWERED || value === undefined) return UNANSWERED;
-	const max = scale.levels.length - 1;
-	const clamped = Math.min(Math.max(Number(value), 0), max);
-	return clamped / max;
+	const index = Math.min(Math.max(Math.round(Number(value)), 0), scale.levels.length - 1);
+	if (!Number.isFinite(index)) return UNANSWERED;
+	return scale.levels[index].score;
 }
 
 export function defineCriterion({id, label = id, scale, color, axis = null, optional = true}) {
@@ -42,7 +68,12 @@ export function defineCriterion({id, label = id, scale, color, axis = null, opti
 	if (!scale || !Array.isArray(scale.levels)) {
 		throw new TypeError(`Criterion "${id}" needs a scale.`);
 	}
-	return Object.freeze({id, label, scale, color: color || scale.color, axis, optional});
+	return Object.freeze({
+		id, label, scale, axis, optional,
+		color: color || scale.color,
+		minColor: scale.minColor,
+		maxColor: scale.maxColor,
+	});
 }
 
 /**

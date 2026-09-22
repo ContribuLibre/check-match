@@ -10,11 +10,11 @@ import {defineAnswerModel} from "../js/core/criteria.js";
 import {parsePresetData} from "../js/core/preset-format.js";
 import legacyPreset from "../kinkListData/en_classic.js";
 import {
-	arousal,
+	acceptance,
+	excitment,
 	kinkAnswerModel,
-	kinkArousalOnly,
-	kinkArousalTolerance,
-	tolerance,
+	kinkExcitmentAcceptance,
+	kinkExcitmentOnly,
 } from "./kink-criteria.js";
 
 const sections = parsePresetData(legacyPreset.data);
@@ -24,16 +24,16 @@ const variant = (id, label, answerModel) => defineChecklist({
 });
 
 /** Same two criteria as the yin/yang variant, read as vertical vs horizontal reach. */
-const arousalToleranceAmplitude = defineAnswerModel({
+const excitmentAcceptanceAmplitude = defineAnswerModel({
 	id: "kink-2-amplitude",
-	label: "Arousal (vertical) vs tolerance (horizontal)",
-	criteria: [arousal, tolerance],
+	label: "Excitment (vertical) vs acceptance (horizontal)",
+	criteria: [excitment, acceptance],
 	duoMode: "amplitude",
 });
 
 export default [
 	variant("kink-classic", "Kinklist — 8 criteria (star)", kinkAnswerModel),
-	variant("kink-duo", "Kinklist — arousal vs tolerance (yin/yang)", kinkArousalTolerance),
-	variant("kink-amplitude", "Kinklist — arousal vs tolerance (amplitude)", arousalToleranceAmplitude),
-	variant("kink-quick", "Kinklist — arousal only (gauge)", kinkArousalOnly),
+	variant("kink-duo", "Kinklist — excitment vs acceptance (yin/yang)", kinkExcitmentAcceptance),
+	variant("kink-amplitude", "Kinklist — excitment vs acceptance (amplitude)", excitmentAcceptanceAmplitude),
+	variant("kink-quick", "Kinklist — excitment only (gauge)", kinkExcitmentOnly),
 ];

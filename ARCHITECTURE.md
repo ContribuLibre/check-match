@@ -5,7 +5,7 @@ Static pages, plain ES modules, no build step and no runtime dependency.
 local preview server only — never to produce the shipped files.
 
 ```
-bun test              # 78 tests, no DOM needed
+bun test              # 85 tests, no DOM needed
 bun run serve         # preview on http://localhost:8080 (PORT= to change)
 ```
 
@@ -62,18 +62,44 @@ wording and colour — experience and disgust have no reason to share a
 granularity. The answer model cascades **checklist → section → item**, so within
 one checklist some items can carry more criteria than their neighbours.
 
+The stored value is the level **index** (an integer, stable across history and
+exports); what the renderers consume is the level's **score**, which is
+deliberately *not* the index spread evenly. In the reference model the gap
+between `ok` (.5) and `sometimes` (.6) is nothing like the gap between `never`
+(0) and `warning` (.1), and flattening that would misrepresent the answer. Each
+level also carries a long text, which is what actually makes it unambiguous; it
+shows up as a tooltip.
+
 The criteria count picks the shape (`display: "auto"`, overridable):
 
 | criteria | shape | file |
 |---|---|---|
 | 1 | thermometer gauge | `www/js/render/shapes.js` |
 | 2 | yin/yang, or `duoMode: "amplitude"` (1st vertical, 2nd horizontal) | idem |
-| 3+ | star, one branch per criterion | idem |
+| 3+ | star, one sector per criterion | idem |
 
-Branch order is stable, so a criterion always sits at the same angle and two
-stars compare at a glance. An unanswered criterion collapses into the hollow —
-it reads as *absent*, not as a zero. `www/shapes.html` renders every shape at
-every value as a visual reference.
+The star follows the reference model (https://codepen.io/1000i100/pen/dydLLZw):
+each criterion owns an angular **sector**, drawn as a spike (centre → left edge
+at half reach → tip → right edge at half reach). Every sector has a *track* —
+the full-size spike filled with that criterion's `minColor→maxColor` gradient,
+veiled so it reads as an empty slot — and a *fill*, the same spike scaled to the
+answer and drawn solid.
+
+Three states, three readings:
+
+| state | drawn as |
+|---|---|
+| unanswered | no fill at all, only the pale track |
+| answered at the lowest level | a truncated triangle, tip removed |
+| answered above it | a spike growing with the score |
+
+Sector order is stable, so a criterion always sits at the same angle and two
+stars compare at a glance. `www/shapes.html` renders every shape at every value
+as a visual reference, including the reference model and state.
+
+Gradients are emitted inline by default so one SVG stands alone; the app passes
+`defs: "external"` and injects `starDefs(model)` once, rather than repeating
+eight gradient definitions in each of a couple hundred items.
 
 All of `shapes.js` is pure geometry returning coordinates and SVG path data: no
 DOM, so it is unit-tested directly and can later draw an export just as well.

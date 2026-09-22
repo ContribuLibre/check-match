@@ -12,70 +12,90 @@ const TAU = Math.PI * 2;
 const round = value => Math.round(value * 1000) / 1000;
 const point = (x, y) => ({x: round(x), y: round(y)});
 
+const polar = (angle, reach) => point(Math.cos(angle) * reach, Math.sin(angle) * reach);
+const polygon = points => points.map(p => `${p.x},${p.y}`).join(" ");
+
+/** Length of a branch for a given score: never zero, or an answer would vanish. */
+export const branchReach = score => MIN_BRANCH + score * (1 - MIN_BRANCH);
+const MIN_BRANCH = 0.25;
+
 /**
- * Star with one branch per criterion — the shape for 3+ criteria.
+ * Star with one sector per criterion — the shape for 3+ criteria.
  *
- * Each branch points at a fixed angle (so a given criterion always sits at the
- * same place and shapes stay comparable at a glance) and its length encodes the
- * value. Unanswered criteria collapse to the hollow radius: the branch is simply
- * absent instead of reading as a zero.
+ * Each criterion owns an angular sector and is drawn as a spike: centre, the
+ * sector's left edge at half reach, the tip at full reach, the right edge at
+ * half reach. Sectors sit at fixed angles, so a criterion is always in the same
+ * place and two stars compare at a glance.
  *
- * @param {Array<number|null>} values normalized 0..1, one per criterion
+ * Every branch carries two shapes:
+ *   `track` — the sector at full size, drawn as a pale gradient: the empty slot;
+ *   `fill`  — the same sector scaled to the answer, drawn solid.
+ *
+ * Three states, three readings:
+ *   unanswered   -> no fill at all, only the pale track;
+ *   answered 0   -> a truncated triangle (no tip), so "the lowest level" still
+ *                   shows as an answer rather than as nothing;
+ *   answered > 0 -> a spike whose length grows with the score.
+ *
+ * @param {Array<number|null>} values scores 0..1, one per criterion
  */
-export function starGeometry(values, {
-	size = 100,
-	hollowRatio = 0.28, // radius of the valleys between branches
-	minRatio = 0.3,     // length of a branch answered at 0 — never zero, or it vanishes
-	rotation = -Math.PI / 2, // first branch points up
-} = {}) {
+export function starGeometry(values, {size = 100, rotation = -Math.PI / 2} = {}) {
 	const branches = values.length;
 	if (branches < 1) throw new TypeError("A star needs at least one branch.");
 	const radius = size / 2;
-	const hollow = radius * hollowRatio;
-	const step = TAU / branches;
+	const wide = TAU / branches;
 
-	const tips = values.map((value, index) => {
-		const angle = rotation + index * step;
+	const sectors = values.map((value, index) => {
+		const direction = rotation + wide * index;
 		const answered = value !== null && value !== undefined;
-		const reach = answered
-			? radius * (minRatio + (1 - minRatio) * value)
-			: hollow;
+		const score = answered ? Math.min(Math.max(value, 0), 1) : 0;
+		const reach = branchReach(score) * radius;
+
+		const track = [
+			point(0, 0),
+			polar(direction - wide / 2, radius / 2),
+			polar(direction, radius),
+			polar(direction + wide / 2, radius / 2),
+		];
+		// A zero answer loses its tip: it must not read like a small positive one.
+		const fill = score === 0
+			? [point(0, 0), polar(direction - wide / 2, reach / 2), polar(direction + wide / 2, reach / 2)]
+			: [
+				point(0, 0),
+				polar(direction - wide / 2, reach / 2),
+				polar(direction, reach),
+				polar(direction + wide / 2, reach / 2),
+			];
+
 		return {
-			...point(Math.cos(angle) * reach, Math.sin(angle) * reach),
-			angle,
+			index, direction, answered, score,
 			reach: round(reach),
-			index,
-			answered,
+			tip: polar(direction, reach),
+			track, fill,
+			trackPoints: polygon(track),
+			fillPoints: polygon(fill),
 		};
 	});
 
-	// Valleys sit halfway between two consecutive branches.
-	const valleys = values.map((_, index) => {
-		const angle = rotation + (index + 0.5) * step;
-		return {...point(Math.cos(angle) * hollow, Math.sin(angle) * hollow), angle, index};
-	});
-
-	const outline = [];
-	for (let index = 0; index < branches; index++) {
-		outline.push(tips[index], valleys[index]);
-	}
-	const path = `M ${outline.map(p => `${p.x} ${p.y}`).join(" L ")} Z`;
-
-	return {branches, radius, hollow, tips, valleys, outline, path};
+	return {branches, radius, wide, sectors};
 }
 
-/** Axis guides for the star: one spoke per criterion, drawn under the shape. */
-export function starAxes(branches, {size = 100, rotation = -Math.PI / 2} = {}) {
-	const radius = size / 2;
-	const step = TAU / branches;
+/**
+ * Gradient geometry for each sector, in objectBoundingBox units.
+ * The gradient runs along the sector's own direction, so every criterion reads
+ * from its own low colour at the centre to its high colour at the tip.
+ */
+export function starGradients(branches, {rotation = -Math.PI / 2} = {}) {
+	const wide = TAU / branches;
 	return Array.from({length: branches}, (_, index) => {
-		const angle = rotation + index * step;
+		const direction = rotation + wide * index;
+		const spike = polar(direction, 1);
 		return {
 			index,
-			angle,
-			from: point(0, 0),
-			to: point(Math.cos(angle) * radius, Math.sin(angle) * radius),
-			label: point(Math.cos(angle) * radius * 1.18, Math.sin(angle) * radius * 1.18),
+			x1: Math.max(0, -spike.x),
+			y1: Math.max(0, -spike.y),
+			x2: Math.max(0, spike.x),
+			y2: Math.max(0, spike.y),
 		};
 	});
 }

@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { relative, resolve, sep } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 import { greffonYaml } from './src/CI/vite-yaml.ts'
@@ -83,9 +83,79 @@ function greffonPwa(version: string, sortie: string): Plugin {
   }
 }
 
-export default defineConfig(() => {
+/**
+ * Build hors ligne : un `index.html` autonome, ouvrable en `file://`.
+ *
+ * Deux obstacles, deux réponses :
+ *
+ * - un navigateur refuse d’exécuter un module ES depuis `file://` (origine
+ *   opaque), d’où un bundle classique plutôt qu’un module ;
+ * - les chemins relatifs vers `assets/` marchent, mais un fichier unique se
+ *   partage et s’ouvre sans se soucier d’un dossier à garder entier — donc CSS,
+ *   script et icône sont intégrés dans la page.
+ *
+ * Le service worker et le manifeste n’ont pas de sens ici : ils sont retirés.
+ * Le client, lui, sait déjà ne pas s’enregistrer hors http(s).
+ */
+function greffonFichierUnique(sortie: string): Plugin {
+  return {
+    name: 'check-match-fichier-unique',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      // Seule forme qu’un navigateur exécute depuis file://.
+      return html
+        .replace(/<script type="module" crossorigin src=/g, '<script defer src=')
+        .replace(/<link rel="modulepreload"[^>]*>/g, '')
+        .replace(/ crossorigin(?=[ >])/g, '')
+    },
+    closeBundle() {
+      const cheminHtml = resolve(sortie, 'index.html')
+      let html = readFileSync(cheminHtml, 'utf8')
+
+      const integrer = (motif: RegExp, remplacer: (contenu: string, chemin: string) => string): void => {
+        html = html.replace(motif, (_balise, chemin: string) => {
+          const fichier = resolve(sortie, chemin.replace(/^\.\//, ''))
+          return remplacer(readFileSync(fichier, 'utf8'), fichier)
+        })
+      }
+
+      integrer(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g, (css) => `<style>${css}</style>`)
+
+      // Le script part en fin de body : intégré tel quel, il perdrait son
+      // `defer` et s’exécuterait avant que la page ait son point de montage.
+      let script = ''
+      html = html.replace(/<script defer src="([^"]+)"><\/script>/g, (_balise, chemin: string) => {
+        script = readFileSync(resolve(sortie, chemin.replace(/^\.\//, '')), 'utf8')
+        return ''
+      })
+      // Dans une balise `<script>`, `</script` ferme la balise et `<!--` ouvre
+      // un commentaire — y compris au milieu d’une chaîne. Le SVG du logo, lui,
+      // porte un commentaire : sans cet échappement, le script casse en silence.
+      const protege = (code: string): string =>
+        code.replace(/<\/script/gi, '<\\/script').replace(/<!--/g, '<\\!--')
+      // Remplacement par **fonction** : dans une chaîne de remplacement, les
+      // séquences `$&`, `` $` `` et `$'` sont interprétées, et le code minifié
+      // en contient. Passer par une chaîne corromprait le script en silence.
+      if (script) html = html.replace('</body>', () => `<script>${protege(script)}</script></body>`)
+      integrer(/<link rel="icon"[^>]*href="([^"]+)"[^>]*>/g, (svg) =>
+        `<link rel="icon" href="data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}" type="image/svg+xml" />`)
+
+      // Sans serveur, ni PWA ni worker : autant ne pas les promettre.
+      html = html.replace(/<link rel="manifest"[^>]*>/g, '')
+
+      writeFileSync(cheminHtml, html)
+      for (const reste of ['assets', 'icons', 'sw.js', 'manifest.webmanifest']) {
+        rmSync(resolve(sortie, reste), { recursive: true, force: true })
+      }
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
   const version = versionBuild()
-  const sortie = resolve(import.meta.dirname, 'dist')
+  const local = mode === 'hors-ligne'
+  const sortie = resolve(import.meta.dirname, local ? 'dist-local' : 'dist')
   return {
     base: './',
     publicDir: resolve(import.meta.dirname, 'public'),
@@ -94,7 +164,12 @@ export default defineConfig(() => {
       target: 'es2022',
       outDir: sortie,
       assetsDir: 'assets',
+      // Un seul morceau : un fichier unique ne peut pas charger de fragment.
+      ...(local ? { modulePreload: false, rollupOptions: { output: { inlineDynamicImports: true } } } : {}),
     },
-    plugins: [greffonYaml(), greffonPwa(version, sortie)],
+    plugins: [
+      greffonYaml(),
+      ...(local ? [greffonFichierUnique(sortie)] : [greffonPwa(version, sortie)]),
+    ],
   }
 })

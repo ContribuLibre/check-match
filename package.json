@@ -7,17 +7,20 @@
   "scripts": {
     "dev": "bun --bun vite",
     "build": "bun --bun tsc --noEmit && bun --bun vite build",
+    "build:local": "bun --bun vite build --mode hors-ligne",
+    "verifie:local": "bun src/CI/verifie-local.ts",
     "preview": "bun --bun vite preview",
     "typecheck": "bun --bun tsc --noEmit",
     "test": "bun --bun vitest run",
     "valide:grilles": "bun src/CI/valide-grilles.ts",
-    "check": "bun run valide:grilles && bun run typecheck && bun run test && bun run build"
+    "check": "bun run valide:grilles && bun run typecheck && bun run test && bun run build && bun run build:local && bun run verifie:local"
   },
   "dependencies": {
     "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@types/bun": "^1.4.2",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^24.0.0",
     "jsdom": "^26.1.0",
     "typescript": "^5.9.0",

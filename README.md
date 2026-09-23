@@ -5,10 +5,21 @@ Tout se passe dans le navigateur, à partir de fichiers statiques.
 
 ```
 bun install
-bun run dev      # développement
-bun run check    # grilles, types, tests, build — la porte d’entrée unique
-bun run build    # site statique dans dist/
+bun run dev          # développement
+bun run check        # grilles, types, tests, builds — la porte d’entrée unique
+bun run build        # site statique dans dist/
+bun run build:local  # page unique dans dist-local/, ouvrable en file://
 ```
+
+Deux cibles pour deux usages. `dist/` est le site publié, avec son service
+worker et son manifeste. `dist-local/` est un **`index.html` autonome** : CSS,
+script, grilles et logo intégrés, rien à côté. On l’ouvre en double-cliquant, on
+l’envoie par courriel, on le garde sur une clé.
+
+Depuis `file://`, un navigateur refuse d’exécuter un module ES — le build local
+produit donc un script classique — et bloque souvent `localStorage`, dont la
+simple lecture lève alors une exception. L’application retombe sur la mémoire et
+le dit dans son pied de page : les réponses ne survivront pas à la fermeture.
 
 ## Le vocabulaire
 

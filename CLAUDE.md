@@ -74,3 +74,15 @@ l’interface — et jamais sur un identifiant technique.
 Seule la langue par défaut d’une grille doit être complète : c’est elle qui sert
 de repli. Le validateur l’exige pour elle seule, et se contente d’afficher la
 couverture des autres.
+
+## Deux cibles de build
+
+`dist/` est le site publié. `dist-local/` est une page unique ouvrable en
+`file://`, vérifiée par `bun run verifie:local` et exécutée pour de bon dans un
+test — c’est le seul moyen d’attraper ce qui ne casse qu’au double-clic.
+
+Trois pièges y sont déjà réglés, chacun silencieux au build :
+un module ES ne s’exécute pas depuis `file://` ; `String.replace` interprète
+`$&` et consorts dans une chaîne de remplacement, ce qui corrompt un script
+minifié qu’on y insère ; et lire `localStorage` sur une origine opaque lève une
+exception avant tout appel.

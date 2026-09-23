@@ -3,7 +3,7 @@ import type { Grille } from '../domaine/grille.ts'
 import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.ts'
 import type { Textes as TextesGrille } from '../domaine/traduction.ts'
 import type { Reponse } from '../domaine/types.ts'
-import { creerStockage, type Stockage } from '../donnees/stockage.ts'
+import { creerStockage, stockagePersistant, type Stockage } from '../donnees/stockage.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
 import { grilles, type GrilleDisponible } from '../grilles/index.ts'
 import { LANGUES_LIBELLES, textesUi, type Textes } from './i18n.ts'
@@ -12,6 +12,9 @@ import {
   type GestionnairePreferences, type Niveau,
 } from './preferences.ts'
 import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
+// Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
+// peut charger aucune image à côté de lui.
+import logoSvg from '../../public/icons/icon.svg?raw'
 
 const echapper = (texte: string): string =>
   String(texte).replace(/[&<>"']/g, (caractere) => ({
@@ -42,9 +45,11 @@ interface Contexte {
   prefs: GestionnairePreferences
 }
 
+const support = stockagePersistant()
+
 export function demarrer(
   racine: HTMLElement,
-  stockage: Stockage = creerStockage({ stockage: localStorage }),
+  stockage: Stockage = creerStockage({ stockage: support.stockage }),
   prefs: GestionnairePreferences = creerPreferences(),
 ): void {
   const etat: Etat = {
@@ -234,7 +239,7 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
   const personnes = stockage.personnes()
 
   const marque = `<div class="marque">
-    <img src="./icons/icon.svg" alt="" width="28" height="28">
+    <span class="logo" aria-hidden="true">${logoSvg}</span>
     <span>${echapper(ui.titre)}</span>
   </div>`
 
@@ -313,7 +318,12 @@ function piedHtml({ etat, ui }: Contexte): string {
     : ''
   const version = `<div class="version"><span class="version-courante">${echapper(ui.version)} ${echapper(versionApplication())}</span>${maj}</div>`
 
-  return `<div class="pied-centre">${credits}</div>${version}`
+  // Mieux vaut le dire que laisser quelqu’un remplir une grille pour rien.
+  const volatil = support.persistant
+    ? ''
+    : `<div class="volatil" role="status">${echapper(ui.sansPersistance)}</div>`
+
+  return `<div class="pied-centre">${credits}${volatil}</div>${version}`
 }
 
 // --- arbre ----------------------------------------------------------------

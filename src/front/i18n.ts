@@ -55,6 +55,7 @@ export interface Textes {
   dopeA: string
   licence: string
   codeSource: string
+  sansPersistance: string
 }
 
 /**
@@ -108,6 +109,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     dopeA: 'dopé à l’',
     licence: 'Licence',
     codeSource: 'Code source',
+    sansPersistance: 'Ce navigateur n’autorise pas l’enregistrement depuis un fichier local : les réponses seront perdues à la fermeture.',
   },
   en: {
     titre: 'check-match',
@@ -155,6 +157,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     dopeA: 'boosted with ',
     licence: 'License',
     codeSource: 'Source code',
+    sansPersistance: 'This browser does not allow storage from a local file: answers will be lost when you close it.',
   },
 }
 

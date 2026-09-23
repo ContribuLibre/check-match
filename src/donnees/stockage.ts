@@ -54,6 +54,27 @@ export function stockageMemoire(initial: Record<string, string> = {}): Storage {
   } as Storage
 }
 
+/**
+ * Le stockage du navigateur, ou la mémoire si on ne peut pas s’en servir.
+ *
+ * Depuis `file://`, l’origine est opaque : **lire la variable `localStorage`
+ * lève une exception**, avant même tout appel. Le mode hors ligne est
+ * précisément fait pour être ouvert ainsi ; sans ce repli, l’application ne
+ * démarrerait pas du tout. Elle fonctionne alors normalement, mais les
+ * réponses ne survivent pas à la fermeture — ce que l’interface dit.
+ */
+export function stockagePersistant(): { stockage: Storage; persistant: boolean } {
+  try {
+    const essai = globalThis.localStorage
+    const temoin = '__cm__'
+    essai.setItem(temoin, '1')
+    essai.removeItem(temoin)
+    return { stockage: essai, persistant: true }
+  } catch {
+    return { stockage: stockageMemoire(), persistant: false }
+  }
+}
+
 const memesReponses = (a: Reponse = {}, b: Reponse = {}): boolean => {
   const cles = new Set([...Object.keys(a), ...Object.keys(b)])
   for (const cle of cles) if (a[cle] !== b[cle]) return false

@@ -55,8 +55,8 @@ export function calculerValeurs(grille: Grille, reponses: Reponses): Valeurs {
         if (!part) continue
 
         const palierChoisi = propre?.[partId]
-        if (palierChoisi !== undefined && part.paliers[palierChoisi]) {
-          etoileValeurs[partId] = { score: part.paliers[palierChoisi].score, poids: 1, origine: 'propre' }
+        if (palierChoisi !== undefined && part.steps[palierChoisi]) {
+          etoileValeurs[partId] = { score: part.steps[palierChoisi].score, poids: 1, origine: 'propre' }
           continue
         }
 
@@ -87,7 +87,7 @@ export function calculerValeurs(grille: Grille, reponses: Reponses): Valeurs {
 
 /** Résume des sources d’héritage en une valeur ; le poids retenu est celui des sources. */
 function resumer(grille: Grille, partId: string, sources: Contribution[]): ValeurPart {
-  const score = agreger(grille.agregationDe(partId, 'heritage'), sources)
+  const score = agreger(grille.agregationDe(partId, 'inheritance'), sources)
   if (score === null) return ABSENT
   const poids = sources.reduce((total, source) => total + source.poids, 0) / sources.length
   return { score, poids, origine: 'herite' }

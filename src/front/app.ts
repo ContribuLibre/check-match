@@ -195,7 +195,7 @@ function titreEtoile(textes: Textes, grille: Grille, valeurs: Valeurs, noeud: st
     .filter((part) => etoileValeurs[part.id] && etoileValeurs[part.id]!.poids > 0)
     .map((part) => {
       const valeur = etoileValeurs[part.id]!
-      const palier = part.paliers.reduce((meilleur, candidat) =>
+      const palier = part.steps.reduce((meilleur, candidat) =>
         Math.abs(candidat.score - valeur.score) < Math.abs(meilleur.score - valeur.score) ? candidat : meilleur)
       return `${textes.part(part.id)} : ${textes.palier(part.id, palier.id)}`
     })
@@ -277,11 +277,11 @@ function editeurHtml(
   const parts = partsDe(grille, noeud.parts).map((part) => {
     const valeur = valeursPolarite[part.id]
     const choisi = saisie[part.id]
-    const paliers = part.paliers.map((palier, index) => {
+    const paliers = part.steps.map((palier, index) => {
       const aide = textes.aidePalier(part.id, palier.id)
       return `<button type="button" class="palier${choisi === index ? ' choisi' : ''}"
         data-part="${echapper(part.id)}" data-palier="${index}"
-        style="--couleur: ${echapper(part.couleurMax)}"
+        style="--couleur: ${echapper(part.maxColor)}"
         ${aide ? `title="${echapper(aide)}"` : ''}>${echapper(textes.palier(part.id, palier.id))}</button>`
     }).join('')
 
@@ -294,7 +294,7 @@ function editeurHtml(
         : '<span class="provenance vide">non renseigné</span>'
 
     return `<div class="part">
-      <div class="part-nom" style="--couleur: ${echapper(part.couleurMax)}">
+      <div class="part-nom" style="--couleur: ${echapper(part.maxColor)}">
         ${echapper(textes.part(part.id))} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}

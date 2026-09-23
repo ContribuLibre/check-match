@@ -9,9 +9,9 @@ const valeurs = (scores: (number | null)[], poids = 1) =>
 
 const parts: PartDefinition[] = ['a', 'b', 'c'].map((id) => ({
   id,
-  couleurMin: '#111',
-  couleurMax: '#eee',
-  paliers: [{ id: 'bas', score: 0 }, { id: 'haut', score: 1 }],
+  minColor: '#111',
+  maxColor: '#eee',
+  steps: [{ id: 'bas', score: 0 }, { id: 'haut', score: 1 }],
 }))
 
 describe('géométrie de l’étoile', () => {
@@ -103,9 +103,9 @@ describe('rendu SVG', () => {
   it('échappe ce qui vient des définitions de grille', () => {
     const piege: PartDefinition[] = [{
       id: 'x',
-      couleurMin: '#000',
-      couleurMax: '"><script>alert(1)</script>',
-      paliers: [{ id: 'bas', score: 0 }],
+      minColor: '#000',
+      maxColor: '"><script>alert(1)</script>',
+      steps: [{ id: 'bas', score: 0 }],
     }]
     const svg = etoileSvg('g', piege, { x: { score: 1, poids: 1, origine: 'propre' } })
     expect(svg).not.toContain('<script>')

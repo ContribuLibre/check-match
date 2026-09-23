@@ -61,9 +61,9 @@ export function proposerDepuis(
       if (valeur?.origine === 'propre') sources.push({ score: valeur.score, poids: 1 })
     }
 
-    const score = agreger(grille.agregationDe(partId, 'remontee'), sources)
+    const score = agreger(grille.agregationDe(partId, 'rollup'), sources)
     if (score === null) continue
-    proposition[partId] = palierLePlusProche(part.paliers.map((palier) => palier.score), score)
+    proposition[partId] = palierLePlusProche(part.steps.map((palier) => palier.score), score)
   }
   return proposition
 }

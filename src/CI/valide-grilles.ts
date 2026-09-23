@@ -24,7 +24,7 @@ export function validerGrille(dossier: string): string[] {
   const grille = construireGrille(definition)
 
   for (const part of grille.parts) {
-    const scores = part.paliers.map((palier) => palier.score)
+    const scores = part.steps.map((palier) => palier.score)
     if (scores.length < 2) problemes.push(`${grille.id}/${part.id} : moins de deux paliers`)
     if (scores[0] !== 0) problemes.push(`${grille.id}/${part.id} : le premier palier ne vaut pas 0`)
     if (scores[scores.length - 1] !== 1) problemes.push(`${grille.id}/${part.id} : le dernier palier ne vaut pas 1`)
@@ -40,7 +40,7 @@ export function validerGrille(dossier: string): string[] {
     problemes.push(`${grille.id}/${orphelin.id} : nœud isolé, sans parent ni enfant`)
   }
 
-  for (const [langue, chemin] of Object.entries(definition.langues ?? {})) {
+  for (const [langue, chemin] of Object.entries(definition.locales ?? {})) {
     const cheminLangue = join(dossier, chemin.replace(/^\.\//, ''))
     if (!existsSync(cheminLangue)) {
       problemes.push(`${grille.id} : traduction « ${langue} » introuvable (${chemin})`)

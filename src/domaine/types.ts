@@ -1,9 +1,15 @@
 import type { NomAgregateur } from './agregateurs.ts'
 
 /**
- * Une grille décrit *quoi* est demandé, jamais comment c’est répondu :
- * les réponses vivent dans le stockage, indexées par identifiant de nœud.
- * Deux grilles qui partagent un nœud partagent donc ses réponses.
+ * Forme des données telles qu’elles sont écrites dans les fichiers.
+ *
+ * Les **clés sont en anglais** : une grille est une donnée destinée à circuler,
+ * à être reprise et traduite hors de ce dépôt. Le code qui les manipule reste
+ * en français, comme le reste du projet.
+ *
+ * Une grille décrit *quoi* est demandé, jamais comment c’est répondu : les
+ * réponses vivent dans le stockage, indexées par identifiant de nœud. Deux
+ * grilles qui partagent un nœud partagent donc ses réponses.
  */
 
 /** Un cran d’une échelle. `score` est volontairement irrégulier : l’écart entre deux crans n’est pas constant. */
@@ -14,20 +20,20 @@ export interface Palier {
 
 /** Comment résumer plusieurs valeurs, en descendant et en remontant. */
 export interface Agregation {
-  /** Combiner plusieurs sources d’héritage (plusieurs parents, ou les deux sens). */
-  heritage?: NomAgregateur
+  /** Combiner plusieurs sources d’héritage (plusieurs parents, ou les deux directions). */
+  inheritance?: NomAgregateur
   /** Déduire une rubrique de ses sous-nœuds, ou la polarité générale de ses polarités. */
-  remontee?: NomAgregateur
+  rollup?: NomAgregateur
 }
 
 /** Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé. */
 export interface PartDefinition {
   id: string
-  couleurMin: string
-  couleurMax: string
-  paliers: Palier[]
+  minColor: string
+  maxColor: string
+  steps: Palier[]
   /** Surcharge l’agrégation de la grille : une limite se résume par le minimum, une envie par le maximum. */
-  agregation?: Agregation
+  aggregation?: Agregation
 }
 
 /**
@@ -36,22 +42,22 @@ export interface PartDefinition {
  * Elles forment un arbre, exactement comme les sujets. La polarité racine
  * (« général ») ne distingue pas les places : elle permet de dégrossir vite,
  * puis de préciser seulement là où les places divergent. L’héritage joue dans
- * les deux sens — le général descend vers les places, les places se résument
- * en général.
+ * les deux directions — le général descend vers les places, les places se
+ * résument en général.
  */
 export interface PolariteDefinition {
   id: string
   /** Polarité englobante ; absente pour la racine. */
   parent?: string
   /** Polarité ouverte par défaut à la saisie. */
-  principale?: boolean
+  primary?: boolean
 }
 
 /** Un nœud : rubrique ou élément, c’est la même chose — seule la place dans le graphe diffère. */
 export interface NoeudDefinition {
   id: string
   /** Sous-nœuds, pour écrire la hiérarchie par imbrication. */
-  enfants?: NoeudDefinition[]
+  children?: NoeudDefinition[]
   /** Parents supplémentaires : un nœud peut relever de plusieurs rubriques. */
   parents?: string[]
   /**
@@ -59,7 +65,7 @@ export interface NoeudDefinition {
    * Les polarités englobantes sont conservées d’office : sans elles, on ne
    * pourrait plus dégrossir au-dessus du détail.
    */
-  polarites?: string[]
+  polarities?: string[]
   /** Restreint les parts applicables, pour ce nœud et tout son sous-arbre. */
   parts?: string[]
 }
@@ -68,8 +74,8 @@ export interface GrilleDefinition {
   schemaVersion: 1
   id: string
   version: string
-  langueParDefaut: string
-  langues: Record<string, string>
+  defaultLocale: string
+  locales: Record<string, string>
   /**
    * Part du poids conservée à chaque niveau de descente dans les sujets.
    * Une réponse donnée sur une rubrique vaut pour ses sous-nœuds, mais moins
@@ -77,21 +83,21 @@ export interface GrilleDefinition {
    */
   attenuation?: number
   /** Idem en descendant de la polarité générale vers les places particulières. */
-  attenuationPolarite?: number
+  polarityAttenuation?: number
   /** Agrégation par défaut, surchargeable pour chaque part. */
-  agregation?: Agregation
-  polarites: PolariteDefinition[]
+  aggregation?: Agregation
+  polarities: PolariteDefinition[]
   parts: PartDefinition[]
-  noeuds: NoeudDefinition[]
+  nodes: NoeudDefinition[]
 }
 
 /** Libellés d’une langue, indexés par identifiant technique. */
 export interface Traduction {
-  titre: string
+  title: string
   intro?: string
-  noeuds: Record<string, { libelle: string; aide?: string }>
-  polarites: Record<string, { libelle: string; aide?: string }>
-  parts: Record<string, { libelle: string; aide?: string; paliers: Record<string, { libelle: string; aide?: string }> }>
+  nodes: Record<string, { label: string; help?: string }>
+  polarities: Record<string, { label: string; help?: string }>
+  parts: Record<string, { label: string; help?: string; steps: Record<string, { label: string; help?: string }> }>
 }
 
 /** Réponse saisie sur un couple (nœud, polarité) : index de palier par part. */

@@ -74,7 +74,7 @@ if (import.meta.main) {
   }
   const rubriques = analyser(await Bun.file(chemin).text())
   const noeuds = rubriques.map((rubrique) =>
-    `  - id: ${rubrique.id}\n    enfants:\n${rubrique.elements.map((element) => `      - id: ${element.id}`).join('\n')}`)
+    `  - id: ${rubrique.id}\n    children:\n${rubrique.elements.map((element) => `      - id: ${element.id}`).join('\n')}`)
   console.log(noeuds.join('\n'))
   console.error(`${rubriques.length} rubriques, ${rubriques.reduce((total, r) => total + r.elements.length, 0)} éléments.`)
   console.error(JSON.stringify(Object.fromEntries(

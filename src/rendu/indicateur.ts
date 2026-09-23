@@ -19,8 +19,8 @@ export function degradesSvg(grilleId: string, parts: PartDefinition[]): string {
     if (!position) return ''
     return `<linearGradient id="${echapper(idDegrade(grilleId, part.id, parts.length))}"`
       + ` x1="${position.x1}" y1="${position.y1}" x2="${position.x2}" y2="${position.y2}">`
-      + `<stop offset="0%" stop-color="${echapper(part.couleurMin)}"/>`
-      + `<stop offset="100%" stop-color="${echapper(part.couleurMax)}"/>`
+      + `<stop offset="0%" stop-color="${echapper(part.minColor)}"/>`
+      + `<stop offset="100%" stop-color="${echapper(part.maxColor)}"/>`
       + '</linearGradient>'
   }).join('')
   return `<defs>${contenu}</defs>`
@@ -72,7 +72,7 @@ export function etoileSvg(
     if (!part || !secteur.remplissage.length) return ''
     const poids = branches[index]?.poids ?? 1
     return `<polygon class="reponse" data-part="${echapper(part.id)}"`
-      + ` points="${pointsSvg(secteur.remplissage)}" fill="${echapper(part.couleurMax)}"`
+      + ` points="${pointsSvg(secteur.remplissage)}" fill="${echapper(part.maxColor)}"`
       + ` fill-opacity="${arrondiOpacite(poids)}"/>`
   }).join('')
 

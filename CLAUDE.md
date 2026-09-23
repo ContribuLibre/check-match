@@ -47,3 +47,14 @@ toucher aux identifiants — c’est ce qui garde les réponses valables d’une
 5. **La moyenne n’est pas le résumé par défaut du métier.** Chaque part choisit
    son agrégateur : une limite se résume par son minimum, une envie par son
    maximum. Remettre une moyenne partout effacerait ce qui est saillant.
+
+## Français dans le code, anglais dans les données
+
+Les clés des fichiers YAML sont en **anglais** (`nodes`, `children`, `parts`,
+`steps`, `minColor`, `aggregation`, `rollup`…) : une grille est une donnée
+destinée à circuler, à être reprise et traduite hors de ce dépôt.
+
+Les interfaces qui mappent ces fichiers (`GrilleDefinition`, `PartDefinition`,
+`Traduction`…) portent donc des propriétés anglaises. Tout le reste — noms de
+fonctions, variables, structures internes calculées (`Grille`, `Noeud`,
+`Polarite`), commentaires, tests — reste en français.

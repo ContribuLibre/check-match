@@ -1,221 +1,221 @@
-titre: Intimacy
+title: Intimacy
 intro: >-
   The item list comes from the historical kinklist; what changed is everything
   around it: eight criteria instead of one axis, three facets, and answers that
   travel down a hierarchy.
 
-polarites:
-  general: { libelle: In general, aide: "Without telling the places apart: to get a rough answer quickly." }
-  agir: { libelle: Doing, aide: What I do, initiate or practise myself. }
-  recevoir: { libelle: Receiving, aide: What I ask for, want or receive from someone else. }
-  temoin: { libelle: Witnessing, aide: Being present while it happens, neither doing it nor receiving it. }
+polarities:
+  general: { label: In general, help: "Without telling the places apart: to get a rough answer quickly." }
+  agir: { label: Doing, help: What I do, initiate or practise myself. }
+  recevoir: { label: Receiving, help: What I ask for, want or receive from someone else. }
+  temoin: { label: Witnessing, help: Being present while it happens, neither doing it nor receiving it. }
 
 parts:
   experience:
-    libelle: Experience
-    paliers:
-      unknown: { libelle: unknown }
-      heard: { libelle: hear, not tried }
-      once: { libelle: one time }
-      few: { libelle: few, aide: only with one partner, without external advices }
-      good: { libelle: good }
-      expert: { libelle: expert }
+    label: Experience
+    steps:
+      unknown: { label: unknown }
+      heard: { label: hear, not tried }
+      once: { label: one time }
+      few: { label: few, help: only with one partner, without external advices }
+      good: { label: good }
+      expert: { label: expert }
   excitment:
-    libelle: Excitment
-    paliers:
-      none: { libelle: none, aide: "Boring, not my thing... See acceptance to know if i'm ok with it." }
-      a-little: { libelle: a little, aide: "There is something, but i need to search if i want to find it." }
-      like: { libelle: like, aide: "Yes, it's my thing ! Enjoying it !" }
-      love: { libelle: love, aide: "Oh yea ! Love'it ! I'm already hot !" }
-      total-fantasy: { libelle: total fantasy, aide: I come every time i dream about it }
+    label: Excitment
+    steps:
+      none: { label: none, help: "Boring, not my thing... See acceptance to know if i'm ok with it." }
+      a-little: { label: a little, help: "There is something, but i need to search if i want to find it." }
+      like: { label: like, help: "Yes, it's my thing ! Enjoying it !" }
+      love: { label: love, help: "Oh yea ! Love'it ! I'm already hot !" }
+      total-fantasy: { label: total fantasy, help: I come every time i dream about it }
   disgust:
-    libelle: Disgust
-    paliers:
-      none: { libelle: none, aide: no problem with that }
-      disinterest: { libelle: disinterest, aide: "it look like it's not my thing" }
-      repulsed: { libelle: repulsed, aide: it look unhealthy }
-      disgust: { libelle: disgust, aide: noseous feeling }
-      vomiting: { libelle: vommiting, aide: "noseous reaction : vomiting, convulsion or blackout" }
+    label: Disgust
+    steps:
+      none: { label: none, help: no problem with that }
+      disinterest: { label: disinterest, help: "it look like it's not my thing" }
+      repulsed: { label: repulsed, help: it look unhealthy }
+      disgust: { label: disgust, help: noseous feeling }
+      vomiting: { label: vommiting, help: "noseous reaction : vomiting, convulsion or blackout" }
   exhibition:
-    libelle: Exhibition
-    paliers:
-      taboo: { libelle: taboo, aide: "don't even ask me anything about it" }
-      secret: { libelle: secret, aide: nobody must know }
-      private: { libelle: private, aide: you can speak about it without naming me or to your very confident }
-      community: { libelle: community, aide: "community speak or practice, public flash exhib, record for strict private use" }
-      shared: { libelle: shared, aide: "public leaks not welcome, but you like to show off while trying to hide your identity" }
-      public: { libelle: public, aide: "it's ok if your boss or familly see you or your records" }
-      star: { libelle: star, aide: you want the world to know you do this ! }
+    label: Exhibition
+    steps:
+      taboo: { label: taboo, help: "don't even ask me anything about it" }
+      secret: { label: secret, help: nobody must know }
+      private: { label: private, help: you can speak about it without naming me or to your very confident }
+      community: { label: community, help: "community speak or practice, public flash exhib, record for strict private use" }
+      shared: { label: shared, help: "public leaks not welcome, but you like to show off while trying to hide your identity" }
+      public: { label: public, help: "it's ok if your boss or familly see you or your records" }
+      star: { label: star, help: you want the world to know you do this ! }
   fear:
-    libelle: Fear
-    paliers:
-      none: { libelle: none }
-      uncomfortable: { libelle: unconfortable }
-      scary: { libelle: scary }
-      fear: { libelle: fear }
-      terror: { libelle: terror, aide: can trigger sideration }
-      petrified: { libelle: petrificated, aide: or blackout }
+    label: Fear
+    steps:
+      none: { label: none }
+      uncomfortable: { label: unconfortable }
+      scary: { label: scary }
+      fear: { label: fear }
+      terror: { label: terror, help: can trigger sideration }
+      petrified: { label: petrificated, help: or blackout }
   acceptance:
-    libelle: Acceptance
-    paliers:
-      never: { libelle: never, aide: "just don't, never, or you will go to jail" }
-      warning: { libelle: warning, aide: "may happen by accident, or be allowed once a year, 1/100" }
-      tolerate: { libelle: tolerate, aide: "if you like, i don't. But it can be ok about once a month" }
-      ok: { libelle: ok, aide: "don't like or dislike, it's just ok to do it" }
-      sometimes: { libelle: sometimes, aide: "i usually like it, but not every day" }
-      mostly: { libelle: mostly, aide: "i really like it, we can do this most time we meet." }
-      always: { libelle: always, aide: "love it and always ready for it" }
+    label: Acceptance
+    steps:
+      never: { label: never, help: "just don't, never, or you will go to jail" }
+      warning: { label: warning, help: "may happen by accident, or be allowed once a year, 1/100" }
+      tolerate: { label: tolerate, help: "if you like, i don't. But it can be ok about once a month" }
+      ok: { label: ok, help: "don't like or dislike, it's just ok to do it" }
+      sometimes: { label: sometimes, help: "i usually like it, but not every day" }
+      mostly: { label: mostly, help: "i really like it, we can do this most time we meet." }
+      always: { label: always, help: "love it and always ready for it" }
   aftercare:
-    libelle: Aftercare
-    paliers:
-      dislike: { libelle: dislike, aide: "Not your job, don't do it" }
-      indifferent: { libelle: indiferent, aide: no need }
-      optional: { libelle: optional, aide: "it's an optional bonus" }
-      check: { libelle: check, aide: i need you to check if i need it }
-      need: { libelle: need, aide: "yep, it's part of the deel, and a requirement for me" }
-      many: { libelle: many, aide: prepare yourself for at least as long aftercare as practice }
+    label: Aftercare
+    steps:
+      dislike: { label: dislike, help: "Not your job, don't do it" }
+      indifferent: { label: indiferent, help: no need }
+      optional: { label: optional, help: "it's an optional bonus" }
+      check: { label: check, help: i need you to check if i need it }
+      need: { label: need, help: "yep, it's part of the deel, and a requirement for me" }
+      many: { label: many, help: prepare yourself for at least as long aftercare as practice }
   explicit:
-    libelle: Explicit consent
-    paliers:
-      do-it: { libelle: do it, aide: "Don't ask, just do it, it's my job to stop you if i don't want it" }
-      i-will: { libelle: "don't do, i will", aide: "Don't ask, don't do, i will surprise you and do it when i want" }
-      after-check: { libelle: after check, aide: do it then ask me if it's welcome }
-      first-time: { libelle: first time, aide: "ask me the first time, then it will be every time as long i don't stop you" }
-      by-session: { libelle: by session, aide: "ask me for the session, if ok, i don't need more check until session end" }
-      ask: { libelle: ask, aide: ask me every time you may want to do it }
-      always-ask: { libelle: always ask, aide: "ask every time, for ever, even if i tell you it's ok" }
-      in-advance: { libelle: in advance, aide: "ask me in advance, with no agenda about it" }
-      i-ask: { libelle: "don't ask, i will", aide: "Don't ask, don't do, i will ask you if i want it." }
+    label: Explicit consent
+    steps:
+      do-it: { label: do it, help: "Don't ask, just do it, it's my job to stop you if i don't want it" }
+      i-will: { label: "don't do, i will", help: "Don't ask, don't do, i will surprise you and do it when i want" }
+      after-check: { label: after check, help: do it then ask me if it's welcome }
+      first-time: { label: first time, help: "ask me the first time, then it will be every time as long i don't stop you" }
+      by-session: { label: by session, help: "ask me for the session, if ok, i don't need more check until session end" }
+      ask: { label: ask, help: ask me every time you may want to do it }
+      always-ask: { label: always ask, help: "ask every time, for ever, even if i tell you it's ok" }
+      in-advance: { label: in advance, help: "ask me in advance, with no agenda about it" }
+      i-ask: { label: "don't ask, i will", help: "Don't ask, don't do, i will ask you if i want it." }
 
-noeuds:
-  bodies: { libelle: Bodies }
-  skinny: { libelle: Skinny }
-  chubby: { libelle: Chubby }
-  small-breasts: { libelle: Small breasts }
-  large-breasts: { libelle: Large breasts }
-  small-cocks: { libelle: Small cocks }
-  large-cocks: { libelle: Large cocks }
-  clothing: { libelle: Clothing }
-  clothed-sex: { libelle: Clothed sex }
-  lingerie: { libelle: Lingerie }
-  stockings: { libelle: Stockings }
-  heels: { libelle: Heels }
-  leather: { libelle: Leather }
-  latex: { libelle: Latex }
-  uniform-costume: { libelle: Uniform / costume }
-  cross-dressing: { libelle: Cross-dressing }
-  groupings: { libelle: Groupings }
-  you-and-1-male: { libelle: You and 1 male }
-  you-and-1-female: { libelle: You and 1 female }
-  you-and-mtf-trans: { libelle: You and MtF trans }
-  you-and-ftm-trans: { libelle: You and FtM trans }
-  you-and-1-male-1-female: { libelle: "You and 1 male, 1 female" }
-  you-and-2-males: { libelle: You and 2 males }
-  you-and-2-females: { libelle: You and 2 females }
-  orgy: { libelle: Orgy }
-  general: { libelle: General }
-  romance-affection: { libelle: Romance / Affection }
-  handjob-fingering: { libelle: Handjob / fingering }
-  blowjob: { libelle: Blowjob }
-  deep-throat: { libelle: Deep throat }
-  swallowing: { libelle: Swallowing }
-  facials: { libelle: Facials }
-  cunnilingus: { libelle: Cunnilingus }
-  face-sitting: { libelle: Face-sitting }
-  edging: { libelle: Edging }
-  teasing: { libelle: Teasing }
-  joi-si: { libelle: "JOI, SI" }
-  ass-play: { libelle: Ass play }
-  anal-toys: { libelle: Anal toys }
-  anal-sex-pegging: { libelle: "Anal sex, pegging" }
-  rimming: { libelle: Rimming }
-  double-penetration: { libelle: Double penetration }
-  anal-fisting: { libelle: Anal fisting }
-  restrictive: { libelle: Restrictive }
-  gag: { libelle: Gag }
-  collar: { libelle: Collar }
-  leash: { libelle: Leash }
-  chastity: { libelle: Chastity }
-  bondage-light: { libelle: Bondage (Light) }
-  bondage-heavy: { libelle: Bondage (Heavy) }
-  encasement: { libelle: Encasement }
-  toys: { libelle: Toys }
-  dildos: { libelle: Dildos }
-  plugs: { libelle: Plugs }
-  vibrators: { libelle: Vibrators }
-  sounding: { libelle: Sounding }
-  domination: { libelle: Domination }
-  dominant-submissive: { libelle: Dominant / Submissive }
-  domestic-servitude: { libelle: Domestic servitude }
-  slavery: { libelle: Slavery }
-  pet-play: { libelle: Pet play }
-  dd-lg-md-lb: { libelle: "DD/lg, MD/lb" }
-  discipline: { libelle: Discipline }
-  begging: { libelle: Begging }
-  forced-orgasm: { libelle: Forced orgasm }
-  orgasm-control: { libelle: Orgasm control }
-  orgasm-denial: { libelle: Orgasm denial }
-  power-exchange: { libelle: Power exchange }
-  no-consent: { libelle: No consent }
-  non-con-rape: { libelle: Non-con / rape }
-  blackmail-coercion: { libelle: Blackmail / coercion }
-  kidnapping: { libelle: Kidnapping }
-  drugs-alcohol: { libelle: Drugs / alcohol }
-  sleep-play: { libelle: Sleep play }
-  taboo: { libelle: Taboo }
-  incest: { libelle: Incest }
-  ageplay: { libelle: Ageplay }
-  interracial-raceplay: { libelle: Interracial / Raceplay }
-  bestiality: { libelle: Bestiality }
-  necrophilia: { libelle: Necrophilia }
-  cheating: { libelle: Cheating }
-  exhibitionism: { libelle: Exhibitionism }
-  voyeurism: { libelle: Voyeurism }
-  surrealism: { libelle: Surrealism }
-  futanari: { libelle: Futanari }
-  furry: { libelle: Furry }
-  vore: { libelle: Vore }
-  transformation: { libelle: Transformation }
-  tentacles: { libelle: Tentacles }
-  monster-or-alien: { libelle: Monster or Alien }
-  fluids: { libelle: Fluids }
-  blood: { libelle: Blood }
-  watersports: { libelle: Watersports }
-  scat: { libelle: Scat }
-  lactation: { libelle: Lactation }
-  diapers: { libelle: Diapers }
-  cum-play: { libelle: Cum play }
-  degradation: { libelle: Degradation }
-  glory-hole: { libelle: Glory hole }
-  name-calling: { libelle: Name calling }
-  humiliation: { libelle: Humiliation }
-  touch-stimulation: { libelle: "Touch & Stimulation" }
-  cock-pussy-worship: { libelle: Cock/Pussy worship }
-  ass-worship: { libelle: Ass worship }
-  foot-play: { libelle: Foot play }
-  tickling: { libelle: Tickling }
-  sensation-play: { libelle: Sensation play }
-  electro-stimulation: { libelle: Electro stimulation }
-  misc-fetish: { libelle: Misc. Fetish }
-  fisting: { libelle: Fisting }
-  gangbang: { libelle: Gangbang }
-  breath-play: { libelle: Breath play }
-  impregnation: { libelle: Impregnation }
-  pregnancy: { libelle: Pregnancy }
-  feminization: { libelle: Feminization }
-  cuckold-cuckquean: { libelle: Cuckold / Cuckquean }
-  pain: { libelle: Pain }
-  light-pain: { libelle: Light pain }
-  heavy-pain: { libelle: Heavy pain }
-  nipple-clamps: { libelle: Nipple clamps }
-  clothes-pins: { libelle: Clothes pins }
-  caning: { libelle: Caning }
-  flogging: { libelle: Flogging }
-  beating: { libelle: Beating }
-  spanking: { libelle: Spanking }
-  cock-pussy-slapping: { libelle: Cock/Pussy slapping }
-  cock-pussy-torture: { libelle: Cock/Pussy torture }
-  hot-wax: { libelle: Hot Wax }
-  scratching: { libelle: Scratching }
-  biting: { libelle: Biting }
-  cutting: { libelle: Cutting }
+nodes:
+  bodies: { label: Bodies }
+  skinny: { label: Skinny }
+  chubby: { label: Chubby }
+  small-breasts: { label: Small breasts }
+  large-breasts: { label: Large breasts }
+  small-cocks: { label: Small cocks }
+  large-cocks: { label: Large cocks }
+  clothing: { label: Clothing }
+  clothed-sex: { label: Clothed sex }
+  lingerie: { label: Lingerie }
+  stockings: { label: Stockings }
+  heels: { label: Heels }
+  leather: { label: Leather }
+  latex: { label: Latex }
+  uniform-costume: { label: Uniform / costume }
+  cross-dressing: { label: Cross-dressing }
+  groupings: { label: Groupings }
+  you-and-1-male: { label: You and 1 male }
+  you-and-1-female: { label: You and 1 female }
+  you-and-mtf-trans: { label: You and MtF trans }
+  you-and-ftm-trans: { label: You and FtM trans }
+  you-and-1-male-1-female: { label: "You and 1 male, 1 female" }
+  you-and-2-males: { label: You and 2 males }
+  you-and-2-females: { label: You and 2 females }
+  orgy: { label: Orgy }
+  general: { label: General }
+  romance-affection: { label: Romance / Affection }
+  handjob-fingering: { label: Handjob / fingering }
+  blowjob: { label: Blowjob }
+  deep-throat: { label: Deep throat }
+  swallowing: { label: Swallowing }
+  facials: { label: Facials }
+  cunnilingus: { label: Cunnilingus }
+  face-sitting: { label: Face-sitting }
+  edging: { label: Edging }
+  teasing: { label: Teasing }
+  joi-si: { label: "JOI, SI" }
+  ass-play: { label: Ass play }
+  anal-toys: { label: Anal toys }
+  anal-sex-pegging: { label: "Anal sex, pegging" }
+  rimming: { label: Rimming }
+  double-penetration: { label: Double penetration }
+  anal-fisting: { label: Anal fisting }
+  restrictive: { label: Restrictive }
+  gag: { label: Gag }
+  collar: { label: Collar }
+  leash: { label: Leash }
+  chastity: { label: Chastity }
+  bondage-light: { label: Bondage (Light) }
+  bondage-heavy: { label: Bondage (Heavy) }
+  encasement: { label: Encasement }
+  toys: { label: Toys }
+  dildos: { label: Dildos }
+  plugs: { label: Plugs }
+  vibrators: { label: Vibrators }
+  sounding: { label: Sounding }
+  domination: { label: Domination }
+  dominant-submissive: { label: Dominant / Submissive }
+  domestic-servitude: { label: Domestic servitude }
+  slavery: { label: Slavery }
+  pet-play: { label: Pet play }
+  dd-lg-md-lb: { label: "DD/lg, MD/lb" }
+  discipline: { label: Discipline }
+  begging: { label: Begging }
+  forced-orgasm: { label: Forced orgasm }
+  orgasm-control: { label: Orgasm control }
+  orgasm-denial: { label: Orgasm denial }
+  power-exchange: { label: Power exchange }
+  no-consent: { label: No consent }
+  non-con-rape: { label: Non-con / rape }
+  blackmail-coercion: { label: Blackmail / coercion }
+  kidnapping: { label: Kidnapping }
+  drugs-alcohol: { label: Drugs / alcohol }
+  sleep-play: { label: Sleep play }
+  taboo: { label: Taboo }
+  incest: { label: Incest }
+  ageplay: { label: Ageplay }
+  interracial-raceplay: { label: Interracial / Raceplay }
+  bestiality: { label: Bestiality }
+  necrophilia: { label: Necrophilia }
+  cheating: { label: Cheating }
+  exhibitionism: { label: Exhibitionism }
+  voyeurism: { label: Voyeurism }
+  surrealism: { label: Surrealism }
+  futanari: { label: Futanari }
+  furry: { label: Furry }
+  vore: { label: Vore }
+  transformation: { label: Transformation }
+  tentacles: { label: Tentacles }
+  monster-or-alien: { label: Monster or Alien }
+  fluids: { label: Fluids }
+  blood: { label: Blood }
+  watersports: { label: Watersports }
+  scat: { label: Scat }
+  lactation: { label: Lactation }
+  diapers: { label: Diapers }
+  cum-play: { label: Cum play }
+  degradation: { label: Degradation }
+  glory-hole: { label: Glory hole }
+  name-calling: { label: Name calling }
+  humiliation: { label: Humiliation }
+  touch-stimulation: { label: "Touch & Stimulation" }
+  cock-pussy-worship: { label: Cock/Pussy worship }
+  ass-worship: { label: Ass worship }
+  foot-play: { label: Foot play }
+  tickling: { label: Tickling }
+  sensation-play: { label: Sensation play }
+  electro-stimulation: { label: Electro stimulation }
+  misc-fetish: { label: Misc. Fetish }
+  fisting: { label: Fisting }
+  gangbang: { label: Gangbang }
+  breath-play: { label: Breath play }
+  impregnation: { label: Impregnation }
+  pregnancy: { label: Pregnancy }
+  feminization: { label: Feminization }
+  cuckold-cuckquean: { label: Cuckold / Cuckquean }
+  pain: { label: Pain }
+  light-pain: { label: Light pain }
+  heavy-pain: { label: Heavy pain }
+  nipple-clamps: { label: Nipple clamps }
+  clothes-pins: { label: Clothes pins }
+  caning: { label: Caning }
+  flogging: { label: Flogging }
+  beating: { label: Beating }
+  spanking: { label: Spanking }
+  cock-pussy-slapping: { label: Cock/Pussy slapping }
+  cock-pussy-torture: { label: Cock/Pussy torture }
+  hot-wax: { label: Hot Wax }
+  scratching: { label: Scratching }
+  biting: { label: Biting }
+  cutting: { label: Cutting }

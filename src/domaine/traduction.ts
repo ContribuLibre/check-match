@@ -13,18 +13,18 @@ import type { Traduction } from './types.ts'
  */
 export function creerTextes(traduction: Traduction) {
   return {
-    titre: traduction.titre,
+    titre: traduction.title,
     intro: traduction.intro ?? '',
-    noeud: (id: string): string => traduction.noeuds?.[id]?.libelle ?? id,
-    aideNoeud: (id: string): string => traduction.noeuds?.[id]?.aide ?? '',
-    polarite: (id: string): string => traduction.polarites?.[id]?.libelle ?? id,
-    aidePolarite: (id: string): string => traduction.polarites?.[id]?.aide ?? '',
-    part: (id: string): string => traduction.parts?.[id]?.libelle ?? id,
-    aidePart: (id: string): string => traduction.parts?.[id]?.aide ?? '',
+    noeud: (id: string): string => traduction.nodes?.[id]?.label ?? id,
+    aideNoeud: (id: string): string => traduction.nodes?.[id]?.help ?? '',
+    polarite: (id: string): string => traduction.polarities?.[id]?.label ?? id,
+    aidePolarite: (id: string): string => traduction.polarities?.[id]?.help ?? '',
+    part: (id: string): string => traduction.parts?.[id]?.label ?? id,
+    aidePart: (id: string): string => traduction.parts?.[id]?.help ?? '',
     palier: (part: string, palier: string): string =>
-      traduction.parts?.[part]?.paliers?.[palier]?.libelle ?? palier,
+      traduction.parts?.[part]?.steps?.[palier]?.label ?? palier,
     aidePalier: (part: string, palier: string): string =>
-      traduction.parts?.[part]?.paliers?.[palier]?.aide ?? '',
+      traduction.parts?.[part]?.steps?.[palier]?.help ?? '',
   }
 }
 
@@ -38,19 +38,19 @@ export type Textes = ReturnType<typeof creerTextes>
  */
 export function clesManquantes(grille: Grille, traduction: Traduction): string[] {
   const manquantes: string[] = []
-  if (!traduction.titre) manquantes.push('titre')
+  if (!traduction.title) manquantes.push('titre')
 
   for (const id of grille.noeuds.keys()) {
-    if (!traduction.noeuds?.[id]?.libelle) manquantes.push(`noeuds.${id}`)
+    if (!traduction.nodes?.[id]?.label) manquantes.push(`noeuds.${id}`)
   }
   for (const polarite of grille.polarites.values()) {
-    if (!traduction.polarites?.[polarite.id]?.libelle) manquantes.push(`polarites.${polarite.id}`)
+    if (!traduction.polarities?.[polarite.id]?.label) manquantes.push(`polarites.${polarite.id}`)
   }
   for (const part of grille.parts) {
     const traduit = traduction.parts?.[part.id]
-    if (!traduit?.libelle) manquantes.push(`parts.${part.id}`)
-    for (const palier of part.paliers) {
-      if (!traduit?.paliers?.[palier.id]?.libelle) manquantes.push(`parts.${part.id}.paliers.${palier.id}`)
+    if (!traduit?.label) manquantes.push(`parts.${part.id}`)
+    for (const palier of part.steps) {
+      if (!traduit?.steps?.[palier.id]?.label) manquantes.push(`parts.${part.id}.steps.${palier.id}`)
     }
   }
   return manquantes

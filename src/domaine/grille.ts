@@ -44,7 +44,7 @@ export interface Grille {
 }
 
 export const ATTENUATION_PAR_DEFAUT = 0.5
-export const AGREGATION_PAR_DEFAUT: Required<Agregation> = { heritage: 'moyenne', remontee: 'moyenne' }
+export const AGREGATION_PAR_DEFAUT: Required<Agregation> = { inheritance: 'moyenne', rollup: 'moyenne' }
 
 export class ErreurGrille extends Error {}
 
@@ -54,12 +54,12 @@ export class ErreurGrille extends Error {}
  * parent inconnu, cycle, part ou polarité inexistants, agrégateur inconnu.
  */
 export function construireGrille(definition: GrilleDefinition): Grille {
-  const polarites = construirePolarites(definition.polarites, definition.id)
-  const partsConnus = new Set(definition.parts.map((part) => part.id))
-  if (!partsConnus.size) throw new ErreurGrille(`La grille « ${definition.id} » n’a aucun part.`)
+  const polarites = construirePolarites(definition.polarities, definition.id)
+  const partsConnues = new Set(definition.parts.map((part) => part.id))
+  if (!partsConnues.size) throw new ErreurGrille(`La grille « ${definition.id} » n’a aucune part.`)
 
-  for (const part of definition.parts) verifierAgregation(part.agregation, `${definition.id}/${part.id}`)
-  verifierAgregation(definition.agregation, definition.id)
+  for (const part of definition.parts) verifierAgregation(part.aggregation, `${definition.id}/${part.id}`)
+  verifierAgregation(definition.aggregation, definition.id)
 
   const noeuds = new Map<string, Noeud>()
   const polaritesParDefaut = [...polarites.keys()]
@@ -77,19 +77,19 @@ export function construireGrille(definition: GrilleDefinition): Grille {
     if (noeuds.has(defNoeud.id)) {
       throw new ErreurGrille(`Le nœud « ${defNoeud.id} » est défini deux fois.`)
     }
-    for (const polarite of defNoeud.polarites ?? []) {
+    for (const polarite of defNoeud.polarities ?? []) {
       if (!polarites.has(polarite)) {
         throw new ErreurGrille(`Le nœud « ${defNoeud.id} » cite la polarité inconnue « ${polarite} ».`)
       }
     }
     for (const part of defNoeud.parts ?? []) {
-      if (!partsConnus.has(part)) {
+      if (!partsConnues.has(part)) {
         throw new ErreurGrille(`Le nœud « ${defNoeud.id} » cite la part inconnu « ${part} ».`)
       }
     }
 
-    const polaritesNoeud = defNoeud.polarites
-      ? avecAncetres(defNoeud.polarites, polarites)
+    const polaritesNoeud = defNoeud.polarities
+      ? avecAncetres(defNoeud.polarities, polarites)
       : heritees.polarites
     const partsNoeud = defNoeud.parts ?? heritees.parts
 
@@ -101,11 +101,11 @@ export function construireGrille(definition: GrilleDefinition): Grille {
       polarites: polaritesNoeud,
       parts: partsNoeud,
     })
-    for (const enfant of defNoeud.enfants ?? []) {
+    for (const enfant of defNoeud.children ?? []) {
       aplatir(enfant, defNoeud.id, { polarites: polaritesNoeud, parts: partsNoeud })
     }
   }
-  for (const racine of definition.noeuds) {
+  for (const racine of definition.nodes) {
     aplatir(racine, undefined, { polarites: polaritesParDefaut, parts: partsParDefaut })
   }
 
@@ -132,14 +132,14 @@ export function construireGrille(definition: GrilleDefinition): Grille {
   }
 
   const parPart = new Map(definition.parts.map((part) => [part.id, part]))
-  const agregation = { ...AGREGATION_PAR_DEFAUT, ...definition.agregation }
+  const agregation = { ...AGREGATION_PAR_DEFAUT, ...definition.aggregation }
   const racinePolarite = [...polarites.values()].find((polarite) => !polarite.parent)
 
   return {
     id: definition.id,
     version: definition.version,
     attenuation: definition.attenuation ?? ATTENUATION_PAR_DEFAUT,
-    attenuationPolarite: definition.attenuationPolarite ?? ATTENUATION_PAR_DEFAUT,
+    attenuationPolarite: definition.polarityAttenuation ?? ATTENUATION_PAR_DEFAUT,
     agregation,
     polarites,
     ordrePolarites: [...polarites.keys()],
@@ -149,7 +149,7 @@ export function construireGrille(definition: GrilleDefinition): Grille {
     racines,
     ordre,
     part: (id) => parPart.get(id),
-    agregationDe: (partId, sens) => parPart.get(partId)?.agregation?.[sens] ?? agregation[sens],
+    agregationDe: (partId, sens) => parPart.get(partId)?.aggregation?.[sens] ?? agregation[sens],
   }
 }
 
@@ -179,7 +179,7 @@ function construirePolarites(definitions: PolariteDefinition[], grilleId: string
       parent: definition.parent ?? null,
       enfants: [],
       niveau: 0,
-      principale: definition.principale ?? false,
+      principale: definition.primary ?? false,
     })
   }
 

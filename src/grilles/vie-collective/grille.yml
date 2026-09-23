@@ -1,26 +1,26 @@
 schemaVersion: 1
 id: vie-collective
 version: "0.1"
-langueParDefaut: fr
-langues:
+defaultLocale: fr
+locales:
   fr: ./fr.yml
 
 # Une réponse posée sur une rubrique vaut pour tout ce qu’elle contient, avec le
 # même score mais la moitié du poids à chaque niveau de descente.
 attenuation: 0.5
 # Idem en descendant du général vers les places particulières.
-attenuationPolarite: 0.5
+polarityAttenuation: 0.5
 
 # Comment résumer plusieurs valeurs en une, par défaut.
-agregation:
-  heritage: moyenne
-  remontee: moyenne
+aggregation:
+  inheritance: moyenne
+  rollup: moyenne
 
 # Les polarités forment un arbre. Le général ne distingue pas les places : il
 # sert à dégrossir, puis on précise là où les places divergent.
-polarites:
+polarities:
   - id: general
-    principale: true
+    primary: true
   - id: agir
     parent: general
   - id: recevoir
@@ -30,81 +30,81 @@ polarites:
 
 parts:
   - id: avis
-    couleurMin: "#C00"
-    couleurMax: "#5B0"
-    paliers:
+    minColor: "#C00"
+    maxColor: "#5B0"
+    steps:
       - { id: contre, score: 0 }
       - { id: reticence, score: 0.15 }
       - { id: sans-avis, score: 0.4 }
       - { id: favorable, score: 0.7 }
       - { id: tiens-y, score: 1 }
   - id: importance
-    couleurMin: "#BBB"
-    couleurMax: "#F60"
+    minColor: "#BBB"
+    maxColor: "#F60"
     # Il suffit d’un sujet qui compte pour que la rubrique compte : la moyenne
     # diluerait ce qui est justement le plus saillant.
-    agregation:
-      remontee: max
-    paliers:
+    aggregation:
+      rollup: max
+    steps:
       - { id: indifferent, score: 0 }
       - { id: accessoire, score: 0.2 }
       - { id: compte, score: 0.5 }
       - { id: structurant, score: 0.8 }
       - { id: vital, score: 1 }
   - id: autonomie
-    couleurMin: "#07A"
-    couleurMax: "#C0B"
+    minColor: "#07A"
+    maxColor: "#C0B"
     # C’est le besoin de coopération le plus fort qui contraint l’ensemble.
-    agregation:
-      remontee: max
-    paliers:
+    aggregation:
+      rollup: max
+    steps:
       - { id: quoi-quil-en-coute, score: 0 }
       - { id: dans-mon-coin, score: 0.2 }
       - { id: quon-me-laisse, score: 0.45 }
       - { id: coup-de-main, score: 0.75 }
       - { id: cooperation, score: 1 }
 
-noeuds:
+nodes:
   - id: son
-    enfants:
+    children:
       - id: musique
-        enfants:
+        children:
           - id: instrument
           - id: chant
           - id: musique-enregistree
       - id: conversations
-        enfants:
+        children:
           - id: conversations-tardives
       - id: silence
-        polarites: [recevoir, temoin]
+        polarities: [recevoir, temoin]
 
   - id: espaces
-    enfants:
+    children:
       - id: espaces-communs
-        enfants:
+        children:
           - id: cuisine
           - id: salon
           - id: rangement
       - id: espaces-prives
-        enfants:
+        children:
           - id: chambre
           - id: visites-en-prive
 
   - id: alimentation
-    enfants:
+    children:
       - id: repas-partages
       - id: courses-communes
       - id: regimes
-        polarites: [agir, recevoir]
+        polarities: [agir, recevoir]
 
   - id: rythmes
-    enfants:
+    children:
       - id: nuits
       - id: matins
       - id: absences
 
   - id: decisions
-    enfants:
+    children:
       - id: reunions
       - id: conflits
       - id: argent-commun

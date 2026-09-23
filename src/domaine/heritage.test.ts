@@ -7,9 +7,9 @@ import type { GrilleDefinition } from './types.ts'
 const parts = [
   {
     id: 'avis',
-    couleurMin: '#E00',
-    couleurMax: '#6F0',
-    paliers: [
+    minColor: '#E00',
+    maxColor: '#6F0',
+    steps: [
       { id: 'contre', score: 0 },
       { id: 'reserve', score: 0.25 },
       { id: 'ok', score: 0.5 },
@@ -18,9 +18,9 @@ const parts = [
   },
   {
     id: 'importance',
-    couleurMin: '#AAA',
-    couleurMax: '#F60',
-    paliers: [
+    minColor: '#AAA',
+    maxColor: '#F60',
+    steps: [
       { id: 'aucune', score: 0 },
       { id: 'moyenne', score: 0.5 },
       { id: 'forte', score: 1 },
@@ -35,25 +35,25 @@ const polarites = [
 ]
 
 const definition = (
-  noeuds: GrilleDefinition['noeuds'],
+  noeuds: GrilleDefinition['nodes'],
   extra: Partial<GrilleDefinition> = {},
 ): GrilleDefinition => ({
   schemaVersion: 1,
   id: 'test',
   version: '1',
-  langueParDefaut: 'fr',
-  langues: { fr: './fr.yml' },
-  polarites,
+  defaultLocale: 'fr',
+  locales: { fr: './fr.yml' },
+  polarities: polarites,
   parts,
-  noeuds,
+  nodes: noeuds,
   ...extra,
 })
 
 const grilleSimple = construireGrille(definition([
   {
     id: 'musique',
-    enfants: [
-      { id: 'instrument', enfants: [{ id: 'batterie' }] },
+    children: [
+      { id: 'instrument', children: [{ id: 'batterie' }] },
       { id: 'chant' },
     ],
   },
@@ -71,7 +71,7 @@ describe('construction du graphe', () => {
 
   it('accepte plusieurs parents pour un même nœud', () => {
     const grille = construireGrille(definition([
-      { id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] },
+      { id: 'musique', children: [{ id: 'concert', parents: ['sortie'] }] },
       { id: 'sortie' },
     ]))
     expect(grille.noeuds.get('concert')?.parents).toEqual(['musique', 'sortie'])
@@ -95,7 +95,7 @@ describe('arbre des polarités', () => {
   it('exige une polarité générale, et une seule', () => {
     expect(grilleSimple.polariteRacine).toBe('general')
     expect(() => construireGrille(definition([{ id: 'a' }], {
-      polarites: [{ id: 'agir' }, { id: 'recevoir' }],
+      polarities: [{ id: 'agir' }, { id: 'recevoir' }],
     }))).toThrow(/exactement une polarité générale/)
   })
 
@@ -106,7 +106,7 @@ describe('arbre des polarités', () => {
 
   it('accepte des polarités plus fines que le triptyque', () => {
     const grille = construireGrille(definition([{ id: 'a' }], {
-      polarites: [
+      polarities: [
         { id: 'general' },
         { id: 'agir', parent: 'general' },
         { id: 'agir-seul', parent: 'agir' },
@@ -118,7 +118,7 @@ describe('arbre des polarités', () => {
 
   it('refuse une polarité coupée de la générale', () => {
     expect(() => construireGrille(definition([{ id: 'a' }], {
-      polarites: [{ id: 'general' }, { id: 'perdue', parent: 'inexistante' }],
+      polarities: [{ id: 'general' }, { id: 'perdue', parent: 'inexistante' }],
     }))).toThrow(/parent inconnu/)
   })
 })
@@ -127,8 +127,8 @@ describe('restriction des polarités', () => {
   const grille = construireGrille(definition([
     {
       id: 'silence',
-      polarites: ['recevoir'],
-      enfants: [{ id: 'silence-nuit' }],
+      polarities: ['recevoir'],
+      children: [{ id: 'silence-nuit' }],
     },
     { id: 'musique' },
   ]))
@@ -177,7 +177,7 @@ describe('héritage dans la direction des sujets', () => {
   })
 
   it('suit l’atténuation déclarée par la grille', () => {
-    const douce = construireGrille(definition([{ id: 'a', enfants: [{ id: 'b' }] }], { attenuation: 0.9 }))
+    const douce = construireGrille(definition([{ id: 'a', children: [{ id: 'b' }] }], { attenuation: 0.9 }))
     const valeurs = calculerValeurs(douce, reponses({ 'a/agir': { avis: 3 } }))
     expect(etoile(valeurs, 'b', 'agir').avis?.poids).toBeCloseTo(0.9, 6)
   })
@@ -214,7 +214,7 @@ describe('héritage dans la direction des polarités', () => {
   })
 
   it('suit sa propre atténuation, distincte de celle des sujets', () => {
-    const grille = construireGrille(definition([{ id: 'a' }], { attenuationPolarite: 0.8 }))
+    const grille = construireGrille(definition([{ id: 'a' }], { polarityAttenuation: 0.8 }))
     const valeurs = calculerValeurs(grille, reponses({ 'a/general': { avis: 3 } }))
     expect(etoile(valeurs, 'a', 'agir').avis?.poids).toBeCloseTo(0.8, 6)
   })
@@ -222,7 +222,7 @@ describe('héritage dans la direction des polarités', () => {
 
 describe('héritage depuis plusieurs parents', () => {
   const grille = construireGrille(definition([
-    { id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] },
+    { id: 'musique', children: [{ id: 'concert', parents: ['sortie'] }] },
     { id: 'sortie' },
   ]))
 
@@ -236,7 +236,7 @@ describe('héritage depuis plusieurs parents', () => {
 
   it('pondère la moyenne par le poids de chaque parent', () => {
     const profonde = construireGrille(definition([
-      { id: 'racine', enfants: [{ id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] }] },
+      { id: 'racine', children: [{ id: 'musique', children: [{ id: 'concert', parents: ['sortie'] }] }] },
       { id: 'sortie' },
     ]))
     const valeurs = calculerValeurs(profonde, reponses({
@@ -255,9 +255,9 @@ describe('héritage depuis plusieurs parents', () => {
 
 describe('agrégateurs configurables', () => {
   const avecAgregation = (nom: 'min' | 'max' | 'mediane') => construireGrille(definition([
-    { id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] },
+    { id: 'musique', children: [{ id: 'concert', parents: ['sortie'] }] },
     { id: 'sortie' },
-  ], { agregation: { heritage: nom, remontee: nom } }))
+  ], { aggregation: { inheritance: nom, rollup: nom } }))
 
   it('résume un héritage multi-parents par le minimum', () => {
     // Une limite : c’est le parent le plus restrictif qui contraint.
@@ -277,20 +277,20 @@ describe('agrégateurs configurables', () => {
   })
 
   it('se surcharge part par part', () => {
-    const grille = construireGrille(definition([{ id: 'musique', enfants: [{ id: 'chant' }] }], {
+    const grille = construireGrille(definition([{ id: 'musique', children: [{ id: 'chant' }] }], {
       parts: [
-        { ...parts[0]!, agregation: { remontee: 'min' } },
+        { ...parts[0]!, aggregation: { rollup: 'min' } },
         parts[1]!,
       ],
     }))
-    expect(grille.agregationDe('avis', 'remontee')).toBe('min')
-    expect(grille.agregationDe('importance', 'remontee')).toBe('moyenne')
-    expect(grille.agregationDe('avis', 'heritage')).toBe('moyenne')
+    expect(grille.agregationDe('avis', 'rollup')).toBe('min')
+    expect(grille.agregationDe('importance', 'rollup')).toBe('moyenne')
+    expect(grille.agregationDe('avis', 'inheritance')).toBe('moyenne')
   })
 
   it('refuse un agrégateur inconnu', () => {
     expect(() => construireGrille(definition([{ id: 'a' }], {
-      agregation: { heritage: 'mediane-ponderee' as never },
+      aggregation: { inheritance: 'mediane-ponderee' as never },
     }))).toThrow(/inconnu/)
   })
 })
@@ -319,8 +319,8 @@ describe('remontée', () => {
   })
 
   it('résume selon l’agrégateur demandé', () => {
-    const grille = construireGrille(definition([{ id: 'musique', enfants: [{ id: 'chant' }, { id: 'cor' }] }], {
-      agregation: { remontee: 'min' },
+    const grille = construireGrille(definition([{ id: 'musique', children: [{ id: 'chant' }, { id: 'cor' }] }], {
+      aggregation: { rollup: 'min' },
     }))
     const valeurs = calculerValeurs(grille, reponses({
       'chant/agir': { avis: 3 },

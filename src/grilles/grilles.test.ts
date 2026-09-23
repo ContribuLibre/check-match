@@ -22,7 +22,7 @@ describe('grilles livrées', () => {
   it('gardent des scores ordonnés et bornés à 0..1', () => {
     for (const { grille } of grilles) {
       for (const part of grille.parts) {
-        const scores = part.paliers.map((palier) => palier.score)
+        const scores = part.steps.map((palier) => palier.score)
         expect(scores[0]).toBe(0)
         expect(scores[scores.length - 1]).toBe(1)
         for (const [index, score] of scores.entries()) {
@@ -51,8 +51,8 @@ describe('vie collective', () => {
 
   it('résume l’importance par le maximum, pas par la moyenne', () => {
     // Un seul sujet vital rend la rubrique vitale ; la moyenne l’effacerait.
-    expect(disponible?.grille.agregationDe('importance', 'remontee')).toBe('max')
-    expect(disponible?.grille.agregationDe('avis', 'remontee')).toBe('moyenne')
+    expect(disponible?.grille.agregationDe('importance', 'rollup')).toBe('max')
+    expect(disponible?.grille.agregationDe('avis', 'rollup')).toBe('moyenne')
   })
 
   it('porte un nœud à deux parents', () => {
@@ -88,6 +88,6 @@ describe('grille issue du format historique', () => {
 
   it('garde les scores irréguliers du modèle', () => {
     const acceptance = disponible?.grille.parts.find((part) => part.id === 'acceptance')
-    expect(acceptance?.paliers.map((palier) => palier.score)).toEqual([0, 0.1, 0.25, 0.5, 0.6, 0.8, 1])
+    expect(acceptance?.steps.map((palier) => palier.score)).toEqual([0, 0.1, 0.25, 0.5, 0.6, 0.8, 1])
   })
 })

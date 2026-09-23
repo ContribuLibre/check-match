@@ -95,6 +95,48 @@ src/CI/         validation des grilles, import de l’ancien format
 ## Écrire une grille
 
 `src/grilles/<nom>/grille.yml` décrit la structure, `<langue>.yml` les textes.
+Les **clés sont en anglais** — une grille est une donnée faite pour circuler —
+alors que le code qui les lit reste en français.
+
+```yaml
+# grille.yml
+polarityAttenuation: 0.5
+aggregation: { inheritance: moyenne, rollup: moyenne }
+
+polarities:
+  - { id: general, primary: true }
+  - { id: agir, parent: general }
+
+parts:
+  - id: importance
+    minColor: "#BBB"
+    maxColor: "#F60"
+    aggregation: { rollup: max }   # un seul sujet vital rend la rubrique vitale
+    steps:
+      - { id: indifferent, score: 0 }
+      - { id: vital, score: 1 }
+
+nodes:
+  - id: son
+    children:
+      - id: musique
+      - { id: silence, polarities: [recevoir, temoin] }
+```
+
+```yaml
+# fr.yml
+title: Vie collective
+polarities:
+  general: { label: En général, help: Sans distinguer les places. }
+parts:
+  importance:
+    label: Importance
+    steps:
+      vital: { label: Vital, help: Si ce n’est pas réglé, je ne peux pas rester. }
+nodes:
+  son: { label: Son, help: Tout ce qui s’entend depuis les espaces partagés. }
+```
+
 `bun run valide:grilles` refuse ce qui casserait les calculs : parent inconnu,
 cycle, scores non croissants, agrégateur inconnu, libellé manquant.
 

@@ -10,7 +10,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse } from 'yaml'
 import { construireGrille } from '../domaine/grille.ts'
-import { clesManquantes } from '../domaine/traduction.ts'
+import { clesManquantes, couverture } from '../domaine/traduction.ts'
 import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
 
 const racineGrilles = new URL('../grilles/', import.meta.url).pathname
@@ -25,13 +25,57 @@ function lireYaml<T>(chemin: string): { valeur?: T; probleme?: string } {
   }
 }
 
-export function validerGrille(dossier: string): string[] {
+const CLES_ATTENDUES: Record<string, string[]> = {
+  nodes: ['label', 'help'],
+  polarities: ['label', 'help'],
+  parts: ['label', 'help', 'steps'],
+}
+
+/**
+ * Attrape les valeurs coupées par une virgule.
+ *
+ * En YAML, `{ label: Absences, help: Partir, revenir }` ne donne pas l’aide
+ * attendue : la virgule sépare les entrées du mapping, et « revenir » devient
+ * une clé. Le libellé existe quand même, donc rien ne semble cassé — c’est
+ * précisément pour ça qu’il faut le vérifier ici.
+ */
+function clesInattendues(traduction: Traduction, ou: string): string[] {
   const problemes: string[] = []
+  for (const [section, attendues] of Object.entries(CLES_ATTENDUES)) {
+    const entrees = (traduction as unknown as Record<string, Record<string, Record<string, unknown>>>)[section] ?? {}
+    for (const [id, valeur] of Object.entries(entrees)) {
+      for (const cle of Object.keys(valeur ?? {})) {
+        if (!attendues.includes(cle)) {
+          problemes.push(`${ou} : ${section}.${id} porte « ${cle} » — une virgule non protégée a coupé la valeur`)
+        }
+      }
+      for (const [palier, contenu] of Object.entries((valeur?.steps ?? {}) as Record<string, Record<string, unknown>>)) {
+        for (const cle of Object.keys(contenu ?? {})) {
+          if (cle !== 'label' && cle !== 'help') {
+            problemes.push(`${ou} : ${section}.${id}.steps.${palier} porte « ${cle} » — une virgule non protégée a coupé la valeur`)
+          }
+        }
+      }
+    }
+  }
+  return problemes
+}
+
+export interface Rapport {
+  /** Ce qui casserait les calculs ou l’affichage : la CI s’arrête. */
+  problemes: string[]
+  /** Ce qui mérite d’être su sans rien bloquer : couverture des traductions. */
+  remarques: string[]
+}
+
+export function validerGrille(dossier: string): Rapport {
+  const problemes: string[] = []
+  const remarques: string[] = []
   const cheminDefinition = join(dossier, 'grille.yml')
-  if (!existsSync(cheminDefinition)) return [`${dossier} : pas de grille.yml`]
+  if (!existsSync(cheminDefinition)) return { problemes: [`${dossier} : pas de grille.yml`], remarques }
 
   const lu = lireYaml<GrilleDefinition>(cheminDefinition)
-  if (!lu.valeur) return [lu.probleme ?? `${cheminDefinition} : illisible`]
+  if (!lu.valeur) return { problemes: [lu.probleme ?? `${cheminDefinition} : illisible`], remarques }
   const definition = lu.valeur
   const grille = construireGrille(definition)
 
@@ -64,12 +108,24 @@ export function validerGrille(dossier: string): string[] {
       continue
     }
     const traduction = lue.valeur
-    for (const manquante of clesManquantes(grille, traduction)) {
-      problemes.push(`${grille.id}/${langue} : « ${manquante} » sans libellé`)
+    problemes.push(...clesInattendues(traduction, `${grille.id}/${langue}`))
+    const manquantes = clesManquantes(grille, traduction)
+
+    // La langue par défaut sert de repli à toutes les autres : elle doit être
+    // complète. Les autres seront presque toujours partielles — une grille de
+    // deux cents entrées ne se traduit pas d’un bloc, et une traduction entamée
+    // ne doit rien bloquer.
+    if (langue === definition.defaultLocale) {
+      for (const manquante of manquantes) {
+        problemes.push(`${grille.id}/${langue} (langue par défaut) : « ${manquante} » sans libellé`)
+      }
+    } else if (manquantes.length) {
+      const part = Math.round(couverture(grille, traduction) * 100)
+      remarques.push(`${grille.id}/${langue} : ${part} % traduit, ${manquantes.length} libellé(s) repris du ${definition.defaultLocale}`)
     }
   }
 
-  return problemes
+  return { problemes, remarques }
 }
 
 if (import.meta.main) {
@@ -84,9 +140,10 @@ if (import.meta.main) {
 
   let total = 0
   for (const dossier of dossiers) {
-    const problemes = validerGrille(dossier)
+    const { problemes, remarques } = validerGrille(dossier)
     total += problemes.length
     for (const probleme of problemes) console.error(`  ✗ ${probleme}`)
+    for (const remarque of remarques) console.log(`  · ${remarque}`)
   }
 
   if (total) {

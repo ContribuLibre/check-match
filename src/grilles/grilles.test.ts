@@ -13,10 +13,40 @@ describe('grilles livrées', () => {
     }
   })
 
-  it('traduisent tous leurs nœuds, polarites, parts et paliers', () => {
-    for (const { grille, traduction } of grilles) {
-      expect(clesManquantes(grille, traduction), `grille « ${grille.id} »`).toEqual([])
+  it('ont une langue par défaut complète : c’est elle qui sert de repli', () => {
+    for (const { grille, traductions, langueParDefaut } of grilles) {
+      const repli = traductions[langueParDefaut]!
+      expect(clesManquantes(grille, repli), `grille « ${grille.id} » en ${langueParDefaut}`).toEqual([])
     }
+  })
+
+  it('acceptent une traduction partielle, et complètent par la langue par défaut', () => {
+    // Une grille de deux cents entrées ne se traduit pas d’un bloc : une
+    // traduction entamée doit rester utilisable telle quelle.
+    const vieCollective = grilleParId('vie-collective')!
+    const anglais = vieCollective.traductions.en!
+    expect(clesManquantes(vieCollective.grille, anglais).length).toBeGreaterThan(0)
+
+    const textes = vieCollective.textesPour('en')
+    expect(textes.noeud('cuisine')).toBe('Kitchen')
+    // « rangement » n’est pas traduit : on lit le français, jamais l’identifiant.
+    expect(textes.noeud('rangement')).toBe('Rangement')
+    expect(textes.noeud('rangement')).not.toBe('rangement')
+  })
+
+  it('complètent aussi les paliers et les aides, pas seulement les libellés', () => {
+    const textes = grilleParId('vie-collective')!.textesPour('en')
+    // « autonomie » n’est pas traduite du tout.
+    expect(textes.part('autonomie')).toBe('Autonomie')
+    expect(textes.palier('autonomie', 'cooperation')).toBe('Coopération')
+    // « importance » l’est, mais sans les aides de ses paliers.
+    expect(textes.part('importance')).toBe('Importance')
+    expect(textes.aidePalier('importance', 'accessoire')).toBe('J’ai une préférence, sans plus.')
+  })
+
+  it('retombent sur la langue par défaut pour une langue inconnue', () => {
+    const textes = grilleParId('vie-collective')!.textesPour('de')
+    expect(textes.noeud('cuisine')).toBe('Cuisine')
   })
 
   it('gardent des scores ordonnés et bornés à 0..1', () => {

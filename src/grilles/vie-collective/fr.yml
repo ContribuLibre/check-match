@@ -32,8 +32,8 @@ parts:
     help: Ce que j’en pense, indépendamment de l’importance que ça a pour moi.
     steps:
       contre: { label: Contre, help: Je ne veux pas de ça ici. }
-      reticence: { label: Réticence, help: Ça me gêne, je préfère l’éviter. }
-      sans-avis: { label: Sans avis, help: Ni pour ni contre, ça m’est égal. }
+      reticence: { label: Réticence, help: "Ça me gêne, je préfère l’éviter." }
+      sans-avis: { label: Sans avis, help: "Ni pour ni contre, ça m’est égal." }
       favorable: { label: Favorable, help: J’aime bien que ça existe ici. }
       tiens-y: { label: J’y tiens, help: C’est une des raisons pour lesquelles je suis là. }
   importance:
@@ -41,10 +41,10 @@ parts:
     help: À quel point ce sujet pèse pour moi — un avis tranché peut porter sur un sujet secondaire.
     steps:
       indifferent: { label: Indifférent, help: Je peux vivre avec n’importe quelle réponse. }
-      accessoire: { label: Accessoire, help: J’ai une préférence, sans plus. }
+      accessoire: { label: Accessoire, help: "J’ai une préférence, sans plus." }
       compte: { label: Ça compte, help: J’aimerais que ce soit pris en compte. }
       structurant: { label: Structurant, help: Ça change beaucoup mon quotidien. }
-      vital: { label: Vital, help: Si ce n’est pas réglé, je ne peux pas rester. }
+      vital: { label: Vital, help: "Si ce n’est pas réglé, je ne peux pas rester." }
   autonomie:
     label: Autonomie
     help: Est-ce que je peux répondre à ce besoin seule, ou est-ce qu’il me faut les autres ?
@@ -70,7 +70,7 @@ nodes:
   musique: { label: Musique }
   instrument: { label: Jouer d’un instrument }
   chant: { label: Chanter }
-  musique-enregistree: { label: Musique enregistrée, help: Enceintes, casque ouvert, fond sonore. }
+  musique-enregistree: { label: Musique enregistrée, help: "Enceintes, casque ouvert, fond sonore." }
   conversations: { label: Conversations }
   conversations-tardives: { label: Conversations tardives }
   silence: { label: Silence, help: Des plages où l’on peut compter sur le calme. }
@@ -89,7 +89,7 @@ nodes:
   rythmes: { label: Rythmes }
   nuits: { label: Nuits }
   matins: { label: Matins }
-  absences: { label: Absences, help: Partir, revenir, prévenir ou non. }
+  absences: { label: Absences, help: "Partir, revenir, prévenir ou non." }
   decisions: { label: Décisions }
   reunions: { label: Réunions }
   conflits: { label: Conflits, help: Comment on les aborde quand ils arrivent. }

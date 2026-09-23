@@ -21,6 +21,9 @@ export interface Textes {
   avancement: (repondues: number, heritees: number, vides: number, total: number) => string
   contribuer: string
   inspiration: string
+  inspirationIntro: string
+  inspirationKinklist: string
+  inspirationThunometre: string
   reglages: string
   theme: string
   themeAuto: string
@@ -54,8 +57,11 @@ export interface Textes {
   codeSource: string
 }
 
-/** Typé : ajouter une clé sans la traduire partout ne compile pas. */
-const TEXTES: Record<Langue, Textes> = {
+/**
+ * Le français porte toutes les clés ; les autres langues complètent ce qu’elles
+ * peuvent. Une traduction en cours ne doit jamais bloquer une compilation.
+ */
+const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
   fr: {
     titre: 'check-match',
     reponsesDe: 'Réponses de',
@@ -67,7 +73,10 @@ const TEXTES: Record<Langue, Textes> = {
     avancement: (repondues: number, heritees: number, vides: number, total: number) =>
       `${repondues} répondues, ${heritees} héritées, ${vides} vides (sur ${total} étoiles)`,
     contribuer: 'Contribuer',
-    inspiration: 'Inspiration',
+    inspiration: 'Inspirations',
+    inspirationIntro: 'Ce dont ce projet est issu, et ce dont il s’inspire.',
+    inspirationKinklist: 'La liste dont viennent les items d’« Intimité », et le point de départ du projet.',
+    inspirationThunometre: 'Dont viennent l’organisation du projet, les réglages et le fonctionnement hors ligne.',
     reglages: 'Réglages',
     theme: 'Thème',
     themeAuto: 'auto',
@@ -111,7 +120,10 @@ const TEXTES: Record<Langue, Textes> = {
     avancement: (repondues: number, heritees: number, vides: number, total: number) =>
       `${repondues} answered, ${heritees} inherited, ${vides} empty (of ${total} stars)`,
     contribuer: 'Contribute',
-    inspiration: 'Inspiration',
+    inspiration: 'Inspirations',
+    inspirationIntro: 'What this project came from, and what it draws on.',
+    inspirationKinklist: 'The list the “Intimacy” items come from, and the starting point of the project.',
+    inspirationThunometre: 'Where the project layout, the settings and the offline support come from.',
     reglages: 'Settings',
     theme: 'Theme',
     themeAuto: 'auto',
@@ -146,6 +158,7 @@ const TEXTES: Record<Langue, Textes> = {
   },
 }
 
+/** Les textes demandés, complétés par le français pour ce qui manque. */
 export function textesUi(langue: Langue): Textes {
   return { ...TEXTES.fr, ...TEXTES[langue] }
 }

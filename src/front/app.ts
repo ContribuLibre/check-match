@@ -20,7 +20,12 @@ const echapper = (texte: string): string =>
 
 const EXTERNE = ' target="_blank" rel="noreferrer noopener"'
 const DEPOT = 'https://github.com/ContribuLibre/check-match'
-const INSPIRATION = 'https://codepen.io/1000i100/pen/dydLLZw'
+
+/** D’où vient ce projet. Deux sources, donc un panneau plutôt qu’un lien. */
+const INSPIRATIONS = [
+  { nom: 'KinkList', url: 'https://github.com/Goctionni/KinkList', texte: 'inspirationKinklist' },
+  { nom: '1 Thunomètre', url: 'https://framagit.org/contribulibre/1thunometre', texte: 'inspirationThunometre' },
+] as const
 
 interface Etat {
   personne: string | null
@@ -74,7 +79,8 @@ export function demarrer(
     // Le panneau de réglages reste ouvert d’un rendu à l’autre : le refermer à
     // chaque clic empêcherait d’essayer deux réglages de suite.
     const reglagesOuverts = champs.entete.querySelector<HTMLDetailsElement>('[data-reglages]')?.open ?? false
-    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts)
+    const inspirationsOuvertes = champs.entete.querySelector<HTMLDetailsElement>('[data-inspirations]')?.open ?? false
+    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts, inspirationsOuvertes)
     afficherAvancement(grille, valeurs, ctx)
     champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
     champs.pied.innerHTML = piedHtml(ctx)
@@ -223,7 +229,7 @@ export function demarrer(
 
 // --- en-tête --------------------------------------------------------------
 
-function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean): string {
+function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean, inspirationsOuvertes = false): string {
   const { etat, ui, prefs } = ctx
   const personnes = stockage.personnes()
 
@@ -243,7 +249,7 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean)
 
   const quelleGrille = `<label class="champ">${echapper(ui.grille)}
     <select data-grille aria-label="${echapper(ui.grille)}">${grilles.map((disponible) =>
-      `<option value="${echapper(disponible.grille.id)}"${disponible.grille.id === etat.disponible.grille.id ? ' selected' : ''}>${echapper(disponible.textes.titre)}</option>`).join('')}</select></label>`
+      `<option value="${echapper(disponible.grille.id)}"${disponible.grille.id === etat.disponible.grille.id ? ' selected' : ''}>${echapper(disponible.textesPour(prefs.langue).titre)}</option>`).join('')}</select></label>`
 
   const langue = `<label class="champ">${echapper(ui.langue)}
     <select data-langue aria-label="${echapper(ui.langue)}">${LANGUES.map((code) =>
@@ -268,10 +274,20 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean)
     </div>
   </details>`
 
+  const inspirations = `<details class="reglages" data-inspirations${inspirationsOuvertes ? ' open' : ''}>
+    <summary>${echapper(ui.inspiration)}</summary>
+    <div class="reglages-panneau inspirations">
+      <p class="aide">${echapper(ui.inspirationIntro)}</p>
+      ${INSPIRATIONS.map((source) => `<p class="inspiration">
+        <a href="${source.url}"${EXTERNE}>${echapper(source.nom)}</a>
+        <span class="aide">${echapper(ui[source.texte])}</span>
+      </p>`).join('')}
+    </div>
+  </details>`
+
   const liens = `<nav class="entete-liens">
     <a href="${DEPOT}"${EXTERNE}>${echapper(ui.contribuer)}</a>
-    <a href="${INSPIRATION}"${EXTERNE}>${echapper(ui.inspiration)}</a>
-  </nav>`
+  </nav>${inspirations}`
 
   return `${marque}${qui}${quelleGrille}${liens}${langue}${reglages}
     <span class="avancement" data-avancement></span>`
@@ -334,7 +350,8 @@ function polaritesVisibles(grille: Grille, noeud: { polarites: string[] }, nivea
 }
 
 function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte): string {
-  const { grille, textes } = disponible
+  const grille = disponible.grille
+  const textes = disponible.textesPour(ctx.prefs.langue)
   const { etat, ui, prefs } = ctx
 
   const rendu = (id: string, chemin: string[]): string => {
@@ -412,8 +429,9 @@ function editeurHtml(
   personne: string,
   ctx: Contexte,
 ): string {
-  const { grille, textes } = disponible
+  const grille = disponible.grille
   const { ui, prefs } = ctx
+  const textes = disponible.textesPour(prefs.langue)
   const noeud = grille.noeuds.get(ouvert.noeud)
   if (!noeud) return ''
   const valeursPolarite = etoile(valeurs, ouvert.noeud, ouvert.polarite)

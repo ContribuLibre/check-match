@@ -290,3 +290,7 @@ main { padding: 1rem 1.2rem; }
   text-decoration: underline;
   text-underline-offset: .16em;
 }
+
+.inspirations { min-width: 22rem; }
+.inspiration { margin: 0; display: grid; gap: .1rem; }
+.inspiration a { color: var(--accent); font-weight: 600; font-size: .85rem; }

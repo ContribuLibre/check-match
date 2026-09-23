@@ -64,3 +64,13 @@ Les interfaces qui mappent ces fichiers (`GrilleDefinition`, `PartDefinition`,
 `Traduction`…) portent donc des propriétés anglaises. Tout le reste — noms de
 fonctions, variables, structures internes calculées (`Grille`, `Noeud`,
 `Polarite`), commentaires, tests — reste en français.
+
+## Traduire ne bloque jamais
+
+Une traduction partielle est la règle, pas l’exception. Ce qui manque retombe
+sur la langue par défaut — de la grille pour son contenu, le français pour
+l’interface — et jamais sur un identifiant technique.
+
+Seule la langue par défaut d’une grille doit être complète : c’est elle qui sert
+de repli. Le validateur l’exige pour elle seule, et se contente d’afficher la
+couverture des autres.

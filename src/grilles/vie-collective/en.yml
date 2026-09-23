@@ -1,0 +1,68 @@
+# Traduction volontairement partielle : c’est le cas courant d’une grille en
+# cours de traduction. Ce qui manque retombe sur le français, langue par défaut
+# de cette grille — jamais sur les identifiants techniques.
+title: Collective living
+intro: >-
+  Situating yourself on what makes daily life in a shared place, subject by
+  subject, telling apart what you do, what you receive and what you witness.
+
+polarities:
+  general:
+    label: In general
+    help: "Without telling the places apart: to get a rough answer quickly."
+  agir:
+    label: Doing
+    help: What I produce, start or practise myself.
+  recevoir:
+    label: Receiving
+    help: What I ask for, want or receive from others.
+  temoin:
+    label: Witnessing
+    help: Being there while it happens, neither its author nor its recipient.
+
+parts:
+  apercu:
+    label: In a nutshell
+    help: "To tick quickly: counts mostly as an opinion, and hints that the subject matters."
+    steps:
+      contre: { label: Against }
+      reticence: { label: Reluctant }
+      sans-avis: { label: No opinion }
+      favorable: { label: In favour }
+      tiens-y: { label: I care about it }
+  avis:
+    label: My opinion
+    help: What I think of it, regardless of how much it matters to me.
+    steps:
+      contre: { label: Against, help: I don’t want this here. }
+      reticence: { label: Reluctant, help: "It bothers me, I’d rather avoid it." }
+      sans-avis: { label: No opinion, help: Neither for nor against. }
+      favorable: { label: In favour, help: I like that it exists here. }
+      tiens-y: { label: I care about it, help: It’s one of the reasons I’m here. }
+  importance:
+    label: Importance
+    help: How much this subject weighs for me — a firm opinion can be about a side issue.
+    steps:
+      indifferent: { label: Indifferent }
+      accessoire: { label: Minor }
+      compte: { label: It counts }
+      structurant: { label: Structuring }
+      vital: { label: Vital, help: "If it isn’t settled, I can’t stay." }
+
+# L’autonomie n’est pas traduite : ses libellés s’afficheront en français.
+
+nodes:
+  son: { label: Sound, help: Everything audible from the shared spaces. }
+  musique: { label: Music }
+  instrument: { label: Playing an instrument }
+  chant: { label: Singing }
+  conversations: { label: Conversations }
+  silence: { label: Silence, help: Stretches when quiet can be counted on. }
+  espaces: { label: Spaces }
+  espaces-communs: { label: Shared spaces }
+  cuisine: { label: Kitchen }
+  salon: { label: Living room }
+  alimentation: { label: Food }
+  rythmes: { label: Rhythms }
+  decisions: { label: Decisions }
+  # Les sous-éléments restants ne sont pas traduits, volontairement.

@@ -4,6 +4,7 @@ version: "0.1"
 defaultLocale: fr
 locales:
   fr: ./fr.yml
+  en: ./en.yml
 
 # Une réponse posée sur une rubrique vaut pour tout ce qu’elle contient, avec le
 # même score mais la moitié du poids à chaque niveau de descente.

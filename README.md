@@ -191,7 +191,27 @@ nodes:
 ```
 
 `bun run valide:grilles` refuse ce qui casserait les calculs : parent inconnu,
-cycle, scores non croissants, agrégateur inconnu, libellé manquant.
+cycle, scores non croissants, agrégateur inconnu, YAML illisible, et les valeurs
+coupées par une virgule non protégée — `{ help: Partir, revenir }` ne donne pas
+l’aide attendue, et rien ne semble cassé pour autant.
+
+### Traduire par morceaux
+
+Une grille de deux cents entrées ne se traduit pas d’un bloc, donc une
+traduction partielle est la règle. Ce qui manque retombe sur la **langue par
+défaut de la grille**, jamais sur les identifiants techniques : une grille à
+moitié traduite se lit sans tomber sur des `soiree-dansante` au milieu du texte.
+
+Seule la langue par défaut doit être complète — c’est elle qui sert de repli, et
+c’est la seule que le validateur exige. Pour les autres, il affiche la
+couverture sans rien bloquer :
+
+```
+· vie-collective/en : 61 % traduit, 23 libellé(s) repris du fr
+```
+
+Il en va de même pour l’interface : le français porte toutes les clés, les
+autres langues complètent ce qu’elles peuvent.
 
 Les polarités forment un arbre, dont la racine — la générale — est obligatoire.
 Un nœud peut restreindre les polarités qui le concernent ; la restriction vaut

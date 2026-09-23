@@ -6,9 +6,9 @@ intro: >-
 
 polarities:
   general: { label: In general, help: "Without telling the places apart: to get a rough answer quickly." }
-  agir: { label: Doing, help: What I do, initiate or practise myself. }
-  recevoir: { label: Receiving, help: What I ask for, want or receive from someone else. }
-  temoin: { label: Witnessing, help: Being present while it happens, neither doing it nor receiving it. }
+  agir: { label: Doing, help: "What I do, initiate or practise myself." }
+  recevoir: { label: Receiving, help: "What I ask for, want or receive from someone else." }
+  temoin: { label: Witnessing, help: "Being present while it happens, neither doing it nor receiving it." }
 
 parts:
   overall:
@@ -24,9 +24,9 @@ parts:
     label: Experience
     steps:
       unknown: { label: unknown }
-      heard: { label: hear, not tried }
+      heard: { label: "hear, not tried" }
       once: { label: one time }
-      few: { label: few, help: only with one partner, without external advices }
+      few: { label: few, help: "only with one partner, without external advices" }
       good: { label: good }
       expert: { label: expert }
   excitment:

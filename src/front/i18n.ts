@@ -56,6 +56,13 @@ export interface Textes {
   licence: string
   codeSource: string
   sansPersistance: string
+  personneParDefaut: string
+  renommer: string
+  renommerInvite: string
+  toutReplier: string
+  toutDeplier: string
+  replier: string
+  deplier: string
 }
 
 /**
@@ -110,6 +117,13 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     licence: 'Licence',
     codeSource: 'Code source',
     sansPersistance: 'Ce navigateur n’autorise pas l’enregistrement depuis un fichier local : les réponses seront perdues à la fermeture.',
+    personneParDefaut: 'Moi',
+    renommer: 'Renommer',
+    renommerInvite: 'Nouveau nom :',
+    toutReplier: 'Tout replier',
+    toutDeplier: 'Tout déplier',
+    replier: 'Replier',
+    deplier: 'Déplier',
   },
   en: {
     titre: 'check-match',
@@ -158,6 +172,13 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     licence: 'License',
     codeSource: 'Source code',
     sansPersistance: 'This browser does not allow storage from a local file: answers will be lost when you close it.',
+    personneParDefaut: 'Me',
+    renommer: 'Rename',
+    renommerInvite: 'New name:',
+    toutReplier: 'Collapse all',
+    toutDeplier: 'Expand all',
+    replier: 'Collapse',
+    deplier: 'Expand',
   },
 }
 

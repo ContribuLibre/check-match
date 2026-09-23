@@ -12,6 +12,7 @@ import {
   type GestionnairePreferences, type Niveau,
 } from './preferences.ts'
 import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
+import { creerReplis, type Replis } from './repli.ts'
 // Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
 // peut charger aucune image à côté de lui.
 import logoSvg from '../../public/icons/icon.svg?raw'
@@ -43,6 +44,7 @@ interface Contexte {
   etat: Etat
   ui: Textes
   prefs: GestionnairePreferences
+  replis: Replis
 }
 
 const support = stockagePersistant()
@@ -52,12 +54,19 @@ export function demarrer(
   stockage: Stockage = creerStockage({ stockage: support.stockage }),
   prefs: GestionnairePreferences = creerPreferences(),
 ): void {
+  const ui0 = textesUi(prefs.langue)
+  // Quelqu’un qui arrive doit pouvoir répondre tout de suite. On ne lui demande
+  // son nom que s’il veut distinguer plusieurs séries de réponses.
+  const premiere = stockage.personnes()[0] ?? stockage.ajouterPersonne(ui0.personneParDefaut)
+
   const etat: Etat = {
-    personne: stockage.personnes()[0]?.id ?? null,
+    personne: premiere.id,
     disponible: grilles[0]!,
     ouvert: null,
     miseAJour: null,
   }
+
+  let replis = creerReplis(etat.disponible.grille.id, support.stockage)
 
   racine.innerHTML = `
     <header class="entete" data-entete></header>
@@ -72,7 +81,7 @@ export function demarrer(
     editeur: racine.querySelector<HTMLElement>('[data-editeur]')!,
   }
 
-  const contexte = (): Contexte => ({ etat, ui: textesUi(prefs.langue), prefs })
+  const contexte = (): Contexte => ({ etat, ui: textesUi(prefs.langue), prefs, replis })
   const reponses = (): Map<string, Reponse> =>
     etat.personne ? stockage.reponsesCourantes(etat.personne) : new Map()
 
@@ -146,6 +155,29 @@ export function demarrer(
       }
       return
     }
+    if (cible.closest('[data-renommer]')) {
+      const actuelle = stockage.personnes().find((personne) => personne.id === etat.personne)
+      const nom = prompt(textesUi(prefs.langue).renommerInvite, actuelle?.nom ?? '')
+      if (!nom?.trim()) return
+      try {
+        stockage.renommerPersonne(etat.personne!, nom)
+        afficher()
+      } catch (erreur) {
+        alert(erreur instanceof Error ? erreur.message : String(erreur))
+      }
+      return
+    }
+    if (cible.closest('[data-tout-replier]')) {
+      replis.toutReplier([...etat.disponible.grille.noeuds.values()]
+        .filter((noeud) => noeud.enfants.length).map((noeud) => noeud.id))
+      afficher()
+      return
+    }
+    if (cible.closest('[data-tout-deplier]')) {
+      replis.toutDeplier()
+      afficher()
+      return
+    }
     const reglage = cible.closest<HTMLElement>('[data-reglage]')
     if (reglage) {
       const champ = reglage.dataset.reglage as 'theme' | 'niveau'
@@ -161,6 +193,7 @@ export function demarrer(
       etat.ouvert = null
     } else if (champ.matches('[data-grille]')) {
       etat.disponible = grilles.find((d) => d.grille.id === champ.value) ?? grilles[0]!
+      replis = creerReplis(etat.disponible.grille.id, support.stockage)
       etat.ouvert = null
     } else if (champ.matches('[data-langue]')) {
       prefs.definir('langue', champ.value as never)
@@ -171,6 +204,12 @@ export function demarrer(
   // --- arbre et éditeur ---------------------------------------------------
 
   champs.arbre.addEventListener('click', (evenement) => {
+    const pliage = (evenement.target as HTMLElement).closest<HTMLElement>('[data-plier]')
+    if (pliage) {
+      replis.basculer(pliage.dataset.plier!)
+      afficher()
+      return
+    }
     const bouton = (evenement.target as HTMLElement).closest<HTMLElement>('[data-noeud][data-polarite]')
     if (!bouton) return
     if (!etat.personne) {
@@ -250,6 +289,7 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
           `<option value="${echapper(personne.id)}"${personne.id === etat.personne ? ' selected' : ''}>${echapper(personne.nom)}</option>`).join('')
         : `<option value="">— ${echapper(ui.personne)} —</option>`
     }</select></label>
+    <button type="button" data-renommer title="${echapper(ui.renommer)}" aria-label="${echapper(ui.renommer)}">✎</button>
     <button type="button" data-ajout-personne>${echapper(ui.ajouterPersonne)}</button>`
 
   const quelleGrille = `<label class="champ">${echapper(ui.grille)}
@@ -290,11 +330,16 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
     </div>
   </details>`
 
+  const pliage = `<div class="pliage">
+    <button type="button" data-tout-replier title="${echapper(ui.toutReplier)}">⊟</button>
+    <button type="button" data-tout-deplier title="${echapper(ui.toutDeplier)}">⊞</button>
+  </div>`
+
   const liens = `<nav class="entete-liens">
     <a href="${DEPOT}"${EXTERNE}>${echapper(ui.contribuer)}</a>
   </nav>${inspirations}`
 
-  return `${marque}${qui}${quelleGrille}${liens}${langue}${reglages}
+  return `${marque}${qui}${quelleGrille}${pliage}${liens}${langue}${reglages}
     <span class="avancement" data-avancement></span>`
 }
 
@@ -362,7 +407,7 @@ function polaritesVisibles(grille: Grille, noeud: { polarites: string[] }, nivea
 function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte): string {
   const grille = disponible.grille
   const textes = disponible.textesPour(ctx.prefs.langue)
-  const { etat, ui, prefs } = ctx
+  const { etat, ui, prefs, replis } = ctx
 
   const rendu = (id: string, chemin: string[]): string => {
     const noeud = grille.noeuds.get(id)
@@ -383,16 +428,27 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte
 
     const aide = textes.aideNoeud(id)
     const enfants = noeud.enfants.filter((enfant) => !chemin.includes(enfant))
+    const replie = replis.estReplie(id)
+    // Le nombre de sous-sujets cachés : sans lui, une rubrique repliée ne dit
+    // pas ce qu’elle contient.
+    const pliage = enfants.length
+      ? `<button type="button" class="plier" data-plier="${echapper(id)}"
+          aria-expanded="${!replie}" title="${echapper(replie ? ui.deplier : ui.replier)}">
+          <span class="chevron" aria-hidden="true">${replie ? '▸' : '▾'}</span>${replie ? `<span class="compte">${enfants.length}</span>` : ''}
+        </button>`
+      : '<span class="plier-vide" aria-hidden="true"></span>'
+
     return `<li class="noeud" style="--niveau: ${chemin.length}">
       <div class="ligne">
         <div class="intitule">
+          ${pliage}
           <span class="libelle">${echapper(textes.noeud(id))}</span>
           ${repete ? `<span class="multi" title="${echapper(ui.plusieursRubriques)}">↔</span>` : ''}
           ${aide ? `<span class="aide">${echapper(aide)}</span>` : ''}
         </div>
         <div class="etoiles">${etoiles}</div>
       </div>
-      ${enfants.length ? `<ul>${enfants.map((enfant) => rendu(enfant, [...chemin, id])).join('')}</ul>` : ''}
+      ${enfants.length && !replie ? `<ul>${enfants.map((enfant) => rendu(enfant, [...chemin, id])).join('')}</ul>` : ''}
     </li>`
   }
 

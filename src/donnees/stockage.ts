@@ -117,16 +117,43 @@ export function creerStockage({
     return Array.isArray(liste) ? liste : []
   }
 
-  /** Idempotent : un même nom désigne la même personne et garde ses réponses. */
+  /**
+   * Idempotent par **nom** : rouvrir la page avec le même nom retrouve ses
+   * réponses. L’identifiant, lui, est unique et ne bouge plus jamais — c’est
+   * ce qui permet de renommer quelqu’un sans rien perdre.
+   */
   function ajouterPersonne(nom: string): Personne {
-    const id = identifiant(nom)
-    if (!id) throw new TypeError(`« ${nom} » n’est pas un nom utilisable.`)
+    const base = identifiant(nom)
+    if (!base) throw new TypeError(`« ${nom} » n’est pas un nom utilisable.`)
     const existantes = personnes()
-    const deja = existantes.find((personne) => personne.id === id)
+    const propre = nom.trim()
+    const deja = existantes.find((personne) => personne.nom === propre)
     if (deja) return deja
-    const personne: Personne = { id, nom: nom.trim(), creeLe: maintenant() }
+
+    // Le nom a pu être pris par quelqu’un qui s’est renommé depuis.
+    let id = base
+    let suffixe = 2
+    while (existantes.some((personne) => personne.id === id)) id = `${base}-${suffixe++}`
+
+    const personne: Personne = { id, nom: propre, creeLe: maintenant() }
     ecrire(clePersonnes, [...existantes, personne])
     return personne
+  }
+
+  /**
+   * Change le nom, jamais l’identifiant : les réponses sont rangées sous
+   * l’identifiant, donc se renommer ne coûte rien.
+   */
+  function renommerPersonne(id: string, nom: string): Personne | null {
+    const propre = nom.trim()
+    if (!propre) throw new TypeError('Un nom vide ne désigne personne.')
+    const existantes = personnes()
+    if (existantes.some((personne) => personne.id !== id && personne.nom === propre)) {
+      throw new TypeError(`« ${propre} » est déjà pris.`)
+    }
+    const renommee = existantes.map((personne) => (personne.id === id ? { ...personne, nom: propre } : personne))
+    ecrire(clePersonnes, renommee)
+    return renommee.find((personne) => personne.id === id) ?? null
   }
 
   function oublierPersonne(id: string): void {
@@ -219,7 +246,7 @@ export function creerStockage({
   }
 
   return {
-    personnes, ajouterPersonne, oublierPersonne,
+    personnes, ajouterPersonne, renommerPersonne, oublierPersonne,
     enregistrer, derniere, historique, reponsesCourantes, oublier,
     exporter, importer,
     fenetreMs,

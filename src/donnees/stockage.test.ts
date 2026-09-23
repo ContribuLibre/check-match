@@ -146,3 +146,42 @@ describe('circulation des réponses', () => {
     expect(stockage.ajouterPersonne('Alex').id).toBe('alex')
   })
 })
+
+describe('renommer', () => {
+  it('garde les réponses : elles suivent l’identifiant, pas le nom', () => {
+    const { stockage } = horloge()
+    const moi = stockage.ajouterPersonne('Moi')
+    stockage.enregistrer(moi.id, CLE, { avis: 3 })
+
+    const renommee = stockage.renommerPersonne(moi.id, 'Alex')
+    expect(renommee?.id).toBe(moi.id)
+    expect(renommee?.nom).toBe('Alex')
+    expect(stockage.derniere(moi.id, CLE)?.reponse).toEqual({ avis: 3 })
+  })
+
+  it('libère l’ancien nom sans le confondre avec la personne renommée', () => {
+    const { stockage } = horloge()
+    const moi = stockage.ajouterPersonne('Moi')
+    stockage.renommerPersonne(moi.id, 'Alex')
+
+    // « Moi » redevient disponible, et ne doit pas rendre la personne renommée.
+    const nouvelle = stockage.ajouterPersonne('Moi')
+    expect(nouvelle.id).not.toBe(moi.id)
+    expect(stockage.personnes()).toHaveLength(2)
+  })
+
+  it('refuse un nom déjà pris, ou vide', () => {
+    const { stockage } = horloge()
+    const alex = stockage.ajouterPersonne('Alex')
+    stockage.ajouterPersonne('Sam')
+    expect(() => stockage.renommerPersonne(alex.id, 'Sam')).toThrow(/déjà pris/)
+    expect(() => stockage.renommerPersonne(alex.id, '  ')).toThrow()
+  })
+
+  it('reste idempotent par nom, pour retrouver ses réponses', () => {
+    const { stockage } = horloge()
+    const premiere = stockage.ajouterPersonne('Alex')
+    expect(stockage.ajouterPersonne('Alex').id).toBe(premiere.id)
+    expect(stockage.personnes()).toHaveLength(1)
+  })
+})

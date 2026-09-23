@@ -50,10 +50,15 @@ function clesInattendues(traduction: Traduction, ou: string): string[] {
           problemes.push(`${ou} : ${section}.${id} porte « ${cle} » — une virgule non protégée a coupé la valeur`)
         }
       }
-      for (const [palier, contenu] of Object.entries((valeur?.steps ?? {}) as Record<string, Record<string, unknown>>)) {
-        for (const cle of Object.keys(contenu ?? {})) {
-          if (cle !== 'label' && cle !== 'help') {
-            problemes.push(`${ou} : ${section}.${id}.steps.${palier} porte « ${cle} » — une virgule non protégée a coupé la valeur`)
+      // Les sous-sections d’une part — crans, extrêmes, repères — portent les
+      // mêmes clés et courent le même risque.
+      for (const sous of ['steps', 'poles', 'zones']) {
+        const entrees = (valeur?.[sous] ?? {}) as Record<string, Record<string, unknown>>
+        for (const [nom, contenu] of Object.entries(entrees)) {
+          for (const cle of Object.keys(contenu ?? {})) {
+            if (cle !== 'label' && cle !== 'help') {
+              problemes.push(`${ou} : ${section}.${id}.${sous}.${nom} porte « ${cle} » — une virgule non protégée a coupé la valeur`)
+            }
           }
         }
       }

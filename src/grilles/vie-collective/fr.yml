@@ -62,9 +62,9 @@ parts:
       chacun-decide: { label: Chacun décide }
       on-en-parle: { label: On en parle }
       quelquun-sen-charge: { label: Quelqu’un s’en charge }
-      chacun-mais-on-en-parle: { label: Chacun, mais on en parle }
-      on-en-parle-et-on-confie: { label: On en parle, puis on confie }
-      chacun-ou-on-confie: { label: Chacun, ou on confie }
+      chacun-mais-on-en-parle: { label: "Chacun, mais on en parle" }
+      on-en-parle-et-on-confie: { label: "On en parle, puis on confie" }
+      chacun-ou-on-confie: { label: "Chacun, ou on confie" }
       un-peu-des-trois: { label: Un peu des trois }
   chacun:
     label: Chacun pour soi

@@ -195,3 +195,39 @@ main { padding: 1rem 1.2rem; }
   text-transform: uppercase;
   letter-spacing: .04em;
 }
+
+/* --- pied de page -------------------------------------------------------- */
+
+.pied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1.2rem;
+  border-top: 1px solid var(--trait-ui);
+  color: var(--encre-pale);
+  font-size: .78rem;
+}
+
+.pied a { color: inherit; text-underline-offset: .16em; }
+.pied a:hover { color: var(--accent); }
+.pied-centre { flex: 1 1 20rem; }
+
+.version { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.version-courante { opacity: .7; }
+.version-fleche { margin-inline: .35rem; opacity: .55; }
+
+/* Une version en attente se signale sans s’imposer : c’est un lien, pas une
+   bannière qui recouvre le travail en cours. */
+.version-maj {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}

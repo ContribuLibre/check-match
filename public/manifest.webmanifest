@@ -1,0 +1,16 @@
+{
+  "name": "check-match",
+  "short_name": "check-match",
+  "description": "Se situer sur une grille de sujets, et pouvoir comparer avec quelqu’un d’autre.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15171c",
+  "theme_color": "#15171c",
+  "icons": [
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

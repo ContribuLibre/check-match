@@ -4,6 +4,7 @@ import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.
 import type { Textes } from '../domaine/traduction.ts'
 import type { Reponse } from '../domaine/types.ts'
 import { creerStockage, type Stockage } from '../donnees/stockage.ts'
+import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
 import { grilles, type GrilleDisponible } from '../grilles/index.ts'
 
@@ -16,6 +17,8 @@ interface Etat {
   personne: string | null
   disponible: GrilleDisponible
   ouvert: { noeud: string; polarite: string } | null
+  /** Version proposée par un service worker en attente, s’il y en a une. */
+  miseAJour: string | null
 }
 
 export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage({ stockage: localStorage })): void {
@@ -23,6 +26,7 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     personne: stockage.personnes()[0]?.id ?? null,
     disponible: grilles[0]!,
     ouvert: null,
+    miseAJour: null,
   }
 
   racine.innerHTML = `
@@ -34,6 +38,7 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
       <span class="avancement" data-avancement></span>
     </header>
     <main data-arbre></main>
+    <footer class="pied" data-pied></footer>
     <aside class="editeur" data-editeur hidden></aside>`
 
   const champs = {
@@ -42,6 +47,7 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     grille: racine.querySelector<HTMLSelectElement>('[data-grille]')!,
     avancement: racine.querySelector<HTMLElement>('[data-avancement]')!,
     arbre: racine.querySelector<HTMLElement>('[data-arbre]')!,
+    pied: racine.querySelector<HTMLElement>('[data-pied]')!,
     editeur: racine.querySelector<HTMLElement>('[data-editeur]')!,
   }
 
@@ -56,6 +62,7 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     afficherGrilles()
     afficherAvancement(grille, valeurs)
     champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, etat)
+    champs.pied.innerHTML = piedHtml(etat)
     afficherEditeur(valeurs)
   }
 
@@ -181,7 +188,42 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     }
   })
 
+  champs.pied.addEventListener('click', (evenement) => {
+    if ((evenement.target as HTMLElement).closest('[data-appliquer-maj]')) void appliquerMiseAJour()
+  })
+
+  // Une version prête à prendre la place s’annonce dans le pied de page, sans
+  // rien interrompre : c’est à la personne de choisir quand basculer.
+  surMiseAJourDisponible((version) => {
+    if (version === versionApplication()) return
+    etat.miseAJour = version
+    champs.pied.innerHTML = piedHtml(etat)
+  })
+
   afficher()
+}
+
+/**
+ * Pied de page : qui l’a fait, sous quelle licence, et quelle version tourne.
+ * La version n’est pas une décoration — c’est ce qu’on demande à quelqu’un qui
+ * signale un comportement bizarre.
+ */
+function piedHtml(etat: Etat): string {
+  const externe = ' target="_blank" rel="noreferrer noopener"'
+  const credits = `<span>Réalisé par <a href="https://framagit.org/1000i100/"${externe}>1000i100</a>,`
+    + ` dopé à l’<a href="https://claude.com/claude-code"${externe}>I.A.</a>`
+    + ` — Licence <a href="https://choosealicense.com/licenses/agpl-3.0/"${externe}>AGPLv3</a>`
+    + ` (<a href="https://github.com/ContribuLibre/check-match"${externe}>Code source</a>)</span>`
+
+  const maj = etat.miseAJour
+    ? `<span class="version-fleche" aria-hidden="true">→</span>`
+      + `<button class="version-maj" type="button" data-appliquer-maj`
+      + ` title="Une nouvelle version est prête : cliquer pour l’appliquer et recharger">`
+      + `${echapper(etat.miseAJour)}</button>`
+    : ''
+  const version = `<div class="version"><span class="version-courante">Version ${echapper(versionApplication())}</span>${maj}</div>`
+
+  return `<div class="pied-centre">${credits}</div>${version}`
 }
 
 /** Les dégradés sont posés une fois pour toute la page, pas dans chaque étoile. */

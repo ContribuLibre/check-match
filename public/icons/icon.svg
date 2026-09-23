@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1.15 -1.15 2.3 2.3" role="img" aria-label="check-match">
+  <!-- L’étoile du projet : une part par branche, chacune sa couleur. -->
+  <rect x="-1.15" y="-1.15" width="2.3" height="2.3" rx="0.45" fill="#15171c"/>
+  <g stroke="#15171c" stroke-width="0.04" stroke-linejoin="round">
+    <polygon points="0,0 -0.433,-0.25 0,-1 0.433,-0.25" fill="#5B0"/>
+    <polygon points="0,0 0.433,-0.25 0.866,0.5 0,0.5" fill="#F60"/>
+    <polygon points="0,0 0,0.5 -0.866,0.5 -0.433,-0.25" fill="#C0B"/>
+  </g>
+</svg>

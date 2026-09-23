@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
-declare module '*.yml' {
+declare const __APP_VERSION__: string
+
+declare module "*.yml" {
   const contenu: unknown
   export default contenu
 }

@@ -23,6 +23,7 @@ export interface Textes {
   inspiration: string
   inspirationKinklist: string
   inspirationThunometre: string
+  inspirationPolitiscales: string
   reglages: string
   theme: string
   themeAuto: string
@@ -95,6 +96,7 @@ export interface Textes {
   tensionEtendueAide: string
   tensionEtendue: (min: number, bas: number, haut: number, max: number) => string
   triangleAide: string
+  yinyangAide: string
   ajouterEchelle: string
   ajouterEchelleTitre: string
   ajouterEchelleIntro: string
@@ -137,6 +139,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     inspiration: 'Inspirations',
     inspirationKinklist: 'La liste dont viennent les items d’« Intimité », et le point de départ du projet.',
     inspirationThunometre: 'Dont viennent l’organisation du projet, les réglages et le fonctionnement hors ligne.',
+    inspirationPolitiscales: 'Dont vient l’idée de situer une position politique sur plusieurs axes en tension, reprise dans « Labôrizon ».',
     reglages: 'Réglages',
     theme: 'Thème',
     themeAuto: 'auto',
@@ -210,6 +213,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
       `Selon les cas : de ${min} % à ${max} %, le plus souvent entre ${bas} % et ${haut} %.`,
     triangleAide: 'Posez un point entre les trois. Glissez pour dire de combien ça varie autour.',
+    yinyangAide: 'Cliquez dans une moitié : plus vous allez vers le bord, plus c’est fort. Les deux sont indépendantes.',
     ajouterEchelle: '+ échelle',
     ajouterEchelleTitre: 'Ajouter une échelle',
     ajouterEchelleIntro: 'Une façon de qualifier les sujets qui vous manque. Elle vous appartient, comme vos sujets ajoutés.',
@@ -246,6 +250,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     inspiration: 'Inspirations',
     inspirationKinklist: 'The list the “Intimacy” items come from, and the starting point of the project.',
     inspirationThunometre: 'Where the project layout, the settings and the offline support come from.',
+    inspirationPolitiscales: 'Where the idea of placing a political stance on several opposed axes comes from, reused in “Labôrizon”.',
     reglages: 'Settings',
     theme: 'Theme',
     themeAuto: 'auto',
@@ -319,6 +324,7 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
       `Depending: from ${min} % to ${max} %, most often between ${bas} % and ${haut} %.`,
     triangleAide: 'Place a point between the three. Drag to say how much it varies around it.',
+    yinyangAide: 'Click inside a half: the closer to the edge, the stronger. The two are independent.',
     ajouterEchelle: '+ scale',
     ajouterEchelleTitre: 'Add a scale',
     ajouterEchelleIntro: 'A way of qualifying subjects that you are missing. It is yours, like your added subjects.',

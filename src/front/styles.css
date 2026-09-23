@@ -539,3 +539,21 @@ main { padding: 1rem 1.2rem; }
 
 .cases-en-ligne { display: flex; flex-wrap: wrap; gap: .1rem .9rem; max-height: none; }
 .champ-couleur input[type="color"] { width: 4rem; height: 2rem; padding: 0; border: 1px solid var(--trait-ui); border-radius: 7px; background: none; }
+
+/* --- yin et yang ---------------------------------------------------------- */
+
+.yinyang-saisie {
+  margin-top: .3rem;
+  touch-action: none;
+  cursor: crosshair;
+  display: grid;
+  justify-items: center;
+  gap: .3rem;
+}
+
+.yinyang-saisie svg { width: 100%; max-width: 11rem; height: auto; }
+.yinyang-cotes { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
+.yinyang-cotes .pole { font-size: .78rem; color: var(--couleur, var(--encre-pale)); }
+
+.yinyang .bord { stroke: var(--trait, #000); stroke-width: 2; }
+.yinyang .frontiere { stroke: var(--trait, #000); stroke-width: 1.2; stroke-opacity: .5; }

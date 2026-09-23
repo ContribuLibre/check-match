@@ -11,6 +11,8 @@ import frVieCollective from './vie-collective/fr.yml'
 import enVieCollective from './vie-collective/en.yml'
 import defIntimite from './intimite/grille.yml'
 import enIntimite from './intimite/en.yml'
+import defLaborizon from './laborizon/grille.yml'
+import frLaborizon from './laborizon/fr.yml'
 
 export interface GrilleDisponible {
   grille: Grille
@@ -94,6 +96,7 @@ export function preparer(
  */
 export const grilles: GrilleDisponible[] = [
   preparer(defVieCollective, { fr: frVieCollective, en: enVieCollective }),
+  preparer(defLaborizon, { fr: frLaborizon }),
   preparer(defIntimite, { en: enIntimite }),
 ]
 

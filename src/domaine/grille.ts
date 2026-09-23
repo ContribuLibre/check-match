@@ -191,14 +191,14 @@ function verifierEchelle(part: PartDefinition, parts: Map<string, Part>): void {
   if (kind === 'continue') return
 
   const poles = part.poles ?? []
-  const attendus = kind === 'tension' ? 2 : 3
+  const attendus = kind === 'triangle' ? 3 : 2
   if (poles.length !== attendus) {
     throw new ErreurGrille(`${ou} est de type « ${kind} » et demande ${attendus} extrêmes, ${poles.length} déclaré(s).`)
   }
 
-  if (kind !== 'triangle') return
-  // Le point placé dans un triangle *est* la répartition vers les trois
-  // branches : ses sommets ne peuvent donc être qu’elles.
+  if (kind === 'tension') return
+  // Un triangle répartit son point sur ses trois branches ; un yin-yang remplit
+  // ses deux moitiés. Dans les deux cas, les extrêmes *sont* les branches.
   const filles = parts.get(part.id)?.enfants ?? []
   for (const pole of poles) {
     if (!parts.has(pole)) throw new ErreurGrille(`${ou} cite l’extrême inconnu « ${pole} ».`)

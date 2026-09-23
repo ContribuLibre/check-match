@@ -2,10 +2,13 @@ import { peutRemonter, proposerDepuis, type Direction } from '../domaine/agregat
 import type { Grille } from '../domaine/grille.ts'
 import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.ts'
 import type { Textes as TextesGrille } from '../domaine/traduction.ts'
-import type { PartDefinition, PositionRepondue, Reponse, ReponsePart, ValeurPart } from '../domaine/types.ts'
+import type {
+  PartDefinition, PositionRepondue, Reponse, ReponsePart, ValeurPart, ValeurPolarite,
+} from '../domaine/types.ts'
 import { estPosition, paliers, typeEchelle, zoneDe } from '../domaine/echelle.ts'
 import { tensionSvg, triangleSvg } from '../rendu/echelles.ts'
 import { amplitudeDepuis, versBarycentre, versXY } from '../rendu/triangle.ts'
+import { moitieDe, scoreDepuis, yinYangSvg } from '../rendu/yinyang.ts'
 import { creerStockage, stockagePersistant, type Stockage } from '../donnees/stockage.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
 import { grilles, preparer, type GrilleDisponible } from '../grilles/index.ts'
@@ -41,6 +44,7 @@ const EXTERNE = ' target="_blank" rel="noreferrer noopener"'
 const inspirations = (ui: Textes): Inspiration[] => [
   { nom: 'KinkList', url: 'https://github.com/Goctionni/KinkList', texte: ui.inspirationKinklist },
   { nom: '1 Thunomètre', url: 'https://framagit.org/contribulibre/1thunometre', texte: ui.inspirationThunometre },
+  { nom: 'PolitiScales', url: 'https://github.com/Lastenc/politiscales', texte: ui.inspirationPolitiscales },
 ]
 
 interface Etat {
@@ -382,7 +386,8 @@ export function demarrer(
     const cible = evenement.target as HTMLElement
     const regle = cible.closest<HTMLElement>('[data-tension]')
     const triangle = cible.closest<HTMLElement>('[data-triangle]')
-    const zone = regle ?? triangle
+    const yinyang = cible.closest<HTMLElement>('[data-yinyang]')
+    const zone = regle ?? triangle ?? yinyang
     if (!zone) return
     evenement.preventDefault()
 
@@ -399,7 +404,14 @@ export function demarrer(
       arrivee = positionDansSvg(svg, autre)
       const courante = { ...reponseCourante() }
       if (regle) courante[regle.dataset.tension!] = tensionSaisie(depart, arrivee, !!regle.dataset.etendue)
-      else courante[triangle!.dataset.triangle!] = triangleSaisie(depart, arrivee)
+      else if (triangle) courante[triangle.dataset.triangle!] = triangleSaisie(depart, arrivee)
+      else {
+        // Le geste désigne une moitié et une distance : laquelle des deux, et
+        // à quel point. Les deux moitiés ne se touchent jamais ensemble.
+        const moitie = moitieDe(arrivee[0], arrivee[1])
+        const branche = moitie === 'yin' ? yinyang!.dataset.yin! : yinyang!.dataset.yang!
+        courante[branche] = { position: scoreDepuis(arrivee[0], arrivee[1]) }
+      }
       enregistrer(courante)
     }
     zone.addEventListener('pointermove', suivre)
@@ -765,11 +777,12 @@ function boutonsRemontee(grille: Grille, valeurs: Valeurs, ouvert: { noeud: stri
  */
 function saisieHtml(
   part: PartDefinition,
-  valeur: ValeurPart | undefined,
+  valeursPolarite: ValeurPolarite,
   choisi: ReponsePart | undefined,
   textes: TextesGrille,
   ctx: Contexte,
 ): string {
+  const valeur = valeursPolarite[part.id]
   const { ui, prefs } = ctx
 
   if (typeEchelle(part) === 'tension') {
@@ -802,6 +815,28 @@ function saisieHtml(
       <div class="triangle-sommets">${poles.map((pole) =>
         `<span class="pole" style="--couleur: ${echapper(ctxCouleur(ctx, pole))}">${echapper(textes.part(pole))}</span>`).join('')}</div>
       ${zoneCourante ? `<p class="zone-nommee">${echapper(textes.zone(part.id, zoneCourante))}</p>` : ''}
+    </div>`
+  }
+
+  if (typeEchelle(part) === 'yinyang') {
+    const [yin, yang] = (part.poles ?? []).map((pole) => ctx.etat.disponible.grille.part(pole))
+    if (!yin || !yang) return ''
+    const moitie = (branche: PartDefinition) => {
+      const valeur = valeursPolarite[branche.id]
+      return {
+        score: valeur && valeur.poids > 0 ? valeur.score : null,
+        poids: valeur?.poids ?? 0,
+        couleur: branche.maxColor,
+        libelle: textes.part(branche.id),
+      }
+    }
+    return `<div class="yinyang-saisie" data-yinyang="${echapper(part.id)}"
+        data-yin="${echapper(yin.id)}" data-yang="${echapper(yang.id)}" title="${echapper(ui.yinyangAide)}">
+      ${yinYangSvg(moitie(yin), moitie(yang), { titre: textes.part(part.id), id: `yy-${part.id}` })}
+      <div class="yinyang-cotes">
+        <span class="pole" style="--couleur: ${echapper(yin.maxColor)}">${echapper(textes.part(yin.id))}</span>
+        <span class="pole" style="--couleur: ${echapper(yang.maxColor)}">${echapper(textes.part(yang.id))}</span>
+      </div>
     </div>`
   }
 
@@ -884,12 +919,13 @@ function editeurHtml(
   const estRegroupement = (id: string) => (grille.arbreParts.get(id)?.enfants ?? []).length > 0
   // En mode simple, on ne propose que la saisie rapide quand elle existe : c’est
   // exactement ce à quoi elle sert. Sans regroupement, on retombe sur les branches.
+  // En mode simple : les regroupements, plus les branches qui n’en ont aucun.
+  // Une part de premier niveau ne doit pas disparaître parce qu’un groupe existe
+  // à côté d’elle — elle n’est couverte par rien.
   const partsAffichees = prefs.montre('avancee')
     ? partsDe(grille, noeud.parts)
-    : (() => {
-        const rapides = partsDe(grille, noeud.parts).filter((part) => estRegroupement(part.id))
-        return rapides.length ? rapides : branchesDe(grille, noeud.parts)
-      })()
+    : partsDe(grille, noeud.parts).filter((part) =>
+      estRegroupement(part.id) || !grille.arbreParts.get(part.id)?.parent)
 
   const parts = partsAffichees.map((part) => {
     const regroupement = estRegroupement(part.id)
@@ -911,17 +947,20 @@ function editeurHtml(
         ? `<span class="provenance herite">${echapper(ui.herite)}${echapper(detail)}</span>`
         : `<span class="provenance vide">${echapper(ui.nonRenseigne)}</span>`
 
+    // « Saisie rapide » ne vaut que pour un regroupement qui descend vraiment
+    // vers ses branches : un triangle ou un yin-yang ne sont pas des raccourcis,
+    // ce sont les questions elles-mêmes.
     // Une échelle ajoutée se retire d’où elle est : sa racine, pas ses branches.
     const propre = estAjoute(part.id) && !grille.arbreParts.get(part.id)?.parent
     return `<div class="part${regroupement ? ' regroupement' : ''}">
       <div class="part-nom" style="--couleur: ${echapper(part.maxColor)}">
-        ${echapper(textes.part(part.id))}${regroupement ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''}
+        ${echapper(textes.part(part.id))}${part.spread ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''}
         ${propre ? `<span class="marque-ajout" title="${echapper(ui.echelleAjoutee)}">✚</span>
           <button type="button" class="retirer-echelle" data-retirer-echelle="${echapper(part.id)}"
             title="${echapper(ui.retirerEchelle)}">×</button>` : ''} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
-      ${saisieHtml(part, valeur, choisi, textes, ctx)}
+      ${saisieHtml(part, valeursPolarite, choisi, textes, ctx)}
     </div>`
   }).join('')
 

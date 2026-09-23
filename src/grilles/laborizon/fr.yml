@@ -1,0 +1,354 @@
+title: Labôrizon
+intro: >-
+  Se situer sur ce qui fait, ou défait, une vie commune. Chaque sujet se répond
+  deux fois : à quel point ça vous atteint, et à quel point vous vous en occupez.
+  Les deux sont indépendantes — y être très sensible sans rien en faire est une
+  réponse, et en faire beaucoup sans y être sensible aussi.
+
+polarities:
+  general:
+    label: En général
+    help: "Une seule place ici : la question du faire et du recevoir est déjà posée par chaque sujet."
+
+parts:
+  posture:
+    label: Ma posture
+    help: "Deux moitiés, indépendantes : ce que ça me fait, et ce que j’en fais."
+  sensibilite:
+    label: Sensibilité
+    help: À quel point ce sujet m’atteint, me touche, me gêne ou me réjouit.
+  action:
+    label: Action
+    help: À quel point je m’en occupe, je me mets en mouvement pour que ça aille.
+  importance:
+    label: Importance
+    help: À quel point ce sujet pèse dans mon choix de vivre ici plutôt qu’ailleurs.
+    steps:
+      indifferent:
+        label: Indifférent
+        help: Je peux vivre avec n’importe quelle réponse.
+      accessoire:
+        label: Accessoire
+        help: J’ai une préférence, sans plus.
+      compte:
+        label: Ça compte
+        help: J’aimerais que ce soit pris en compte.
+      structurant:
+        label: Structurant
+        help: Ça change beaucoup mon quotidien.
+      vital:
+        label: Vital
+        help: Si ce n’est pas réglé, je ne peux pas rester.
+
+  cadre:
+    label: Cadre
+    help: Est-ce que ça se décide au fil de l’eau, ou est-ce que c’est posé d’avance ?
+    poles:
+      spontane:
+        label: Au fil de l’eau
+        help: On voit sur le moment, selon qui est là et ce dont on a envie.
+      prevu:
+        label: Posé d’avance
+        help: C’est annoncé, convenu, et on s’y tient.
+  soin:
+    label: Soin et autoresponsabilité
+    help: Qui s’occupe de ce que je vis ?
+    poles:
+      autoresponsabilite:
+        label: Autoresponsabilité
+        help: Je m’occupe de mes besoins, je demande quand j’ai besoin, et j’attends la même chose des autres.
+      prendre-soin:
+        label: Prendre soin
+        help: On fait attention les uns aux autres, on propose avant qu’on ne demande.
+  echelle-du-nous:
+    label: Individu et collectif
+    help: Quand les deux se contredisent, qu’est-ce qui passe devant ?
+    poles:
+      individu:
+        label: L’individu
+        help: Chacun mène sa vie ; le collectif est ce qui reste quand les vies s’accordent.
+      collectif:
+        label: Le collectif
+        help: On tient quelque chose ensemble, et ça demande parfois de renoncer à son confort.
+
+  ambiance:
+    label: L’ambiance cherchée
+    help: Entre accueillir largement, vivre intensément, et se reposer.
+    zones:
+      maison-ouverte: { label: Maison ouverte }
+      ca-bouge: { label: Ça bouge }
+      cocon: { label: Cocon }
+      accueillir-et-vivre-fort: { label: "Accueillir, et vivre fort" }
+      intense-mais-entre-nous: { label: "Intense, mais entre nous" }
+      ouvert-et-tranquille: { label: "Ouvert, et tranquille" }
+      un-peu-des-trois: { label: Un peu des trois }
+  ouverture:
+    label: Ouverture
+    help: Du monde qui passe, des gens qu’on ne connaît pas encore, de la diversité.
+  intensite:
+    label: Intensité
+    help: Des choses qui bougent, qui challengent, qui demandent de l’élan.
+  repos:
+    label: Repos
+    help: Du calme, du confort, des visages connus.
+
+  ecologie:
+    label: Écologie
+    help: Ce qu’on est prêt à changer dans son quotidien.
+    poles:
+      confort-materiel:
+        label: Confort matériel
+        help: Le confort et la simplicité d’usage passent avant l’empreinte.
+      sobriete:
+        label: Sobriété
+        help: On réduit, on répare, on se passe — même quand c’est moins pratique.
+  repartition:
+    label: Répartition
+    help: Ce qui justifie que chacun ait ce qu’il a.
+    poles:
+      merite:
+        label: Mérite
+        help: Ce que chacun apporte fonde ce qu’il reçoit.
+      egalite:
+        label: Égalité
+        help: On répartit selon les besoins, pas selon les apports.
+  decision-politique:
+    label: Décision
+    help: Comment se prennent les décisions qui engagent tout le monde.
+    poles:
+      delegation:
+        label: Délégation
+        help: On confie à qui sait faire, et on lui fait confiance.
+      horizontalite:
+        label: Horizontalité
+        help: Tout le monde décide de ce qui le concerne, même si c’est plus lent.
+  changement:
+    label: Changement
+    help: Comment on s’y prend pour que les choses bougent.
+    poles:
+      reforme:
+        label: Réforme
+        help: Par étapes, en transformant l’existant.
+      rupture:
+        label: Rupture
+        help: En construisant autre chose à côté, ou en cassant ce qui bloque.
+  transgression:
+    label: Quand une règle est franchie
+    help: Ce qu’on fait de ce qui a été enfreint.
+    poles:
+      punition:
+        label: Sanction
+        help: Une limite franchie appelle une conséquence claire.
+      reparation:
+        label: Réparation
+        help: On cherche à réparer et à comprendre, avant de sanctionner.
+  identites:
+    label: Identités
+    help: D’où viennent les différences entre les gens.
+    poles:
+      essentialisme:
+        label: Essentialisme
+        help: Il y a des natures, des tempéraments, des choses qui sont là au départ.
+      constructivisme:
+        label: Constructivisme
+        help: Ce qui nous distingue est surtout construit par l’histoire et le milieu.
+
+nodes:
+  lieu:
+    label: Le lieu
+    help: Où l’on vit, et ce qu’on y met.
+  type-de-logement:
+    label: Type de logement
+    help: Maison, appartement, collectif bâti, habitat léger…
+  localisation:
+    label: Localisation
+    help: Ville, campagne, accessibilité, proximité des transports et des services.
+  transports:
+    label: Déplacements
+    help: Marche, vélo, transports en commun, voiture — et ce qu’on partage.
+  amenagement:
+    label: Aménagement
+    help: Comment l’espace est organisé, et par qui.
+  personnalisation:
+    label: S’approprier l’espace
+    help: Pouvoir marquer les lieux de sa présence, les changer, les décorer.
+  deco-et-plantes:
+    label: Déco et plantes
+    help: Ce qui rend un lieu habité — et ce qu’il faut en entretenir.
+  encombrement:
+    label: Encombrement
+    help: Le nombre de choses qui traînent, s’accumulent, ou restent à leur place.
+  menage:
+    label: Ménage
+    help: L’état des lieux, et ce qu’il demande à chacun.
+  proprete-des-communs:
+    label: Propreté des communs
+    help: Le niveau attendu dans la cuisine, le salon, la salle de bain.
+  vaisselle:
+    label: Vaisselle
+    help: Tout de suite, en fin de journée, ou quand ça déborde.
+  organisation-du-menage:
+    label: Organisation du ménage
+    help: Au ressenti, par tour, par tâche attribuée, ou avec une aide extérieure.
+  animaux:
+    label: Animaux
+    help: En avoir, en accueillir, en croiser tous les jours.
+
+  bruit:
+    label: Le bruit
+    help: Tous les bruits ne se valent pas — ni ce qu’ils font, ni ce qu’on en fait.
+  musique:
+    label: Musique
+    help: Enceintes, casque ouvert, instrument, fond sonore.
+  bruits-soudains:
+    label: Bruits soudains
+    help: Portes, chutes d’objets, éclats brefs — ce qui fait sursauter.
+  bruits-continus:
+    label: Bruits continus
+    help: Machines, ventilation, travaux, circulation — ce qui use à la longue.
+  eclats-de-voix:
+    label: Éclats de voix et rires
+    help: La vie qui s’entend, joyeuse et forte.
+  conversations:
+    label: Conversations
+    help: Les voix dans les pièces communes, y compris tard.
+  niveau-sonore-general:
+    label: Niveau sonore général
+    help: Le fond sonore du lieu au quotidien, sans distinguer les sources.
+  voix-qui-monte:
+    label: Voix qui monte
+    help: Quand le ton monte dans un désaccord — ce n’est plus seulement du son.
+
+  quotidien:
+    label: Le quotidien
+    help: Le cadre dans lequel les journées se déroulent.
+  espace-prive:
+    label: Espace privé
+    help: Une pièce à soi, des affaires à soi, un endroit où fermer la porte.
+  usage-des-communs:
+    label: Usage des communs
+    help: Ce qu’on peut y faire, et à quelles conditions.
+  privatisation-ponctuelle:
+    label: Privatiser ponctuellement
+    help: Réserver le salon pour une soirée, un atelier, un moment à soi.
+  chambre-pretee-en-absence:
+    label: Chambre prêtée en l’absence
+    help: Que son espace serve à quelqu’un d’autre quand on n’est pas là.
+  mutualisation:
+    label: Mutualisation
+    help: Courses, objets du quotidien, outils, véhicules mis en commun.
+  rythmes:
+    label: Rythmes
+    help: Les heures auxquelles on vit, et les écarts entre les gens.
+  horaires-decales:
+    label: Horaires décalés
+    help: Vivre avec des gens dont les heures ne sont pas les vôtres.
+  rythme-similaire:
+    label: Rythme partagé
+    help: Avoir besoin que les autres vivent à peu près aux mêmes heures.
+  nuits:
+    label: Nuits
+    help: Le sommeil, ce qui le protège, ce qui le dérange.
+  matins:
+    label: Matins
+    help: Le réveil, le bruit du départ, le silence demandé.
+  modes-de-vie:
+    label: Modes de vie
+    help: Ce qu’on consomme, ce qu’on montre, ce qu’on supporte de voir.
+  viande:
+    label: Viande
+    help: En manger, en cuisiner, en croiser dans le frigo commun.
+  fumee:
+    label: Fumée
+    help: Fumer dedans, dehors, et ce que ça fait aux autres.
+  nudite:
+    label: Nudité
+    help: Pouvoir être nu chez soi, et croiser la nudité des autres.
+  alcool-et-substances:
+    label: Alcool et substances
+    help: Ce qui circule, à quelle fréquence, et dans quels moments.
+  evenements:
+    label: Événements
+    help: Des soirées, des ateliers, des gens qui viennent.
+
+  prevoyance:
+    label: Prévoir ou pas
+    help: Ce qui s’annonce à l’avance, et ce qui arrive comme ça vient.
+  invites-annonces:
+    label: Invités annoncés
+    help: Savoir qui vient, et prévenir quand on invite.
+  initiatives-spontanees:
+    label: Initiatives spontanées
+    help: Proposer un repas, une sortie, un chantier sans l’avoir prévu.
+
+  collectif:
+    label: La vie collective
+    help: Ce qui se dit du groupe lui-même, et comment.
+  meta-sur-le-groupe:
+    label: Méta sur le groupe
+    help: Parler de la dynamique, de ce qui se joue entre nous.
+  explicite:
+    label: Explicite
+    help: Combien on nomme, on écrit, on rend clair — plutôt que de laisser tacite.
+  reunions:
+    label: Réunions
+    help: Leur fréquence, leur longueur, ce qu’on y attend.
+  conflits:
+    label: Conflits
+    help: Pouvoir les aborder, les traverser, et en sortir avec la personne.
+  regles-et-engagements:
+    label: Règles et engagements
+    help: Le degré de cadre souhaité, et ce qu’on attend de son respect.
+
+  liens:
+    label: Les liens
+    help: Ce qui nous relie, au-delà du partage d’un toit.
+  connexion:
+    label: Connexion
+    help: Se sentir proche des personnes avec qui on vit.
+  repas-partages:
+    label: Repas partagés
+    help: Manger ensemble, souvent, parfois, ou quand ça se trouve.
+  solidarite:
+    label: Solidarité
+    help: Ce sur quoi on peut compter dans les coups durs.
+  entraide-materielle:
+    label: Entraide matérielle
+    help: Avancer de l’argent, prêter, dépanner, absorber les écarts.
+
+  communs:
+    label: Ce qu’on partage
+    help: Les sujets, les envies et les élans qu’on a en commun.
+  sujets-de-discussion:
+    label: Sujets de discussion
+    help: Avoir de quoi se parler, au-delà de l’intendance.
+  vibe-artistique:
+    label: Vibe artistique
+    help: La place de la création, de la pratique, du désordre qui va avec.
+  activites-communes:
+    label: Activités communes
+    help: Jeux, films, sport, sorties — ce qu’on fait ensemble.
+  projets-communs:
+    label: Projets communs
+    help: Construire, cultiver, organiser quelque chose à plusieurs.
+  valeurs-partagees:
+    label: Valeurs partagées
+    help: Ce qu’on a besoin de savoir partagé pour se sentir au bon endroit.
+
+  politique:
+    label: Politique
+    help: >-
+      Pas pour se situer sur un échiquier, mais pour savoir sur quoi on va
+      buter — ou s’appuyer — au quotidien.
+  argent-commun:
+    label: Argent commun
+    help: Ce qu’on met en commun, selon quelle règle, et qui décide.
+  consommation:
+    label: Consommation
+    help: Ce qu’on achète, d’où ça vient, ce qu’on refuse.
+  accueil-de-personnes:
+    label: Accueil de personnes
+    help: Héberger, dépanner, ouvrir la porte à des gens en difficulté.
+  engagement-exterieur:
+    label: Engagement extérieur
+    help: Militer, s’organiser, porter le lieu dans des luttes.

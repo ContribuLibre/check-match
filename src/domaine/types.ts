@@ -47,6 +47,9 @@ export interface ZoneDefinition {
  *   l’étendue de ce qu’on a vécu, pas seulement son point moyen.
  * - `triangle` : un barycentre entre trois extrêmes. Une part de regroupement à
  *   trois branches se saisit alors d’un point plutôt que branche par branche.
+ * - `yinyang` : deux parts qui vont ensemble sans se contredire — ce qu’on
+ *   reçoit d’un côté, ce qu’on fait de l’autre. Les deux moitiés sont
+ *   indépendantes : rien ne s’y normalise, contrairement au triangle.
  * - `continue` : un score entre 0 et 1 qu’on ne saisit pas directement. C’est
  *   ce que sont les branches d’un triangle : le point les renseigne toutes les
  *   trois, et les demander une à une n’aurait pas de sens.
@@ -54,7 +57,7 @@ export interface ZoneDefinition {
  * Le type ne change rien au modèle : une valeur reste un score entre 0 et 1,
  * avec son poids. Seules la saisie et la lecture diffèrent.
  */
-export type TypeEchelle = 'steps' | 'tension' | 'triangle' | 'continue'
+export type TypeEchelle = 'steps' | 'tension' | 'triangle' | 'yinyang' | 'continue'
 
 /**
  * Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé.
@@ -77,8 +80,9 @@ export interface PartDefinition {
    */
   steps?: Palier[]
   /**
-   * Les extrêmes d’une tension (deux) ou d’un triangle (trois).
-   * Pour un triangle, ils désignent les trois parts filles, dans l’ordre.
+   * Les extrêmes d’une tension (deux), d’un triangle (trois) ou d’un yin-yang
+   * (deux). Pour un triangle comme pour un yin-yang, ils désignent les parts
+   * filles, dans l’ordre — le yin d’abord, le yang ensuite.
    */
   poles?: string[]
   /** Repères nommés d’un triangle. */

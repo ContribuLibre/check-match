@@ -29,7 +29,7 @@ le dit dans son pied de page : les réponses ne survivront pas à la fermeture.
 | **polarité** | la place depuis laquelle on répond : en général, en faisant, en recevant, en assistant. Une polarité = une étoile entière |
 | **part** | une branche de l’étoile : une dimension d’appréciation, avec sa propre échelle et son propre dégradé. Les parts peuvent se regrouper, et un regroupement ne se dessine pas |
 | **palier** | un cran d’une part, avec un score 0..1 volontairement irrégulier |
-| **extrême** | un bout d’une échelle continue : deux pour une tension, trois pour un triangle |
+| **extrême** | un bout d’une échelle continue : deux pour une tension ou un yin-yang, trois pour un triangle |
 
 ## Ce que ça fait
 
@@ -85,7 +85,7 @@ vraiment répondu compte plus qu’un parent qui héritait lui-même de loin.
 Le poids se lit dans l’étoile : une valeur héritée est d’autant plus pâle qu’elle
 vient de loin.
 
-### Trois façons de répondre
+### Quatre façons de répondre
 
 Toutes les questions ne se posent pas en « plus ou moins ». Une part déclare
 donc sa forme, sans que le modèle change pour autant : une valeur reste un score
@@ -96,12 +96,20 @@ entre 0 et 1 avec son poids, et l’héritage ignore d’où elle vient.
 | **crans** (défaut) | on clique une réponse nommée | — |
 | **tension** | on se place entre deux extrêmes | l’étendue de ce qui varie, en glissant d’un bout à l’autre |
 | **triangle** | on pose un point entre trois extrêmes | l’amplitude autour, en glissant depuis le point |
+| **yin-yang** | on remplit deux moitiés indépendantes | — |
 
 Une tension met deux façons de faire **qui se valent** face à face — « au fil de
 l’eau » contre « posé d’avance » — et aucune n’est un moins de l’autre. En
 interface complète, un glissé dit l’étendue de ce qu’on vit : « ça dépend des
 fois » est une réponse, et souvent la vraie. Elle se lit en boîte à moustaches :
 bornes, et premiers et derniers déciles.
+
+Un yin-yang met face à face ce qu’on **reçoit** et ce qu’on **fait**. Une
+étoile à deux branches ne se lit pas ; celle-ci, si. Être très sensible au bruit
+et n’en faire aucun cas, y être indifférent et ranger son vacarme : ce sont
+quatre situations différentes, et c’est là que se joue la compatibilité. Les
+deux moitiés sont indépendantes — rien ne s’y normalise, contrairement au
+triangle — et chacune pousse depuis le centre à la hauteur de son score.
 
 Un triangle met trois directions autour d’un point. Le point posé **est** la
 répartition vers les trois branches — la seule qui ne va pas de soi, mais qui se
@@ -113,6 +121,10 @@ triangle n’est pas découpé.
 - id: cadre
   kind: tension
   poles: [souple, prevu]
+
+- id: posture
+  kind: yinyang
+  poles: [sensibilite, action]   # ses deux branches, yin puis yang
 
 - id: decider
   kind: triangle
@@ -354,8 +366,10 @@ l’ambiguïté ; il apparaît en infobulle.
 
 ## État
 
-Deux grilles livrées : **vie collective** (le cas d’usage visé) et **intimité**
-(les items viennent de l’ancienne kinklist, tout le reste est neuf).
+Trois grilles livrées : **vie collective** (le cas d’usage visé), **Labôrizon**
+(compatibilité en habitat partagé, avec le couple sensibilité / action sur
+chaque sujet, un volet politique en tensions, et le détail des bruits), et
+**intimité** (les items viennent de l’ancienne kinklist, tout le reste est neuf).
 
 Pas encore fait : la comparaison entre personnes, l’export d’image, la
 modification d’un sujet ou d’une échelle déjà ajoutés (on les retire et on les
@@ -363,6 +377,17 @@ refait), les repères de triangle depuis l’interface, les langues
 supplémentaires.
 
 L’implémentation précédente est conservée sur la branche `legacy`.
+
+## Inspirations
+
+[KinkList](https://github.com/Goctionni/KinkList) pour les items d’« Intimité »
+et le point de départ,
+[1 Thunomètre](https://framagit.org/contribulibre/1thunometre) pour
+l’organisation du projet et le hors-ligne, et
+[PolitiScales](https://github.com/Lastenc/politiscales) pour l’idée de situer
+une position politique sur plusieurs axes en tension — reprise dans le volet
+politique de « Labôrizon », avec d’autres axes, choisis pour ce qui se vit
+ensemble plutôt que pour situer quelqu’un sur un échiquier.
 
 ## Licence
 

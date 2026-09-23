@@ -1,0 +1,233 @@
+schemaVersion: 1
+id: laborizon
+version: "0.1"
+defaultLocale: fr
+locales:
+  fr: ./fr.yml
+
+attenuation: 0.5
+polarityAttenuation: 0.5
+
+aggregation:
+  inheritance: moyenne
+  rollup: moyenne
+
+# Une seule place ici : la question n’est pas « en faisant / en recevant », elle
+# est déjà posée par le couple sensibilité / action de chaque sujet.
+polarities:
+  - id: general
+    primary: true
+
+parts:
+  # Le couple qui porte la grille. Y être sensible et s’en occuper sont deux
+  # choses : quelqu’un de très gêné par le bruit qui n’en fait jamais, et
+  # quelqu’un que ça n’atteint pas mais qui range son vacarme, ne vivent pas la
+  # même chose — et c’est justement là que se joue la compatibilité.
+  - id: posture
+    kind: yinyang
+    poles: [sensibilite, action]
+    minColor: "#556"
+    maxColor: "#889"
+  - id: sensibilite
+    parent: posture
+    kind: continue
+    minColor: "#234"
+    maxColor: "#4AB"
+  - id: action
+    parent: posture
+    kind: continue
+    minColor: "#421"
+    maxColor: "#E85"
+
+  - id: importance
+    minColor: "#BBB"
+    maxColor: "#F60"
+    # Il suffit d’un sujet vital pour que la rubrique le soit : la moyenne
+    # diluerait ce qui décide de tout.
+    aggregation:
+      rollup: max
+    steps:
+      - { id: indifferent, score: 0 }
+      - { id: accessoire, score: 0.2 }
+      - { id: compte, score: 0.5 }
+      - { id: structurant, score: 0.8 }
+      - { id: vital, score: 1 }
+
+  # --- tensions : deux façons de faire qui se valent ------------------------
+  - id: cadre
+    kind: tension
+    poles: [spontane, prevu]
+    minColor: "#2A9"
+    maxColor: "#94C"
+  - id: soin
+    kind: tension
+    poles: [autoresponsabilite, prendre-soin]
+    minColor: "#C84"
+    maxColor: "#4C8"
+  - id: echelle-du-nous
+    kind: tension
+    poles: [individu, collectif]
+    minColor: "#E85"
+    maxColor: "#58E"
+
+  # --- le triangle de l’ambiance qu’on cherche ------------------------------
+  - id: ambiance
+    kind: triangle
+    poles: [ouverture, intensite, repos]
+    minColor: "#666"
+    maxColor: "#999"
+    zones:
+      - { id: maison-ouverte, position: [1, 0, 0] }
+      - { id: ca-bouge, position: [0, 1, 0] }
+      - { id: cocon, position: [0, 0, 1] }
+      - { id: accueillir-et-vivre-fort, position: [1, 1, 0] }
+      - { id: intense-mais-entre-nous, position: [0, 1, 1] }
+      - { id: ouvert-et-tranquille, position: [1, 0, 1] }
+      - { id: un-peu-des-trois, position: [1, 1, 1] }
+  - id: ouverture
+    parent: ambiance
+    kind: continue
+    minColor: "#333"
+    maxColor: "#3B9"
+  - id: intensite
+    parent: ambiance
+    kind: continue
+    minColor: "#333"
+    maxColor: "#E93"
+  - id: repos
+    parent: ambiance
+    kind: continue
+    minColor: "#333"
+    maxColor: "#96E"
+
+  # --- le volet politique, en tensions --------------------------------------
+  # Inspiré de PolitiScales (libre), mais recentré sur ce qui se vit ensemble :
+  # ce qui compte ici n’est pas de situer quelqu’un sur un échiquier, c’est de
+  # savoir sur quoi on va buter au quotidien.
+  - id: ecologie
+    kind: tension
+    poles: [confort-materiel, sobriete]
+    minColor: "#B85"
+    maxColor: "#5A3"
+  - id: repartition
+    kind: tension
+    poles: [merite, egalite]
+    minColor: "#B67"
+    maxColor: "#67B"
+  - id: decision-politique
+    kind: tension
+    poles: [delegation, horizontalite]
+    minColor: "#96E"
+    maxColor: "#3B9"
+  - id: changement
+    kind: tension
+    poles: [reforme, rupture]
+    minColor: "#59B"
+    maxColor: "#D45"
+  - id: transgression
+    kind: tension
+    poles: [punition, reparation]
+    minColor: "#A55"
+    maxColor: "#5A9"
+  - id: identites
+    kind: tension
+    poles: [essentialisme, constructivisme]
+    minColor: "#A77"
+    maxColor: "#77A"
+
+nodes:
+  - id: lieu
+    parts: [posture, sensibilite, action, importance]
+    children:
+      - id: type-de-logement
+      - id: localisation
+      - id: transports
+      - id: amenagement
+        children:
+          - id: personnalisation
+          - id: deco-et-plantes
+          - id: encombrement
+      - id: menage
+        children:
+          - id: proprete-des-communs
+          - id: vaisselle
+          - id: organisation-du-menage
+      - id: animaux
+    # Le bruit ne se dit pas d’un mot : chaque bruit touche différemment, et on
+    # n’en produit pas les mêmes.
+  - id: bruit
+    parts: [posture, sensibilite, action, importance]
+    children:
+      - id: musique
+      - id: bruits-soudains
+      - id: bruits-continus
+      - id: eclats-de-voix
+      - id: conversations
+      - id: niveau-sonore-general
+      - id: voix-qui-monte
+
+  - id: quotidien
+    parts: [posture, sensibilite, action, importance]
+    children:
+      - id: espace-prive
+      - id: usage-des-communs
+        children:
+          - id: privatisation-ponctuelle
+          - id: chambre-pretee-en-absence
+      - id: mutualisation
+      - id: rythmes
+        children:
+          - id: horaires-decales
+          - id: rythme-similaire
+          - id: nuits
+          - id: matins
+      - id: modes-de-vie
+        children:
+          - id: viande
+          - id: fumee
+          - id: nudite
+          - id: alcool-et-substances
+      - id: evenements
+  - id: prevoyance
+    parents: [quotidien]
+    parts: [posture, sensibilite, action, importance, cadre]
+    children:
+      - id: invites-annonces
+      - id: initiatives-spontanees
+
+  - id: collectif
+    parts: [posture, sensibilite, action, importance]
+    children:
+      - id: meta-sur-le-groupe
+      - id: explicite
+      - id: reunions
+      - id: conflits
+      - id: regles-et-engagements
+  - id: liens
+    parents: [collectif]
+    parts: [posture, sensibilite, action, importance, soin, echelle-du-nous]
+    children:
+      - id: connexion
+      - id: repas-partages
+      - id: solidarite
+      - id: entraide-materielle
+
+  - id: communs
+    parts: [posture, sensibilite, action, importance, ambiance, ouverture, intensite, repos]
+    children:
+      - id: sujets-de-discussion
+      - id: vibe-artistique
+      - id: activites-communes
+      - id: projets-communs
+      - id: valeurs-partagees
+
+  # Une branche par axe : l’étoile de la rubrique est le profil, et chaque sujet
+  # en dessous le reprend là où il se joue vraiment. Situer quelqu’un sur un
+  # échiquier n’intéresse personne ici — savoir sur quoi on va buter, si.
+  - id: politique
+    parts: [importance, ecologie, repartition, decision-politique, changement, transgression, identites]
+    children:
+      - id: argent-commun
+      - id: consommation
+      - id: accueil-de-personnes
+      - id: engagement-exterieur

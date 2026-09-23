@@ -22,6 +22,8 @@ export interface Polarite {
   enfants: string[]
   niveau: number
   principale: boolean
+  /** La place qui lui répond chez quelqu’un d’autre ; sert à comparer. */
+  reciproque: string | null
 }
 
 /** Une part et sa place dans l’arbre des parts. */
@@ -250,7 +252,13 @@ function construireParts(definitions: PartDefinition[], grilleId: string): Map<s
     parent.enfants.push(part.definition.id)
   }
 
-  for (const part of parts.values()) verifierEchelle(part.definition, parts)
+  for (const part of parts.values()) {
+    verifierEchelle(part.definition, parts)
+    const reciproque = part.definition.reciprocal
+    if (reciproque && !parts.has(reciproque)) {
+      throw new ErreurGrille(`La part « ${part.definition.id} » répond à « ${reciproque} », qui n’existe pas.`)
+    }
+  }
 
   for (const part of parts.values()) {
     for (const cible of Object.keys(part.definition.spread ?? {})) {
@@ -298,6 +306,7 @@ function construirePolarites(definitions: PolariteDefinition[], grilleId: string
       enfants: [],
       niveau: 0,
       principale: definition.primary ?? false,
+      reciproque: definition.reciprocal ?? null,
     })
   }
 
@@ -309,6 +318,9 @@ function construirePolarites(definitions: PolariteDefinition[], grilleId: string
   }
 
   for (const polarite of polarites.values()) {
+    if (polarite.reciproque && !polarites.has(polarite.reciproque)) {
+      throw new ErreurGrille(`La polarité « ${polarite.id} » répond à « ${polarite.reciproque} », qui n’existe pas.`)
+    }
     if (!polarite.parent) continue
     const parent = polarites.get(polarite.parent)
     if (!parent) throw new ErreurGrille(`La polarité « ${polarite.id} » cite le parent inconnu « ${polarite.parent} ».`)

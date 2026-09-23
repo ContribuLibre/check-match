@@ -133,6 +133,36 @@ triangle n’est pas découpé.
     - { id: un-peu-des-trois, position: [1, 1, 1] }
 ```
 
+### Comparer des profils
+
+Une page dédiée met les profils côte à côte : une colonne par personne, une
+ligne par métrique, un point par personne à la hauteur de son niveau, et un
+trait entre voisins. **Un trait plat, ça s’accorde ; un trait pentu, ça
+diverge.** Les colonnes sont rangées pour que les voisins se ressemblent, si
+bien qu’on lit la suite comme un dégradé et que les ruptures sautent aux yeux.
+Chaque ligne affiche aussi l’écart le plus petit et le plus grand observés.
+
+Deux façons de s’accorder, et elles ne se valent pas :
+
+- **se ressembler** : on veut la même chose ;
+- **se répondre** : l’un aime faire ce que l’autre aime recevoir, l’un est
+  sensible à ce dont l’autre s’occupe.
+
+La seconde vaut mieux, et la grille déclare qui répond à qui (`reciprocal`).
+Quand les places se répondent, c’est la réponse qu’on mesure, pas la
+ressemblance : deux personnes qui veulent toutes les deux *faire* ne
+s’accordent pas, elles se disputent la tâche. Encore faut-il qu’elles l’aient
+dit — la complémentarité ne joue que sur des réponses **posées**, jamais sur ce
+qu’un « général » a diffusé vers les places.
+
+Rien n’est comparé qui ne soit renseigné des deux côtés : des profils à peine
+commencés se comparent quand même, sur le peu qu’ils ont en commun. La grille
+peut enfin déclarer ce qui pondère la comparaison (`weightBy`) — un désaccord
+sur ce qui laisse tout le monde indifférent ne pèse pas comme un désaccord sur
+ce qui décide de tout, et il suffit qu’un seul des deux y tienne.
+
+C’est un premier jet : l’algorithme demande à être affiné à l’usage.
+
 ### La remontée
 
 À l’inverse, un nœud peut proposer sa réponse d’après ce qui a été répondu « en
@@ -371,7 +401,7 @@ Trois grilles livrées : **vie collective** (le cas d’usage visé), **Labôriz
 chaque sujet, un volet politique en tensions, et le détail des bruits), et
 **intimité** (les items viennent de l’ancienne kinklist, tout le reste est neuf).
 
-Pas encore fait : la comparaison entre personnes, l’export d’image, la
+Pas encore fait : l’export d’image, la
 modification d’un sujet ou d’une échelle déjà ajoutés (on les retire et on les
 refait), les repères de triangle depuis l’interface, les langues
 supplémentaires.

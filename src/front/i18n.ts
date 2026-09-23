@@ -118,6 +118,15 @@ export interface Textes {
   retirerEchelle: string
   retirerEchelleConfirme: string
   echelleAjoutee: string
+  comparer: string
+  repondre: string
+  comparaisonTitre: string
+  comparaisonAide: string
+  comparaisonLegende: string
+  comparaisonTropPeu: string
+  comparaisonMatrice: string
+  comparaisonRienEnCommun: string
+  comparaisonSur: (comparaisons: number) => string
 }
 
 /**
@@ -235,6 +244,15 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     retirerEchelle: 'Retirer cette échelle',
     retirerEchelleConfirme: 'Retirer cette échelle ? Les réponses posées dessus restent enregistrées.',
     echelleAjoutee: 'Échelle ajoutée par vous',
+    comparer: 'Comparer',
+    repondre: 'Répondre',
+    comparaisonTitre: 'Comparaison des profils',
+    comparaisonAide: 'Seul ce qui est renseigné des deux côtés est comparé : des profils à peine commencés se comparent quand même, sur le peu qu’ils ont en commun.',
+    comparaisonLegende: 'Un trait plat, ça s’accorde ; un trait pentu, ça diverge. Les colonnes sont rangées pour que les voisins se ressemblent. Un trait pointillé signale un accord qui vient d’une complémentarité — l’un fait ce que l’autre reçoit — et non d’une ressemblance.',
+    comparaisonTropPeu: 'Il faut au moins deux personnes ayant répondu quelque chose pour comparer.',
+    comparaisonMatrice: 'Accord deux à deux',
+    comparaisonRienEnCommun: 'Rien de renseigné en commun.',
+    comparaisonSur: (comparaisons: number) => `Sur ${comparaisons} points de comparaison`,
   },
   en: {
     titre: 'check-match',
@@ -346,6 +364,15 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     retirerEchelle: 'Remove this scale',
     retirerEchelleConfirme: 'Remove this scale? Answers given on it stay stored.',
     echelleAjoutee: 'Scale added by you',
+    comparer: 'Compare',
+    repondre: 'Answer',
+    comparaisonTitre: 'Profile comparison',
+    comparaisonAide: 'Only what is filled in on both sides is compared: barely started profiles still compare, on the little they share.',
+    comparaisonLegende: 'A flat line agrees; a steep line diverges. Columns are ordered so that neighbours resemble each other. A dashed line marks an agreement coming from complementarity — one does what the other receives — rather than from likeness.',
+    comparaisonTropPeu: 'At least two people with answers are needed to compare.',
+    comparaisonMatrice: 'Pairwise agreement',
+    comparaisonRienEnCommun: 'Nothing filled in common.',
+    comparaisonSur: (comparaisons: number) => `Over ${comparaisons} comparison points`,
   },
 }
 

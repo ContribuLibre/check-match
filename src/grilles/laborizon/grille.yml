@@ -11,6 +11,9 @@ polarityAttenuation: 0.5
 aggregation:
   inheritance: moyenne
 
+# Ce qui pondère une comparaison entre deux personnes.
+weightBy: importance
+
 # Une seule place ici : la question n’est pas « en faisant / en recevant », elle
 # est déjà posée par le couple sensibilité / action de chaque sujet.
 polarities:
@@ -27,14 +30,19 @@ parts:
     poles: [sensibilite, action]
     minColor: "#556"
     maxColor: "#889"
+  # Les deux moitiés se répondent l’une l’autre entre personnes : être sensible
+  # à ce dont l’autre s’occupe vaut mieux que d’y être sensibles tous les deux
+  # sans que personne n’agisse.
   - id: sensibilite
     parent: posture
     kind: continue
+    reciprocal: action
     minColor: "#234"
     maxColor: "#4AB"
   - id: action
     parent: posture
     kind: continue
+    reciprocal: sensibilite
     minColor: "#421"
     maxColor: "#E85"
 

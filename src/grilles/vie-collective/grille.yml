@@ -16,17 +16,27 @@ polarityAttenuation: 0.5
 aggregation:
   inheritance: moyenne
 
+# Ce qui pondère une comparaison entre deux personnes : un désaccord sur un
+# sujet indifférent ne pèse pas comme un désaccord sur un sujet vital.
+weightBy: importance
+
 # Les polarités forment un arbre. Le général ne distingue pas les places : il
 # sert à dégrossir, puis on précise là où les places divergent.
 polarities:
   - id: general
     primary: true
+  # Se répondre vaut mieux que se ressembler : que l’un aime faire ce que
+  # l’autre aime recevoir en dit plus long que deux goûts identiques.
   - id: agir
     parent: general
+    reciprocal: recevoir
   - id: recevoir
     parent: general
+    reciprocal: agir
+  # Assister se répond à soi-même : deux témoins s’accordent en se ressemblant.
   - id: temoin
     parent: general
+    reciprocal: temoin
 
 parts:
   # Part de regroupement : elle ne se dessine pas, elle sert à cocher vite un

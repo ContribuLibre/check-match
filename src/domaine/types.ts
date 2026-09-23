@@ -87,6 +87,12 @@ export interface PartDefinition {
   poles?: string[]
   /** Repères nommés d’un triangle. */
   zones?: ZoneDefinition[]
+  /**
+   * La part qui répond à celle-ci chez quelqu’un d’autre. Même idée que pour
+   * les polarités : être sensible à ce dont l’autre s’occupe vaut mieux que
+   * d’y être sensibles tous les deux sans que personne n’agisse.
+   */
+  reciprocal?: string
   /** Surcharge l’agrégation de la grille : une limite se résume par le minimum, une envie par le maximum. */
   aggregation?: Agregation
   /**
@@ -117,6 +123,14 @@ export interface PolariteDefinition {
   parent?: string
   /** Polarité ouverte par défaut à la saisie. */
   primary?: boolean
+  /**
+   * La place qui **répond** à celle-ci chez quelqu’un d’autre : agir appelle
+   * recevoir, et réciproquement. Sert à comparer deux personnes — que l’un aime
+   * faire ce que l’autre aime recevoir en dit bien plus que deux goûts
+   * identiques. Une place peut se répondre à elle-même : deux témoins
+   * s’accordent en se ressemblant.
+   */
+  reciprocal?: string
 }
 
 /** Un nœud : rubrique ou élément, c’est la même chose — seule la place dans le graphe diffère. */
@@ -152,6 +166,12 @@ export interface GrilleDefinition {
   polarityAttenuation?: number
   /** Agrégation par défaut, surchargeable pour chaque part. */
   aggregation?: Agregation
+  /**
+   * La part qui pondère une comparaison entre deux personnes : un désaccord
+   * sur ce qui laisse tout le monde indifférent ne devrait pas peser autant
+   * qu’un désaccord sur ce qui décide de tout.
+   */
+  weightBy?: string
   polarities: PolariteDefinition[]
   parts: PartDefinition[]
   nodes: NoeudDefinition[]

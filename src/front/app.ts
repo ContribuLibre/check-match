@@ -29,6 +29,7 @@ import { formulaireSujet, lireSujet } from './sujet-formulaire.ts'
 import { DEPOT, ouvrirContribuer, ouvrirInspirations, type Inspiration } from './contribuer.ts'
 import { choisirFichier, ErreurImport, lireFichier } from './import.ts'
 import { creerGrillesImportees } from '../donnees/grilles-importees.ts'
+import { comparaisonHtml, profilsDe } from './comparaison.ts'
 // Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
 // peut charger aucune image à côté de lui.
 import logoSvg from '../../public/icons/icon.svg?raw'
@@ -50,6 +51,8 @@ const inspirations = (ui: Textes): Inspiration[] => [
 interface Etat {
   personne: string | null
   disponible: GrilleDisponible
+  /** Répondre, ou comparer ce qui a été répondu. */
+  vue: 'arbre' | 'comparaison'
   ouvert: { noeud: string; polarite: string } | null
   /** Version proposée par un service worker en attente, s’il y en a une. */
   miseAJour: string | null
@@ -78,6 +81,7 @@ export function demarrer(
   const etat: Etat = {
     personne: premiere.id,
     disponible: grilles[0]!,
+    vue: 'arbre',
     ouvert: null,
     miseAJour: null,
   }
@@ -143,7 +147,9 @@ export function demarrer(
     const reglagesOuverts = champs.entete.querySelector<HTMLDetailsElement>('[data-reglages]')?.open ?? false
     champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts, toutesLesGrilles())
     afficherAvancement(grille, valeurs, ctx)
-    champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
+    champs.arbre.innerHTML = etat.vue === 'comparaison'
+      ? comparaisonHtml(etat.disponible, profilsDe(etat.disponible, stockage), ctx.ui, prefs.langue)
+      : degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
     champs.pied.innerHTML = piedHtml(ctx)
     afficherEditeur(valeurs, ctx)
   }
@@ -167,7 +173,7 @@ export function demarrer(
   }
 
   function afficherEditeur(valeurs: Valeurs, ctx: Contexte): void {
-    if (!etat.ouvert || !etat.personne) {
+    if (!etat.ouvert || !etat.personne || etat.vue === 'comparaison') {
       champs.editeur.hidden = true
       champs.editeur.innerHTML = ''
       return
@@ -249,6 +255,12 @@ export function demarrer(
       if (!confirm(textesUi(prefs.langue).retirerGrilleConfirme)) return
       importees.retirer(etat.disponible.grille.id)
       etat.disponible = grilles[0]!
+      etat.ouvert = null
+      afficher()
+      return
+    }
+    if (cible.closest('[data-vue]')) {
+      etat.vue = etat.vue === 'arbre' ? 'comparaison' : 'arbre'
       etat.ouvert = null
       afficher()
       return
@@ -585,6 +597,9 @@ function enteteHtml(
     </div>
   </details>`
 
+  const bascule = `<button type="button" class="bascule-vue" data-vue>${
+    echapper(etat.vue === 'arbre' ? ui.comparer : ui.repondre)}</button>`
+
   const pliage = `<div class="pliage">
     <button type="button" data-ajouter-racine title="${echapper(ui.ajouterSujet)}">${echapper(ui.ajouterSujet)}</button>
     <button type="button" data-ajouter-echelle title="${echapper(ui.ajouterEchelleTitre)}">${echapper(ui.ajouterEchelle)}</button>
@@ -599,7 +614,7 @@ function enteteHtml(
     <button type="button" data-inspirations>${echapper(ui.inspiration)}</button>
   </nav>`
 
-  return `${marque}${qui}${quelleGrille}${pliage}${outils}${liens}${langue}${reglages}
+  return `${marque}${qui}${quelleGrille}${bascule}${pliage}${outils}${liens}${langue}${reglages}
     <span class="avancement" data-avancement></span>`
 }
 

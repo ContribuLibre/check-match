@@ -1,0 +1,49 @@
+name: Publier sur GitHub Pages
+
+# Publier ce qui est vérifié, et rien d’autre : la même porte d’entrée qu’en
+# local — grilles, types, tests, builds — avant toute mise en ligne.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Une publication à la fois, sans annuler celle qui est en cours : une mise en
+# ligne à moitié faite serait pire qu’une mise en ligne en retard.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # La version affichée en pied de page compte les commits : sans
+          # l’historique complet, elle annoncerait n’importe quoi.
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publier:
+    needs: construire
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4

@@ -91,6 +91,10 @@ export interface Textes {
   grilleImportee: string
   retirerGrille: string
   retirerGrilleConfirme: string
+  tensionAide: string
+  tensionEtendueAide: string
+  tensionEtendue: (min: number, bas: number, haut: number, max: number) => string
+  triangleAide: string
 }
 
 /**
@@ -180,6 +184,11 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     grilleImportee: '(reçue)',
     retirerGrille: 'Retirer cette checklist reçue',
     retirerGrilleConfirme: 'Retirer cette checklist ? Les réponses posées dessus restent enregistrées, et vaudront encore si vous la réimportez.',
+    tensionAide: 'Pointez où vous vous situez entre les deux.',
+    tensionEtendueAide: 'Pointez où vous vous situez ; glissez d’un bout à l’autre si ça dépend des fois.',
+    tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
+      `Selon les cas : de ${min} % à ${max} %, le plus souvent entre ${bas} % et ${haut} %.`,
+    triangleAide: 'Posez un point entre les trois. Glissez pour dire de combien ça varie autour.',
   },
   en: {
     titre: 'check-match',
@@ -263,6 +272,11 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     grilleImportee: '(received)',
     retirerGrille: 'Remove this received checklist',
     retirerGrilleConfirme: 'Remove this checklist? Answers given on it stay stored, and will still hold if you import it again.',
+    tensionAide: 'Point where you stand between the two.',
+    tensionEtendueAide: 'Point where you stand; drag from one end to the other if it depends.',
+    tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
+      `Depending: from ${min} % to ${max} %, most often between ${bas} % and ${haut} %.`,
+    triangleAide: 'Place a point between the three. Drag to say how much it varies around it.',
   },
 }
 

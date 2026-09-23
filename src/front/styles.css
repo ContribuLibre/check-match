@@ -495,3 +495,44 @@ main { padding: 1rem 1.2rem; }
 .adresse-bouton.copie::after { content: " " attr(data-etat); font-size: .72rem; font-weight: 600; }
 
 .entete-liens { display: flex; gap: .3rem; }
+
+/* --- échelles continues --------------------------------------------------- */
+
+/* `touch-action: none` est indispensable : sans lui, un glissé au doigt fait
+   défiler la page au lieu de tracer l’étendue. */
+.tension-saisie {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .3rem;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.tension-saisie .pole { flex: 0 1 8rem; font-size: .78rem; color: var(--encre-pale); }
+.tension-saisie .pole:last-child { text-align: end; }
+.tension-saisie svg { flex: 1 1 auto; max-width: 22rem; height: 44px; }
+
+.triangle-saisie {
+  margin-top: .3rem;
+  touch-action: none;
+  cursor: crosshair;
+  display: grid;
+  justify-items: center;
+  gap: .3rem;
+}
+
+.triangle-saisie svg { width: 100%; max-width: 15rem; height: auto; }
+.triangle-sommets { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+.triangle-sommets .pole { font-size: .78rem; color: var(--couleur, var(--encre-pale)); }
+.zone-nommee { margin: 0; font-size: .85rem; font-weight: 600; color: var(--accent); }
+
+.triangle .fond { fill: var(--panneau-haut); }
+.triangle .bord { fill: none; stroke: var(--trait, #000); stroke-width: 1.5; }
+.triangle .zone { fill: transparent; stroke: var(--trait-ui); stroke-width: .7; }
+.triangle .zone.active { fill: var(--accent); fill-opacity: .12; }
+.triangle .amplitude { fill: var(--accent); fill-opacity: .14; stroke: var(--accent); stroke-opacity: .5; }
+.triangle .barycentre { fill: var(--accent); stroke: var(--trait, #000); stroke-width: 1.2; }
+
+.tension-lecture { margin-top: .2rem; opacity: .85; }
+.tension-lecture svg { width: 100%; max-width: 22rem; height: 36px; }

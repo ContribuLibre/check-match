@@ -1,4 +1,5 @@
 import { agreger, type Contribution } from './agregateurs.ts'
+import { etendueDepuis, paliers, typeEchelle } from './echelle.ts'
 import { descendants, sousPolarites, type Grille } from './grille.ts'
 import { cle, type Valeurs } from './heritage.ts'
 import type { Reponse } from './types.ts'
@@ -51,6 +52,8 @@ export function proposerDepuis(
   }
 
   const proposition: Reponse = {}
+  const scoresParPart = new Map<string, number[]>()
+
   for (const partId of noeud.parts) {
     const part = grille.part(partId)
     if (!part) continue
@@ -60,11 +63,42 @@ export function proposerDepuis(
       const valeur = valeurs.get(cle(autreNoeud, autrePolarite))?.[partId]
       if (valeur?.origine === 'propre') sources.push({ score: valeur.score, poids: 1 })
     }
+    scoresParPart.set(partId, sources.map((source) => source.score))
 
     const score = agreger(grille.agregationDe(partId, 'rollup'), sources)
     if (score === null) continue
-    proposition[partId] = palierLePlusProche(part.steps.map((palier) => palier.score), score)
+
+    if (typeEchelle(part) === 'tension') {
+      // Se situer d’un curseur sur chaque élément dit deux choses de la
+      // rubrique : où l’on est en général, et à quel point ça varie selon les
+      // cas. La seconde se perdrait à ne garder que la moyenne.
+      const etendue = etendueDepuis(scoresParPart.get(partId) ?? [])
+      proposition[partId] = { position: score, ...(etendue ? { etendue } : {}) }
+      continue
+    }
+    if (typeEchelle(part) === 'triangle') continue
+    proposition[partId] = palierLePlusProche(paliers(part).map((palier) => palier.score), score)
   }
+
+  // Un triangle se déduit de ses trois branches : leur relief donne le point,
+  // leur dispersion l’amplitude.
+  for (const partId of noeud.parts) {
+    const part = grille.part(partId)
+    if (!part || typeEchelle(part) !== 'triangle') continue
+    const composantes = (part.poles ?? []).map((pole) => scoresParPart.get(pole) ?? [])
+    if (composantes.some((serie) => !serie.length)) continue
+    const moyennes = composantes.map((serie) => serie.reduce((total, score) => total + score, 0) / serie.length)
+    if (!moyennes.some((valeur) => valeur > 0)) continue
+    const amplitude = Math.max(...composantes.map((serie) => {
+      const bornes = etendueDepuis(serie)
+      return bornes ? bornes[3] - bornes[0] : 0
+    }))
+    proposition[partId] = {
+      barycentre: [moyennes[0] ?? 0, moyennes[1] ?? 0, moyennes[2] ?? 0],
+      ...(amplitude > 0 ? { amplitude } : {}),
+    }
+  }
+
   return proposition
 }
 

@@ -1,4 +1,5 @@
 import { agreger, type Contribution } from './agregateurs.ts'
+import { composantesDuTriangle, estPosition, etendueDe, scoreDe, typeEchelle } from './echelle.ts'
 import { sousPolarites, type Grille, type Noeud } from './grille.ts'
 import type { Reponse, ValeurPart, ValeurPolarite } from './types.ts'
 
@@ -99,15 +100,38 @@ function descendre(
   const polarite = grille.polarites.get(polariteId)
   if (!polarite) return
 
+  // Un triangle est répondu d’un point : les trois branches qu’il porte sont
+  // alors posées toutes les trois à la fois, et non héritées.
+  const parLeTriangle = new Map<string, number>()
+  let amplitude: number | undefined
+  for (const partId of grille.ordreParts) {
+    const part = grille.part(partId)
+    if (!part || typeEchelle(part) !== 'triangle') continue
+    const composantes = composantesDuTriangle(part, propre?.[part.id])
+    if (!composantes) continue
+    for (const [branche, valeur] of Object.entries(composantes)) parLeTriangle.set(branche, valeur)
+    const rayon = propre?.[part.id]
+    amplitude = estPosition(rayon) ? rayon.amplitude : undefined
+  }
+
   // Ordre du calcul : les regroupements avant les branches qu’ils alimentent.
   for (const partId of grille.ordreParts) {
     const part = grille.part(partId)
     if (!part || !noeud.parts.includes(part.id)) continue
 
-    const palierChoisi = propre?.[part.id]
-    if (palierChoisi !== undefined && part.steps[palierChoisi]) {
+    const posee = parLeTriangle.get(part.id)
+    if (posee !== undefined) {
       etoileValeurs[part.id] = {
-        score: part.steps[palierChoisi].score, poids: 1, origine: 'propre', detours: 0,
+        score: posee, poids: 1, origine: 'propre', detours: 0, ...(amplitude ? { amplitude } : {}),
+      }
+      continue
+    }
+
+    const score = scoreDe(part, propre?.[part.id])
+    if (score !== null) {
+      const etendue = etendueDe(propre?.[part.id])
+      etoileValeurs[part.id] = {
+        score, poids: 1, origine: 'propre', detours: 0, ...(etendue ? { etendue } : {}),
       }
       continue
     }

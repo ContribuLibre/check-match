@@ -2,7 +2,10 @@ import { peutRemonter, proposerDepuis, type Direction } from '../domaine/agregat
 import type { Grille } from '../domaine/grille.ts'
 import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.ts'
 import type { Textes as TextesGrille } from '../domaine/traduction.ts'
-import type { Reponse } from '../domaine/types.ts'
+import type { PartDefinition, PositionRepondue, Reponse, ReponsePart, ValeurPart } from '../domaine/types.ts'
+import { estPosition, paliers, typeEchelle, zoneDe } from '../domaine/echelle.ts'
+import { tensionSvg, triangleSvg } from '../rendu/echelles.ts'
+import { amplitudeDepuis, versBarycentre, versXY } from '../rendu/triangle.ts'
 import { creerStockage, stockagePersistant, type Stockage } from '../donnees/stockage.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
 import { grilles, preparer, type GrilleDisponible } from '../grilles/index.ts'
@@ -346,6 +349,44 @@ export function demarrer(
   })
 
   /**
+   * Se situer sur une échelle continue.
+   *
+   * Un simple appui suffit à poser une position. Un cliqué-glissé dit en plus
+   * l’étendue : sur une règle, du point de départ au point de lâcher ; dans un
+   * triangle, le départ donne le barycentre et la distance parcourue
+   * l’amplitude. Une seule geste, deux informations, et personne n’est obligé
+   * de faire la seconde.
+   */
+  champs.editeur.addEventListener('pointerdown', (evenement) => {
+    const cible = evenement.target as HTMLElement
+    const regle = cible.closest<HTMLElement>('[data-tension]')
+    const triangle = cible.closest<HTMLElement>('[data-triangle]')
+    const zone = regle ?? triangle
+    if (!zone) return
+    evenement.preventDefault()
+
+    const svg = zone.querySelector('svg')!
+    const depart = positionDansSvg(svg, evenement)
+    let arrivee = depart
+    zone.setPointerCapture?.(evenement.pointerId)
+
+    const suivre = (autre: PointerEvent): void => { arrivee = positionDansSvg(svg, autre) }
+    const lacher = (autre: PointerEvent): void => {
+      zone.removeEventListener('pointermove', suivre)
+      zone.removeEventListener('pointerup', lacher)
+      zone.removeEventListener('pointercancel', lacher)
+      arrivee = positionDansSvg(svg, autre)
+      const courante = { ...reponseCourante() }
+      if (regle) courante[regle.dataset.tension!] = tensionSaisie(depart, arrivee, !!regle.dataset.etendue)
+      else courante[triangle!.dataset.triangle!] = triangleSaisie(depart, arrivee)
+      enregistrer(courante)
+    }
+    zone.addEventListener('pointermove', suivre)
+    zone.addEventListener('pointerup', lacher)
+    zone.addEventListener('pointercancel', lacher)
+  })
+
+  /**
    * Ouvre le formulaire d’ajout, puis range le sujet.
    *
    * Tout y a un défaut qui convient presque toujours — le rangement proposé est
@@ -547,14 +588,28 @@ function titreEtoile(textes: TextesGrille, ui: Textes, grille: Grille, valeurs: 
   const etoileValeurs = etoile(valeurs, noeud, polarite)
   const morceaux = grille.parts
     .filter((part) => etoileValeurs[part.id] && etoileValeurs[part.id]!.poids > 0)
-    .map((part) => {
-      const valeur = etoileValeurs[part.id]!
-      const palier = part.steps.reduce((meilleur, candidat) =>
-        Math.abs(candidat.score - valeur.score) < Math.abs(meilleur.score - valeur.score) ? candidat : meilleur)
-      return `${textes.part(part.id)} : ${textes.palier(part.id, palier.id)}`
-    })
+    .map((part) => `${textes.part(part.id)} : ${diteEnMots(part, etoileValeurs[part.id]!, textes)}`)
   const prefixe = `${textes.noeud(noeud)} — ${textes.polarite(polarite)}`
   return morceaux.length ? `${prefixe}. ${morceaux.join(', ')}` : `${prefixe}. ${ui.rienRenseigne}`
+}
+
+/**
+ * Une valeur dite en mots, pour une infobulle ou un lecteur d’écran.
+ * Un cran porte son nom ; une position se dit par l’extrême dont elle est la
+ * plus proche, avec sa part — « plutôt X », c’est déjà se situer.
+ */
+function diteEnMots(part: PartDefinition, valeur: ValeurPart, textes: TextesGrille): string {
+  if (typeEchelle(part) === 'tension') {
+    const [bas, haut] = part.poles ?? []
+    const vers = valeur.score >= 0.5 ? haut : bas
+    const part100 = Math.round((valeur.score >= 0.5 ? valeur.score : 1 - valeur.score) * 100)
+    return `${textes.pole(part.id, vers ?? '')} ${part100} %`
+  }
+  const crans = paliers(part)
+  if (!crans.length) return `${Math.round(valeur.score * 100)} %`
+  const palier = crans.reduce((meilleur, candidat) =>
+    Math.abs(candidat.score - valeur.score) < Math.abs(meilleur.score - valeur.score) ? candidat : meilleur)
+  return textes.palier(part.id, palier.id)
 }
 
 /**
@@ -658,6 +713,115 @@ function boutonsRemontee(grille: Grille, valeurs: Valeurs, ouvert: { noeud: stri
 
 // --- éditeur --------------------------------------------------------------
 
+/**
+ * De quoi répondre, selon la forme de l’échelle.
+ *
+ * Des crans se cliquent. Une tension se pointe sur sa règle, et en interface
+ * complète on peut y ajouter l’étendue de ce qu’on vit — « ça dépend des fois »
+ * est une réponse, et souvent la vraie. Un triangle se pointe aussi, et un
+ * cliqué-glissé y trace en plus l’amplitude autour du point.
+ */
+function saisieHtml(
+  part: PartDefinition,
+  valeur: ValeurPart | undefined,
+  choisi: ReponsePart | undefined,
+  textes: TextesGrille,
+  ctx: Contexte,
+): string {
+  const { ui, prefs } = ctx
+
+  if (typeEchelle(part) === 'tension') {
+    const [bas, haut] = part.poles ?? []
+    const etendue = prefs.montre('complete')
+    return `<div class="tension-saisie" data-tension="${echapper(part.id)}"
+        ${etendue ? ` data-etendue="1" title="${echapper(ui.tensionEtendueAide)}"` : ''}>
+      <span class="pole">${echapper(textes.pole(part.id, bas ?? ''))}</span>
+      ${tensionSvg(part, valeur, { titre: textes.part(part.id) })}
+      <span class="pole">${echapper(textes.pole(part.id, haut ?? ''))}</span>
+    </div>
+    ${etendue && valeur?.etendue
+      ? `<p class="aide">${echapper(ui.tensionEtendue(...valeur.etendue.map((borne) => Math.round(borne * 100)) as [number, number, number, number]))}</p>`
+      : ''}`
+  }
+
+  if (typeEchelle(part) === 'triangle') {
+    const poles = part.poles ?? []
+    const barycentre = estPosition(choisi) ? choisi.barycentre : undefined
+    const zoneCourante = barycentre ? zoneDe(part.zones, barycentre) : null
+    const zones = (part.zones ?? []).flatMap((zone) => {
+      const point = versXY(zone.position)
+      return point ? [{ id: zone.id, point, libelle: textes.zone(part.id, zone.id) }] : []
+    })
+    return `<div class="triangle-saisie" data-triangle="${echapper(part.id)}" title="${echapper(ui.triangleAide)}">
+      ${triangleSvg(barycentre ?? null, estPosition(choisi) ? choisi.amplitude : undefined, {
+        zones, zoneActive: zoneCourante, titre: textes.part(part.id),
+        couleurs: poles.map((pole) => ctxCouleur(ctx, pole)),
+      })}
+      <div class="triangle-sommets">${poles.map((pole) =>
+        `<span class="pole" style="--couleur: ${echapper(ctxCouleur(ctx, pole))}">${echapper(textes.part(pole))}</span>`).join('')}</div>
+      ${zoneCourante ? `<p class="zone-nommee">${echapper(textes.zone(part.id, zoneCourante))}</p>` : ''}
+    </div>`
+  }
+
+  // Une part continue ne se répond pas directement : elle se lit. C’est le cas
+  // des branches d’un triangle, que le point renseigne toutes les trois.
+  if (typeEchelle(part) === 'continue') {
+    return `<div class="tension-lecture">${tensionSvg(part, valeur, { titre: textes.part(part.id) })}</div>`
+  }
+
+  const crans = paliers(part).map((palier, index) => {
+    const aide = textes.aidePalier(part.id, palier.id)
+    return `<button type="button" class="palier${choisi === index ? ' choisi' : ''}"
+      data-part="${echapper(part.id)}" data-palier="${index}"
+      style="--couleur: ${echapper(part.maxColor)}"
+      ${aide ? `title="${echapper(aide)}"` : ''}>${echapper(textes.palier(part.id, palier.id))}</button>`
+  }).join('')
+  return `<div class="paliers">${crans}</div>`
+}
+
+/** Où un geste est tombé, dans le repère du dessin et non celui de l’écran. */
+function positionDansSvg(svg: SVGSVGElement, evenement: PointerEvent): [number, number] {
+  const boite = svg.getBoundingClientRect()
+  const vue = svg.viewBox.baseVal
+  if (!boite.width || !boite.height) return [0, 0]
+  return [
+    vue.x + ((evenement.clientX - boite.left) / boite.width) * vue.width,
+    vue.y + ((evenement.clientY - boite.top) / boite.height) * vue.height,
+  ]
+}
+
+/**
+ * Ce qu’un geste sur une règle veut dire.
+ * Glisser en dit plus que pointer : les deux bouts du geste deviennent les
+ * extrêmes de ce qu’on vit, et le milieu la position. Un simple appui, lui,
+ * ne pose qu’une position.
+ */
+function tensionSaisie(depart: [number, number], arrivee: [number, number], avecEtendue: boolean): PositionRepondue {
+  const debut = positionSurRegle(depart[0])
+  const fin = positionSurRegle(arrivee[0])
+  if (!avecEtendue || Math.abs(fin - debut) < 0.02) return { position: fin }
+  const [min, max] = debut <= fin ? [debut, fin] : [fin, debut]
+  // Les déciles sont posés au cinquième de l’intervalle : sans plus
+  // d’information, c’est la lecture la plus sobre d’un « de là à là ».
+  const marge = (max - min) / 5
+  return { position: (min + max) / 2, etendue: [min, min + marge, max - marge, max] }
+}
+
+const positionSurRegle = (x: number): number => Math.min(1, Math.max(0, (x - 10) / 180))
+
+/** Le point posé dans un triangle, et l’amplitude que le glissé a tracée autour. */
+function triangleSaisie(depart: [number, number], arrivee: [number, number]): PositionRepondue {
+  const barycentre = versBarycentre(depart)
+  const distance = Math.hypot(arrivee[0] - depart[0], arrivee[1] - depart[1])
+  const amplitude = amplitudeDepuis(distance)
+  return { barycentre, ...(amplitude > 0.02 ? { amplitude } : {}) }
+}
+
+/** La couleur haute d’une part, pour teinter un sommet de triangle. */
+function ctxCouleur(ctx: Contexte, partId: string): string {
+  return ctx.etat.disponible.grille.part(partId)?.maxColor ?? 'var(--trait, #000)'
+}
+
 function editeurHtml(
   disponible: GrilleDisponible,
   valeurs: Valeurs,
@@ -689,13 +853,6 @@ function editeurHtml(
     const regroupement = estRegroupement(part.id)
     const valeur = valeursPolarite[part.id]
     const choisi = saisie[part.id]
-    const paliers = part.steps.map((palier, index) => {
-      const aide = textes.aidePalier(part.id, palier.id)
-      return `<button type="button" class="palier${choisi === index ? ' choisi' : ''}"
-        data-part="${echapper(part.id)}" data-palier="${index}"
-        style="--couleur: ${echapper(part.maxColor)}"
-        ${aide ? `title="${echapper(aide)}"` : ''}>${echapper(textes.palier(part.id, palier.id))}</button>`
-    }).join('')
 
     // Dire d’où vient la valeur affichée est indispensable : héritée, elle
     // n’engage pas la personne de la même façon qu’une réponse posée. Le détail
@@ -703,7 +860,10 @@ function editeurHtml(
     const detail = prefs.montre('complete') && valeur
       ? ` (${valeur.poids.toFixed(2)}, ${valeur.detours} ${valeur.detours > 1 ? ui.detours : ui.detour})`
       : ''
-    const provenance = choisi !== undefined
+    // C’est l’origine calculée qui fait foi, pas la présence d’une saisie sur
+    // cette part précise : les trois branches d’un triangle sont bel et bien
+    // posées, même si c’est le point qui les a posées.
+    const provenance = valeur?.origine === 'propre'
       ? `<span class="provenance propre">${echapper(ui.reponseDirecte)}</span>`
       : valeur && valeur.poids > 0
         ? `<span class="provenance herite">${echapper(ui.herite)}${echapper(detail)}</span>`
@@ -714,7 +874,7 @@ function editeurHtml(
         ${echapper(textes.part(part.id))}${regroupement ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
-      <div class="paliers">${paliers}</div>
+      ${saisieHtml(part, valeur, choisi, textes, ctx)}
     </div>`
   }).join('')
 

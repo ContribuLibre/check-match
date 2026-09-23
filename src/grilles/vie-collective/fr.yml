@@ -45,6 +45,36 @@ parts:
       compte: { label: Ça compte, help: J’aimerais que ce soit pris en compte. }
       structurant: { label: Structurant, help: Ça change beaucoup mon quotidien. }
       vital: { label: Vital, help: "Si ce n’est pas réglé, je ne peux pas rester." }
+  cadre:
+    label: Cadre
+    help: Est-ce que ça se décide au fil de l’eau, ou est-ce que c’est posé d’avance ?
+    poles:
+      souple:
+        label: Au fil de l’eau
+        help: On voit sur le moment, selon qui est là et ce dont on a envie.
+      prevu:
+        label: Posé d’avance
+        help: C’est convenu, écrit, et on s’y tient.
+  decider:
+    label: Qui décide
+    help: Entre décider chacun pour soi, décider ensemble, et confier la décision à quelqu’un.
+    zones:
+      chacun-decide: { label: Chacun décide }
+      on-en-parle: { label: On en parle }
+      quelquun-sen-charge: { label: Quelqu’un s’en charge }
+      chacun-mais-on-en-parle: { label: Chacun, mais on en parle }
+      on-en-parle-et-on-confie: { label: On en parle, puis on confie }
+      chacun-ou-on-confie: { label: Chacun, ou on confie }
+      un-peu-des-trois: { label: Un peu des trois }
+  chacun:
+    label: Chacun pour soi
+    help: Chacun tranche pour ce qui le concerne, sans avoir à demander.
+  ensemble:
+    label: Ensemble
+    help: On en parle et on décide à plusieurs.
+  delegue:
+    label: Confié
+    help: Quelqu’un s’en occupe pour le groupe, et on lui fait confiance.
   autonomie:
     label: Autonomie
     help: Est-ce que je peux répondre à ce besoin seule, ou est-ce qu’il me faut les autres ?

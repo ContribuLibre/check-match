@@ -71,6 +71,46 @@ parts:
       - { id: compte, score: 0.5 }
       - { id: structurant, score: 0.8 }
       - { id: vital, score: 1 }
+  # Une tension : pas un « plus » et un « moins », mais deux façons de faire qui
+  # se valent. On se place entre les deux, et on peut dire en plus l’étendue de
+  # ce qu’on vit — « ça dépend des jours » est une réponse.
+  - id: cadre
+    kind: tension
+    poles: [souple, prevu]
+    minColor: "#2A9"
+    maxColor: "#94C"
+
+  # Un triangle : trois directions, et un point entre elles. Le point est la
+  # répartition — la seule qui ne se devine pas, mais qui se pose d’un geste.
+  - id: decider
+    kind: triangle
+    poles: [chacun, ensemble, delegue]
+    minColor: "#888"
+    maxColor: "#BBB"
+    zones:
+      - { id: chacun-decide, position: [1, 0, 0] }
+      - { id: on-en-parle, position: [0, 1, 0] }
+      - { id: quelquun-sen-charge, position: [0, 0, 1] }
+      - { id: chacun-mais-on-en-parle, position: [1, 1, 0] }
+      - { id: on-en-parle-et-on-confie, position: [0, 1, 1] }
+      - { id: chacun-ou-on-confie, position: [1, 0, 1] }
+      - { id: un-peu-des-trois, position: [1, 1, 1] }
+  - id: chacun
+    parent: decider
+    kind: continue
+    minColor: "#333"
+    maxColor: "#E93"
+  - id: ensemble
+    parent: decider
+    kind: continue
+    minColor: "#333"
+    maxColor: "#3B9"
+  - id: delegue
+    parent: decider
+    kind: continue
+    minColor: "#333"
+    maxColor: "#96E"
+
   - id: autonomie
     minColor: "#07A"
     maxColor: "#C0B"
@@ -84,8 +124,12 @@ parts:
       - { id: coup-de-main, score: 0.75 }
       - { id: cooperation, score: 1 }
 
+# Les parts spécialisées ne concernent que les rubriques où elles ont du sens :
+# une restriction vaut pour tout le sous-arbre, donc elle se pose une fois par
+# racine. Sans elle, toutes les parts s’appliqueraient partout.
 nodes:
   - id: son
+    parts: [apercu, avis, importance, autonomie]
     children:
       - id: musique
         children:
@@ -99,6 +143,7 @@ nodes:
         polarities: [recevoir, temoin]
 
   - id: espaces
+    parts: [apercu, avis, importance, autonomie]
     children:
       - id: espaces-communs
         children:
@@ -111,6 +156,7 @@ nodes:
           - id: visites-en-prive
 
   - id: alimentation
+    parts: [apercu, avis, importance, autonomie]
     children:
       - id: repas-partages
       - id: courses-communes
@@ -118,12 +164,14 @@ nodes:
         polarities: [agir, recevoir]
 
   - id: rythmes
+    parts: [apercu, avis, importance, autonomie, cadre]
     children:
       - id: nuits
       - id: matins
       - id: absences
 
   - id: decisions
+    parts: [apercu, avis, importance, autonomie, decider, chacun, ensemble, delegue]
     children:
       - id: reunions
       - id: conflits
@@ -134,5 +182,7 @@ nodes:
   # elle prend la moyenne de ses deux parents.
   - id: soiree-dansante
     parents: [musique, espaces-communs]
+    parts: [apercu, avis, importance, autonomie]
   - id: invites
     parents: [espaces-communs, rythmes]
+    parts: [apercu, avis, importance, autonomie, cadre]

@@ -1,5 +1,6 @@
+import { paliers, typeEchelle } from './echelle.ts'
 import type { Grille } from './grille.ts'
-import type { Traduction } from './types.ts'
+import type { PartDefinition, Traduction } from './types.ts'
 
 /**
  * Accès aux libellés.
@@ -49,6 +50,16 @@ export function creerTextes(traduction: Traduction, parDefaut: Traduction = trad
         traduction.parts?.[part]?.steps?.[palier]?.help,
         parDefaut.parts?.[part]?.steps?.[palier]?.help,
       ) ?? '',
+
+    pole: (part: string, pole: string): string =>
+      premier(traduction.parts?.[part]?.poles?.[pole]?.label, parDefaut.parts?.[part]?.poles?.[pole]?.label) ?? pole,
+    aidePole: (part: string, pole: string): string =>
+      premier(traduction.parts?.[part]?.poles?.[pole]?.help, parDefaut.parts?.[part]?.poles?.[pole]?.help) ?? '',
+
+    zone: (part: string, zone: string): string =>
+      premier(traduction.parts?.[part]?.zones?.[zone]?.label, parDefaut.parts?.[part]?.zones?.[zone]?.label) ?? zone,
+    aideZone: (part: string, zone: string): string =>
+      premier(traduction.parts?.[part]?.zones?.[zone]?.help, parDefaut.parts?.[part]?.zones?.[zone]?.help) ?? '',
   }
 }
 
@@ -77,11 +88,25 @@ export function clesManquantes(grille: Grille, traduction: Traduction): string[]
   for (const part of grille.parts) {
     const traduit = traduction.parts?.[part.id]
     if (!traduit?.label) manquantes.push(`parts.${part.id}`)
-    for (const palier of part.steps) {
-      if (!traduit?.steps?.[palier.id]?.label) manquantes.push(`parts.${part.id}.steps.${palier.id}`)
+    for (const cle of clesEchelle(part)) {
+      const [section, id] = cle
+      if (!traduit?.[section]?.[id]?.label) manquantes.push(`parts.${part.id}.${section}.${id}`)
     }
   }
   return manquantes
+}
+
+/**
+ * Ce qu’une part demande de traduire en plus de son propre libellé : ses crans,
+ * ou les extrêmes et les repères de son échelle continue. Un triangle fait
+ * exception pour ses sommets, qui sont ses branches et portent déjà leur nom.
+ */
+function clesEchelle(part: PartDefinition): ['steps' | 'poles' | 'zones', string][] {
+  const cles: ['steps' | 'poles' | 'zones', string][] = []
+  for (const palier of paliers(part)) cles.push(['steps', palier.id])
+  if (typeEchelle(part) === 'tension') for (const pole of part.poles ?? []) cles.push(['poles', pole])
+  for (const zone of part.zones ?? []) cles.push(['zones', zone.id])
+  return cles
 }
 
 /** Part des clés effectivement traduites, entre 0 et 1. */
@@ -90,6 +115,6 @@ export function couverture(grille: Grille, traduction: Traduction): number {
     + grille.noeuds.size
     + grille.polarites.size
     + grille.parts.length
-    + grille.parts.reduce((somme, part) => somme + part.steps.length, 0)
+    + grille.parts.reduce((somme, part) => somme + clesEchelle(part).length, 0)
   return total ? (total - clesManquantes(grille, traduction).length) / total : 1
 }

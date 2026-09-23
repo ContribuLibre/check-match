@@ -175,6 +175,44 @@ export function construireGrille(definition: GrilleDefinition): Grille {
   }
 }
 
+/**
+ * Chaque forme d’échelle a ses exigences, et les manquer ne se verrait qu’à la
+ * saisie : une tension sans ses deux extrêmes ne se dessine pas, un triangle
+ * dont les sommets ne sont pas ses branches ne répartit rien.
+ */
+function verifierEchelle(part: PartDefinition, parts: Map<string, Part>): void {
+  const ou = `La part « ${part.id} »`
+  const kind = part.kind ?? 'steps'
+  if (kind === 'steps') {
+    if (!part.steps?.length) throw new ErreurGrille(`${ou} n’a aucun palier.`)
+    return
+  }
+  // Une part continue n’a rien à déclarer : elle est renseignée par ailleurs.
+  if (kind === 'continue') return
+
+  const poles = part.poles ?? []
+  const attendus = kind === 'tension' ? 2 : 3
+  if (poles.length !== attendus) {
+    throw new ErreurGrille(`${ou} est de type « ${kind} » et demande ${attendus} extrêmes, ${poles.length} déclaré(s).`)
+  }
+
+  if (kind !== 'triangle') return
+  // Le point placé dans un triangle *est* la répartition vers les trois
+  // branches : ses sommets ne peuvent donc être qu’elles.
+  const filles = parts.get(part.id)?.enfants ?? []
+  for (const pole of poles) {
+    if (!parts.has(pole)) throw new ErreurGrille(`${ou} cite l’extrême inconnu « ${pole} ».`)
+    if (!filles.includes(pole)) {
+      throw new ErreurGrille(`${ou} cite l’extrême « ${pole} », qui n’est pas une de ses branches.`)
+    }
+  }
+  for (const zone of part.zones ?? []) {
+    if (zone.position?.length !== 3) {
+      throw new ErreurGrille(`${ou} : la zone « ${zone.id} » n’a pas trois coordonnées.`)
+    }
+  }
+}
+
 function verifierAgregation(agregation: Agregation | undefined, ou: string): void {
   for (const [sens, nom] of Object.entries(agregation ?? {})) {
     if (nom && !estAgregateur(nom)) {
@@ -205,6 +243,8 @@ function construireParts(definitions: PartDefinition[], grilleId: string): Map<s
     if (!parent) throw new ErreurGrille(`La part « ${part.definition.id} » cite le parent inconnu « ${part.parent} ».`)
     parent.enfants.push(part.definition.id)
   }
+
+  for (const part of parts.values()) verifierEchelle(part.definition, parts)
 
   for (const part of parts.values()) {
     for (const cible of Object.keys(part.definition.spread ?? {})) {

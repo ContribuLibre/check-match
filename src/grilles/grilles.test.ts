@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { grilles, grilleParId } from './index.ts'
 import { calculerValeurs, cle, etoile } from '../domaine/heritage.ts'
 import { clesManquantes } from '../domaine/traduction.ts'
+import { typeEchelle } from '../domaine/echelle.ts'
 
 describe('grilles livrées', () => {
   it('se construisent toutes sans erreur', () => {
@@ -52,7 +53,9 @@ describe('grilles livrées', () => {
   it('gardent des scores ordonnés et bornés à 0..1', () => {
     for (const { grille } of grilles) {
       for (const part of grille.parts) {
-        const scores = part.steps.map((palier) => palier.score)
+        // Une échelle continue n’a pas de crans : elle n’a rien à ordonner.
+        if (typeEchelle(part) !== 'steps') continue
+        const scores = (part.steps ?? []).map((palier) => palier.score)
         expect(scores[0]).toBe(0)
         expect(scores[scores.length - 1]).toBe(1)
         for (const [index, score] of scores.entries()) {
@@ -128,6 +131,6 @@ describe('grille issue du format historique', () => {
 
   it('garde les scores irréguliers du modèle', () => {
     const acceptance = disponible?.grille.parts.find((part) => part.id === 'acceptance')
-    expect(acceptance?.steps.map((palier) => palier.score)).toEqual([0, 0.1, 0.25, 0.5, 0.6, 0.8, 1])
+    expect((acceptance?.steps ?? []).map((palier) => palier.score)).toEqual([0, 0.1, 0.25, 0.5, 0.6, 0.8, 1])
   })
 })

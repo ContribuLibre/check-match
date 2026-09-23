@@ -27,6 +27,36 @@ export interface Agregation {
 }
 
 /**
+ * Un repère nommé d’un triangle : « ici, c’est ceci ».
+ *
+ * `position` est barycentrique, normalisée à la lecture : `[1, 0, 0]` est un
+ * sommet, `[1, 1, 1]` le centre. Les repères découpent le triangle en autant de
+ * zones qu’il y en a — chaque point appartient à la zone du repère le plus
+ * proche. Sans repères, le triangle n’est pas découpé.
+ */
+export interface ZoneDefinition {
+  id: string
+  position: [number, number, number]
+}
+
+/**
+ * Comment une part se répond.
+ *
+ * - `steps` : des crans nommés. C’est le défaut, et ce qui se compare le mieux.
+ * - `tension` : un curseur entre deux extrêmes, continu. On peut y ajouter
+ *   l’étendue de ce qu’on a vécu, pas seulement son point moyen.
+ * - `triangle` : un barycentre entre trois extrêmes. Une part de regroupement à
+ *   trois branches se saisit alors d’un point plutôt que branche par branche.
+ * - `continue` : un score entre 0 et 1 qu’on ne saisit pas directement. C’est
+ *   ce que sont les branches d’un triangle : le point les renseigne toutes les
+ *   trois, et les demander une à une n’aurait pas de sens.
+ *
+ * Le type ne change rien au modèle : une valeur reste un score entre 0 et 1,
+ * avec son poids. Seules la saisie et la lecture diffèrent.
+ */
+export type TypeEchelle = 'steps' | 'tension' | 'triangle' | 'continue'
+
+/**
  * Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé.
  *
  * Les parts peuvent elles aussi former un arbre. Une part de regroupement — une
@@ -39,7 +69,20 @@ export interface PartDefinition {
   parent?: string
   minColor: string
   maxColor: string
-  steps: Palier[]
+  /** Défaut : `steps`. */
+  kind?: TypeEchelle
+  /**
+   * Les crans d’une échelle `steps`. Une tension ou un triangle n’en a pas
+   * besoin : ils sont continus.
+   */
+  steps?: Palier[]
+  /**
+   * Les extrêmes d’une tension (deux) ou d’un triangle (trois).
+   * Pour un triangle, ils désignent les trois parts filles, dans l’ordre.
+   */
+  poles?: string[]
+  /** Repères nommés d’un triangle. */
+  zones?: ZoneDefinition[]
   /** Surcharge l’agrégation de la grille : une limite se résume par le minimum, une envie par le maximum. */
   aggregation?: Agregation
   /**
@@ -116,11 +159,49 @@ export interface Traduction {
   intro?: string
   nodes: Record<string, { label: string; help?: string }>
   polarities: Record<string, { label: string; help?: string }>
-  parts: Record<string, { label: string; help?: string; steps: Record<string, { label: string; help?: string }> }>
+  parts: Record<string, {
+    label: string
+    help?: string
+    /** Les crans, pour une échelle à crans. */
+    steps?: Record<string, { label: string; help?: string }>
+    /**
+     * Les extrêmes d’une tension. Un triangle n’en a pas besoin : ses sommets
+     * sont ses branches, et portent déjà leur libellé de part.
+     */
+    poles?: Record<string, { label: string; help?: string }>
+    /** Les repères nommés d’un triangle. */
+    zones?: Record<string, { label: string; help?: string }>
+  }>
 }
 
-/** Réponse saisie sur un couple (nœud, polarité) : index de palier par part. */
-export type Reponse = Record<string, number>
+/**
+ * Ce qu’on a posé sur une part qui ne se répond pas par un cran.
+ *
+ * Une position seule suffit à répondre. L’étendue et l’amplitude disent en plus
+ * la variabilité : selon les cas, selon les jours, ce n’est pas toujours pareil,
+ * et ça vaut la peine de pouvoir le dire plutôt que de moyenner en silence.
+ */
+export interface PositionRepondue {
+  /** Position sur une tension, 0 au premier extrême, 1 au second. */
+  position?: number
+  /** Position dans un triangle, en coordonnées barycentriques (normalisées à la lecture). */
+  barycentre?: [number, number, number]
+  /** Étendue vécue autour de la position : minimum, premier décile, dernier décile, maximum. */
+  etendue?: [number, number, number, number]
+  /** Amplitude autour d’un barycentre, en part du rayon du triangle. */
+  amplitude?: number
+}
+
+/**
+ * Réponse posée sur une part : l’index d’un cran, ou une position.
+ *
+ * Le nombre reste accepté tel quel — c’est la forme qu’ont toutes les réponses
+ * déjà enregistrées, et la seule qui ait du sens pour une échelle à crans.
+ */
+export type ReponsePart = number | PositionRepondue
+
+/** Réponse saisie sur un couple (nœud, polarité), part par part. */
+export type Reponse = Record<string, ReponsePart>
 
 /** D’où vient une valeur affichée, ce qui change entièrement sa lecture. */
 export type Origine = 'propre' | 'herite' | 'absent'
@@ -130,6 +211,13 @@ export interface ValeurPart {
   score: number
   poids: number
   origine: Origine
+  /**
+   * Variabilité autour du score, quand elle a été dite ou déduite.
+   * Quatre bornes : minimum, premier décile, dernier décile, maximum.
+   */
+  etendue?: [number, number, number, number]
+  /** Amplitude autour d’un barycentre, pour une part saisie dans un triangle. */
+  amplitude?: number
   /**
    * Nombre de changements de dimension traversés pour obtenir cette valeur.
    *

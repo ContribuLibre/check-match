@@ -9,6 +9,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse } from 'yaml'
+import { paliers, typeEchelle } from '../domaine/echelle.ts'
 import { construireGrille } from '../domaine/grille.ts'
 import { clesManquantes, couverture } from '../domaine/traduction.ts'
 import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
@@ -28,7 +29,7 @@ function lireYaml<T>(chemin: string): { valeur?: T; probleme?: string } {
 const CLES_ATTENDUES: Record<string, string[]> = {
   nodes: ['label', 'help'],
   polarities: ['label', 'help'],
-  parts: ['label', 'help', 'steps'],
+  parts: ['label', 'help', 'steps', 'poles', 'zones'],
 }
 
 /**
@@ -80,7 +81,9 @@ export function validerGrille(dossier: string): Rapport {
   const grille = construireGrille(definition)
 
   for (const part of grille.parts) {
-    const scores = part.steps.map((palier) => palier.score)
+    // Une échelle continue n’a pas de crans : c’est sa raison d’être.
+    if (typeEchelle(part) !== 'steps') continue
+    const scores = paliers(part).map((palier) => palier.score)
     if (scores.length < 2) problemes.push(`${grille.id}/${part.id} : moins de deux paliers`)
     if (scores[0] !== 0) problemes.push(`${grille.id}/${part.id} : le premier palier ne vaut pas 0`)
     if (scores[scores.length - 1] !== 1) problemes.push(`${grille.id}/${part.id} : le dernier palier ne vaut pas 1`)

@@ -1,0 +1,98 @@
+schemaVersion: 1
+id: vie-collective
+version: "0.1"
+langueParDefaut: fr
+langues:
+  fr: ./fr.yml
+
+# Une réponse posée sur une rubrique vaut pour tout ce qu’elle contient, avec le
+# même score mais la moitié du poids à chaque niveau de descente.
+attenuation: 0.5
+
+facettes:
+  - id: agir
+    principale: true
+  - id: recevoir
+  - id: temoin
+
+criteres:
+  - id: avis
+    couleurMin: "#C00"
+    couleurMax: "#5B0"
+    paliers:
+      - { id: contre, score: 0 }
+      - { id: reticence, score: 0.15 }
+      - { id: sans-avis, score: 0.4 }
+      - { id: favorable, score: 0.7 }
+      - { id: tiens-y, score: 1 }
+  - id: importance
+    couleurMin: "#BBB"
+    couleurMax: "#F60"
+    paliers:
+      - { id: indifferent, score: 0 }
+      - { id: accessoire, score: 0.2 }
+      - { id: compte, score: 0.5 }
+      - { id: structurant, score: 0.8 }
+      - { id: vital, score: 1 }
+  - id: autonomie
+    couleurMin: "#07A"
+    couleurMax: "#C0B"
+    paliers:
+      - { id: quoi-quil-en-coute, score: 0 }
+      - { id: dans-mon-coin, score: 0.2 }
+      - { id: quon-me-laisse, score: 0.45 }
+      - { id: coup-de-main, score: 0.75 }
+      - { id: cooperation, score: 1 }
+
+noeuds:
+  - id: son
+    enfants:
+      - id: musique
+        enfants:
+          - id: instrument
+          - id: chant
+          - id: musique-enregistree
+      - id: conversations
+        enfants:
+          - id: conversations-tardives
+      - id: silence
+        facettes: [recevoir, temoin]
+
+  - id: espaces
+    enfants:
+      - id: espaces-communs
+        enfants:
+          - id: cuisine
+          - id: salon
+          - id: rangement
+      - id: espaces-prives
+        enfants:
+          - id: chambre
+          - id: visites-en-prive
+
+  - id: alimentation
+    enfants:
+      - id: repas-partages
+      - id: courses-communes
+      - id: regimes
+        facettes: [agir, recevoir]
+
+  - id: rythmes
+    enfants:
+      - id: nuits
+      - id: matins
+      - id: absences
+
+  - id: decisions
+    enfants:
+      - id: reunions
+      - id: conflits
+      - id: argent-commun
+
+  # Un nœud peut relever de plusieurs rubriques : une soirée dansante est autant
+  # une question de son que d’usage des espaces communs. Sans réponse propre,
+  # elle prend la moyenne de ses deux parents.
+  - id: soiree-dansante
+    parents: [musique, espaces-communs]
+  - id: invites
+    parents: [espaces-communs, rythmes]

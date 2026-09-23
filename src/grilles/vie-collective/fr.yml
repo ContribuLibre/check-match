@@ -1,0 +1,86 @@
+titre: Vie collective
+intro: >-
+  Se situer sur ce qui fait le quotidien d’un lieu partagé, sujet par sujet,
+  en distinguant ce qu’on fait, ce qu’on reçoit et ce dont on est témoin.
+
+facettes:
+  agir:
+    libelle: Faire
+    aide: Ce que je produis, déclenche ou pratique moi-même.
+  recevoir:
+    libelle: Recevoir
+    aide: Ce que je demande, souhaite ou reçois de la part des autres.
+  temoin:
+    libelle: Être témoin
+    aide: Être là pendant que ça a lieu sans en être la destinataire ni l’autrice.
+
+criteres:
+  avis:
+    libelle: Mon avis
+    aide: Ce que j’en pense, indépendamment de l’importance que ça a pour moi.
+    paliers:
+      contre: { libelle: Contre, aide: Je ne veux pas de ça ici. }
+      reticence: { libelle: Réticence, aide: Ça me gêne, je préfère l’éviter. }
+      sans-avis: { libelle: Sans avis, aide: Ni pour ni contre, ça m’est égal. }
+      favorable: { libelle: Favorable, aide: J’aime bien que ça existe ici. }
+      tiens-y: { libelle: J’y tiens, aide: C’est une des raisons pour lesquelles je suis là. }
+  importance:
+    libelle: Importance
+    aide: À quel point ce sujet pèse pour moi — un avis tranché peut porter sur un sujet secondaire.
+    paliers:
+      indifferent: { libelle: Indifférent, aide: Je peux vivre avec n’importe quelle réponse. }
+      accessoire: { libelle: Accessoire, aide: J’ai une préférence, sans plus. }
+      compte: { libelle: Ça compte, aide: J’aimerais que ce soit pris en compte. }
+      structurant: { libelle: Structurant, aide: Ça change beaucoup mon quotidien. }
+      vital: { libelle: Vital, aide: Si ce n’est pas réglé, je ne peux pas rester. }
+  autonomie:
+    libelle: Autonomie
+    aide: Est-ce que je peux répondre à ce besoin seule, ou est-ce qu’il me faut les autres ?
+    paliers:
+      quoi-quil-en-coute:
+        libelle: Quoi qu’il en coûte
+        aide: Je le fais de toute façon, même si ça dérange.
+      dans-mon-coin:
+        libelle: Dans mon coin
+        aide: Je m’en occupe seule, sans que ça déborde sur les autres.
+      quon-me-laisse:
+        libelle: Qu’on me laisse faire
+        aide: Je n’ai besoin de rien, sinon qu’on ne m’en empêche pas.
+      coup-de-main:
+        libelle: Un coup de main
+        aide: J’y arrive, mais c’est bien plus simple si on m’aide un peu.
+      cooperation:
+        libelle: Coopération
+        aide: Sans l’engagement des autres, ça ne se fait pas.
+
+noeuds:
+  son: { libelle: Son, aide: Tout ce qui s’entend depuis les espaces partagés. }
+  musique: { libelle: Musique }
+  instrument: { libelle: Jouer d’un instrument }
+  chant: { libelle: Chanter }
+  musique-enregistree: { libelle: Musique enregistrée, aide: Enceintes, casque ouvert, fond sonore. }
+  conversations: { libelle: Conversations }
+  conversations-tardives: { libelle: Conversations tardives }
+  silence: { libelle: Silence, aide: Des plages où l’on peut compter sur le calme. }
+  espaces: { libelle: Espaces }
+  espaces-communs: { libelle: Espaces communs }
+  cuisine: { libelle: Cuisine }
+  salon: { libelle: Salon }
+  rangement: { libelle: Rangement, aide: L’état dans lequel on laisse les lieux. }
+  espaces-prives: { libelle: Espaces privés }
+  chambre: { libelle: Chambre }
+  visites-en-prive: { libelle: Recevoir en privé }
+  alimentation: { libelle: Alimentation }
+  repas-partages: { libelle: Repas partagés }
+  courses-communes: { libelle: Courses communes }
+  regimes: { libelle: Régimes et restrictions }
+  rythmes: { libelle: Rythmes }
+  nuits: { libelle: Nuits }
+  matins: { libelle: Matins }
+  absences: { libelle: Absences, aide: Partir, revenir, prévenir ou non. }
+  decisions: { libelle: Décisions }
+  reunions: { libelle: Réunions }
+  conflits: { libelle: Conflits, aide: Comment on les aborde quand ils arrivent. }
+  argent-commun: { libelle: Argent commun }
+  soiree-dansante: { libelle: Soirée dansante, aide: Relève à la fois de la musique et des espaces communs. }
+  invites: { libelle: Invités, aide: Relève à la fois des espaces communs et des rythmes. }

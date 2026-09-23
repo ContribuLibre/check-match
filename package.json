@@ -1,0 +1,30 @@
+{
+  "name": "check-match",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "dev": "bun --bun vite",
+    "build": "bun --bun tsc --noEmit && bun --bun vite build",
+    "preview": "bun --bun vite preview",
+    "typecheck": "bun --bun tsc --noEmit",
+    "test": "bun --bun vitest run",
+    "valide:grilles": "bun src/CI/valide-grilles.ts",
+    "check": "bun run valide:grilles && bun run typecheck && bun run test && bun run build"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "@types/node": "^24.0.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "bun": ">=1.2"
+  },
+  "packageManager": "bun@1.4.0"
+}

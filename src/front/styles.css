@@ -1,0 +1,183 @@
+:root {
+  --fond: #15171c;
+  --panneau: #1e2128;
+  --panneau-haut: #272b34;
+  --encre: #e9eaee;
+  --encre-pale: #99a0ab;
+  --trait-ui: #343a45;
+  --accent: #6db5fe;
+  /* Voile posé sur le dégradé d’un secteur vide : il suit le fond de page,
+     sinon il éblouit sur thème sombre. */
+  --voile: #15171c;
+  --voile-opacite: .72;
+  --trait: #4b5160;
+  color-scheme: dark light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --fond: #f5f6f8;
+    --panneau: #fff;
+    --panneau-haut: #eceef2;
+    --encre: #1a1c20;
+    --encre-pale: #5e6572;
+    --trait-ui: #d5d9e0;
+    --accent: #1f6feb;
+    --voile: #fff;
+    --voile-opacite: .8;
+    --trait: #000;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding-bottom: 20rem;
+  background: var(--fond);
+  color: var(--encre);
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.degrades { position: absolute; width: 0; height: 0; }
+
+/* --- entête ------------------------------------------------------------- */
+
+.entete {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.25rem;
+  align-items: center;
+  padding: .7rem 1.2rem;
+  background: var(--panneau);
+  border-bottom: 1px solid var(--trait-ui);
+}
+
+.entete h1 { margin: 0; font-size: 1.05rem; }
+.entete label { display: flex; gap: .4rem; align-items: center; color: var(--encre-pale); font-size: .85rem; }
+
+select, button {
+  padding: .3rem .55rem;
+  border: 1px solid var(--trait-ui);
+  border-radius: 6px;
+  background: var(--panneau-haut);
+  color: var(--encre);
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+}
+
+select:hover, button:hover { border-color: var(--accent); }
+
+.avancement {
+  margin-left: auto;
+  color: var(--encre-pale);
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.erreur { margin: 1rem; padding: .8rem 1rem; border-radius: 6px; background: #47232a; color: #ffd8dc; }
+
+/* --- arbre -------------------------------------------------------------- */
+
+main { padding: 1rem 1.2rem; }
+
+.arbre, .arbre ul { margin: 0; padding: 0; list-style: none; }
+
+.noeud > .ligne {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  /* La profondeur se lit dans le décalage, sans compter les niveaux. */
+  margin-left: calc(var(--niveau) * 1.35rem);
+  padding: .25rem .5rem;
+  border-left: 2px solid var(--trait-ui);
+  border-radius: 0 6px 6px 0;
+}
+
+.noeud > .ligne:hover { background: var(--panneau); }
+
+.intitule { display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.libelle { font-size: .95rem; }
+.aide { color: var(--encre-pale); font-size: .78rem; margin: 0; }
+.multi { color: var(--accent); cursor: help; }
+
+.etoiles { display: flex; gap: .35rem; flex: 0 0 auto; }
+
+.etoile-bouton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .1rem;
+  padding: .15rem .25rem;
+  border-color: transparent;
+  background: none;
+}
+
+.etoile-bouton svg { width: 40px; height: 40px; display: block; }
+.etoile-bouton.ouvert { border-color: var(--accent); background: var(--panneau-haut); }
+.facette-nom { color: var(--encre-pale); font-size: .68rem; }
+.etoile-bouton.propre .facette-nom { color: var(--encre); }
+
+/* --- éditeur ------------------------------------------------------------ */
+
+.editeur {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  max-height: 62vh;
+  overflow-y: auto;
+  padding: 1rem 1.2rem;
+  background: var(--panneau);
+  border-top: 1px solid var(--accent);
+  box-shadow: 0 -10px 30px #0007;
+}
+
+.editeur-entete { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+.editeur-entete h3 { margin: 0 0 .2rem; font-size: 1.05rem; }
+.editeur-entete code { color: var(--encre-pale); font-size: .72rem; }
+.editeur-entete .actions { margin-left: auto; display: flex; gap: .4rem; flex-wrap: wrap; }
+.grande-etoile svg { width: 130px; height: 130px; display: block; }
+
+.criteres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: .8rem 1.4rem;
+}
+
+.critere-nom {
+  display: flex;
+  gap: .5rem;
+  align-items: baseline;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--couleur, var(--encre));
+}
+
+.provenance { font-weight: 400; font-size: .72rem; }
+.provenance.propre { color: var(--accent); }
+.provenance.herite { color: var(--encre-pale); font-style: italic; }
+.provenance.vide { color: var(--encre-pale); }
+
+.paliers { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .3rem; }
+
+.paliers .palier { flex: 1 1 auto; padding: .28rem .5rem; font-size: .76rem; }
+
+.paliers .palier.choisi {
+  border-color: var(--couleur);
+  background: var(--couleur);
+  color: #101215;
+  font-weight: 600;
+  /* Les couleurs de critères couvrent toute la gamme, certaines très sombres. */
+  text-shadow: 0 0 3px #fff9, 0 0 1px #fff;
+}
+
+.historique { margin-top: 1rem; padding-top: .7rem; border-top: 1px solid var(--trait-ui); }
+.historique h4 { margin: 0 0 .3rem; font-size: .78rem; color: var(--encre-pale); text-transform: uppercase; letter-spacing: .06em; }
+.historique ol { margin: 0; padding-left: 1.2rem; color: var(--encre-pale); font-size: .78rem; }

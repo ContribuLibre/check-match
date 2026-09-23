@@ -1,0 +1,248 @@
+schemaVersion: 1
+id: intimite
+version: "0.1"
+langueParDefaut: en
+langues:
+  en: ./en.yml
+
+attenuation: 0.5
+
+facettes:
+  - id: agir
+    principale: true
+  - id: recevoir
+  - id: temoin
+
+criteres:
+  - id: experience
+    couleurMin: "#04C"
+    couleurMax: "#FC0"
+    paliers:
+      - { id: unknown, score: 0 }
+      - { id: heard, score: 0.1 }
+      - { id: once, score: 0.25 }
+      - { id: few, score: 0.5 }
+      - { id: good, score: 0.8 }
+      - { id: expert, score: 1 }
+  - id: excitment
+    couleurMin: "#AAA"
+    couleurMax: "#F60"
+    paliers:
+      - { id: none, score: 0 }
+      - { id: a-little, score: 0.2 }
+      - { id: like, score: 0.5 }
+      - { id: love, score: 0.8 }
+      - { id: total-fantasy, score: 1 }
+  - id: disgust
+    couleurMin: "#848"
+    couleurMax: "#660"
+    paliers:
+      - { id: none, score: 0 }
+      - { id: disinterest, score: 0.1 }
+      - { id: repulsed, score: 0.33 }
+      - { id: disgust, score: 0.66 }
+      - { id: vomiting, score: 1 }
+  - id: exhibition
+    couleurMin: "#111"
+    couleurMax: "#F8C"
+    paliers:
+      - { id: taboo, score: 0 }
+      - { id: secret, score: 0.1 }
+      - { id: private, score: 0.25 }
+      - { id: community, score: 0.5 }
+      - { id: shared, score: 0.66 }
+      - { id: public, score: 0.9 }
+      - { id: star, score: 1 }
+  - id: fear
+    couleurMin: "#8D6"
+    couleurMax: "#8DF"
+    paliers:
+      - { id: none, score: 0 }
+      - { id: uncomfortable, score: 0.1 }
+      - { id: scary, score: 0.25 }
+      - { id: fear, score: 0.5 }
+      - { id: terror, score: 0.8 }
+      - { id: petrified, score: 1 }
+  - id: acceptance
+    couleurMin: "#E00"
+    couleurMax: "#6F0"
+    paliers:
+      - { id: never, score: 0 }
+      - { id: warning, score: 0.1 }
+      - { id: tolerate, score: 0.25 }
+      - { id: ok, score: 0.5 }
+      - { id: sometimes, score: 0.6 }
+      - { id: mostly, score: 0.8 }
+      - { id: always, score: 1 }
+  - id: aftercare
+    couleurMin: "#666"
+    couleurMax: "#FD0"
+    paliers:
+      - { id: dislike, score: 0 }
+      - { id: indifferent, score: 0.1 }
+      - { id: optional, score: 0.25 }
+      - { id: check, score: 0.5 }
+      - { id: need, score: 0.8 }
+      - { id: many, score: 1 }
+  - id: explicit
+    couleurMin: "#EAF"
+    couleurMax: "#A0C"
+    paliers:
+      - { id: do-it, score: 0 }
+      - { id: i-will, score: 0.1 }
+      - { id: after-check, score: 0.2 }
+      - { id: first-time, score: 0.33 }
+      - { id: by-session, score: 0.5 }
+      - { id: ask, score: 0.66 }
+      - { id: always-ask, score: 0.8 }
+      - { id: in-advance, score: 0.9 }
+      - { id: i-ask, score: 1 }
+
+noeuds:
+  - id: bodies
+    enfants:
+      - id: skinny
+      - id: chubby
+      - id: small-breasts
+      - id: large-breasts
+      - id: small-cocks
+      - id: large-cocks
+  - id: clothing
+    enfants:
+      - id: clothed-sex
+      - id: lingerie
+      - id: stockings
+      - id: heels
+      - id: leather
+      - id: latex
+      - id: uniform-costume
+      - id: cross-dressing
+  - id: groupings
+    enfants:
+      - id: you-and-1-male
+      - id: you-and-1-female
+      - id: you-and-mtf-trans
+      - id: you-and-ftm-trans
+      - id: you-and-1-male-1-female
+      - id: you-and-2-males
+      - id: you-and-2-females
+      - id: orgy
+  - id: general
+    enfants:
+      - id: romance-affection
+      - id: handjob-fingering
+      - id: blowjob
+      - id: deep-throat
+      - id: swallowing
+      - id: facials
+      - id: cunnilingus
+      - id: face-sitting
+      - id: edging
+      - id: teasing
+      - id: joi-si
+  - id: ass-play
+    enfants:
+      - id: anal-toys
+      - id: anal-sex-pegging
+      - id: rimming
+      - id: double-penetration
+      - id: anal-fisting
+  - id: restrictive
+    enfants:
+      - id: gag
+      - id: collar
+      - id: leash
+      - id: chastity
+      - id: bondage-light
+      - id: bondage-heavy
+      - id: encasement
+  - id: toys
+    enfants:
+      - id: dildos
+      - id: plugs
+      - id: vibrators
+      - id: sounding
+  - id: domination
+    enfants:
+      - id: dominant-submissive
+      - id: domestic-servitude
+      - id: slavery
+      - id: pet-play
+      - id: dd-lg-md-lb
+      - id: discipline
+      - id: begging
+      - id: forced-orgasm
+      - id: orgasm-control
+      - id: orgasm-denial
+      - id: power-exchange
+  - id: no-consent
+    enfants:
+      - id: non-con-rape
+      - id: blackmail-coercion
+      - id: kidnapping
+      - id: drugs-alcohol
+      - id: sleep-play
+  - id: taboo
+    enfants:
+      - id: incest
+      - id: ageplay
+      - id: interracial-raceplay
+      - id: bestiality
+      - id: necrophilia
+      - id: cheating
+      - id: exhibitionism
+      - id: voyeurism
+  - id: surrealism
+    enfants:
+      - id: futanari
+      - id: furry
+      - id: vore
+      - id: transformation
+      - id: tentacles
+      - id: monster-or-alien
+  - id: fluids
+    enfants:
+      - id: blood
+      - id: watersports
+      - id: scat
+      - id: lactation
+      - id: diapers
+      - id: cum-play
+  - id: degradation
+    enfants:
+      - id: glory-hole
+      - id: name-calling
+      - id: humiliation
+  - id: touch-stimulation
+    enfants:
+      - id: cock-pussy-worship
+      - id: ass-worship
+      - id: foot-play
+      - id: tickling
+      - id: sensation-play
+      - id: electro-stimulation
+  - id: misc-fetish
+    enfants:
+      - id: fisting
+      - id: gangbang
+      - id: breath-play
+      - id: impregnation
+      - id: pregnancy
+      - id: feminization
+      - id: cuckold-cuckquean
+  - id: pain
+    enfants:
+      - id: light-pain
+      - id: heavy-pain
+      - id: nipple-clamps
+      - id: clothes-pins
+      - id: caning
+      - id: flogging
+      - id: beating
+      - id: spanking
+      - id: cock-pussy-slapping
+      - id: cock-pussy-torture
+      - id: hot-wax
+      - id: scratching
+      - id: biting
+      - id: cutting

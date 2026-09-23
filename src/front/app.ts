@@ -16,6 +16,9 @@ import { creerReplis, type Replis } from './repli.ts'
 import { estAjoute } from '../domaine/ajouts.ts'
 import { creerAjouts } from '../donnees/ajouts-stockage.ts'
 import { composerChecklist, composerReponses, nomFichier, telecharger } from './export.ts'
+import { ouvrirFormulaire } from './lightbox.ts'
+import { formulaireSujet, lireSujet } from './sujet-formulaire.ts'
+import { DEPOT, ouvrirContribuer, ouvrirInspirations, type Inspiration } from './contribuer.ts'
 // Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
 // peut charger aucune image à côté de lui.
 import logoSvg from '../../public/icons/icon.svg?raw'
@@ -26,13 +29,12 @@ const echapper = (texte: string): string =>
   }[caractere] ?? caractere))
 
 const EXTERNE = ' target="_blank" rel="noreferrer noopener"'
-const DEPOT = 'https://github.com/ContribuLibre/check-match'
 
 /** D’où vient ce projet. Deux sources, donc un panneau plutôt qu’un lien. */
-const INSPIRATIONS = [
-  { nom: 'KinkList', url: 'https://github.com/Goctionni/KinkList', texte: 'inspirationKinklist' },
-  { nom: '1 Thunomètre', url: 'https://framagit.org/contribulibre/1thunometre', texte: 'inspirationThunometre' },
-] as const
+const inspirations = (ui: Textes): Inspiration[] => [
+  { nom: 'KinkList', url: 'https://github.com/Goctionni/KinkList', texte: ui.inspirationKinklist },
+  { nom: '1 Thunomètre', url: 'https://framagit.org/contribulibre/1thunometre', texte: ui.inspirationThunometre },
+]
 
 interface Etat {
   personne: string | null
@@ -104,8 +106,7 @@ export function demarrer(
     // Le panneau de réglages reste ouvert d’un rendu à l’autre : le refermer à
     // chaque clic empêcherait d’essayer deux réglages de suite.
     const reglagesOuverts = champs.entete.querySelector<HTMLDetailsElement>('[data-reglages]')?.open ?? false
-    const inspirationsOuvertes = champs.entete.querySelector<HTMLDetailsElement>('[data-inspirations]')?.open ?? false
-    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts, inspirationsOuvertes)
+    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts)
     afficherAvancement(grille, valeurs, ctx)
     champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
     champs.pied.innerHTML = piedHtml(ctx)
@@ -179,7 +180,7 @@ export function demarrer(
       return
     }
     if (cible.closest('[data-ajouter-racine]')) {
-      ajouterSujet([])
+      void ajouterSujet([])
       return
     }
     if (cible.closest('[data-exporter-reponses]')) {
@@ -193,6 +194,14 @@ export function demarrer(
       telecharger(nomFichier('checklist', livree.grille.id),
         composerChecklist(livree.definition, livree.traductions,
           ajouts.pourGrille(etat.personne!, livree.grille.id)))
+      return
+    }
+    if (cible.closest('[data-contribuer]')) {
+      ouvrirContribuer(prefs.langue)
+      return
+    }
+    if (cible.closest('[data-inspirations]')) {
+      ouvrirInspirations(prefs.langue, inspirations(textesUi(prefs.langue)))
       return
     }
     if (cible.closest('[data-tout-replier]')) {
@@ -242,7 +251,7 @@ export function demarrer(
 
     const ajout = cible.closest<HTMLElement>('[data-ajouter-sous]')
     if (ajout) {
-      ajouterSujet([ajout.dataset.ajouterSous!])
+      void ajouterSujet([ajout.dataset.ajouterSous!])
       return
     }
     const retrait = cible.closest<HTMLElement>('[data-retirer]')
@@ -299,17 +308,23 @@ export function demarrer(
     }
   })
 
-  /** Demande un libellé et range le sujet sous les parents donnés. */
-  function ajouterSujet(parents: string[]): void {
+  /**
+   * Ouvre le formulaire d’ajout, puis range le sujet.
+   *
+   * Tout y a un défaut qui convient presque toujours — le rangement proposé est
+   * celui d’où l’on a cliqué, les polarités et les parts sont celles de la
+   * grille. Ce qui se règle rarement est derrière un repli.
+   */
+  async function ajouterSujet(parents: string[]): Promise<void> {
     if (!etat.personne) return
     const ui = textesUi(prefs.langue)
-    const label = prompt(ui.ajouterSujetInvite)
-    if (!label?.trim()) return
+    const saisi = await ouvrirFormulaire(formulaireSujet(etat.disponible, parents, ui, prefs.langue))
+    if (!saisi) return
     try {
-      ajouts.ajouter(etat.personne, etat.disponible.grille.id, label, parents,
-        etat.disponible.grille.noeuds.keys())
+      const sujet = lireSujet(saisi, etat.disponible.grille)
+      ajouts.ajouter(etat.personne, etat.disponible.grille.id, sujet, etat.disponible.grille.noeuds.keys())
       // Un sujet ajouté sous une rubrique repliée resterait invisible.
-      for (const parent of parents) if (replis.estReplie(parent)) replis.basculer(parent)
+      for (const parent of sujet.parents) if (replis.estReplie(parent)) replis.basculer(parent)
       afficher()
     } catch (erreur) {
       alert(erreur instanceof Error ? erreur.message : String(erreur))
@@ -334,7 +349,7 @@ export function demarrer(
 
 // --- en-tête --------------------------------------------------------------
 
-function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean, inspirationsOuvertes = false): string {
+function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean): string {
   const { etat, ui, prefs } = ctx
   const personnes = stockage.personnes()
 
@@ -380,17 +395,6 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
     </div>
   </details>`
 
-  const inspirations = `<details class="reglages" data-inspirations${inspirationsOuvertes ? ' open' : ''}>
-    <summary>${echapper(ui.inspiration)}</summary>
-    <div class="reglages-panneau inspirations">
-      <p class="aide">${echapper(ui.inspirationIntro)}</p>
-      ${INSPIRATIONS.map((source) => `<p class="inspiration">
-        <a href="${source.url}"${EXTERNE}>${echapper(source.nom)}</a>
-        <span class="aide">${echapper(ui[source.texte])}</span>
-      </p>`).join('')}
-    </div>
-  </details>`
-
   const outils = `<details class="reglages" data-exports>
     <summary>${echapper(ui.exporter)}</summary>
     <div class="reglages-panneau">
@@ -406,9 +410,12 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
     <button type="button" data-tout-deplier title="${echapper(ui.toutDeplier)}">⊞</button>
   </div>`
 
+  // Deux panneaux, pas deux liens : contribuer ne se résume pas à une adresse,
+  // et d’où vient le projet non plus.
   const liens = `<nav class="entete-liens">
-    <a href="${DEPOT}"${EXTERNE}>${echapper(ui.contribuer)}</a>
-  </nav>${inspirations}`
+    <button type="button" data-contribuer>${echapper(ui.contribuer)}</button>
+    <button type="button" data-inspirations>${echapper(ui.inspiration)}</button>
+  </nav>`
 
   return `${marque}${qui}${quelleGrille}${pliage}${outils}${liens}${langue}${reglages}
     <span class="avancement" data-avancement></span>`

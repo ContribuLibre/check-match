@@ -18,8 +18,19 @@ export interface NoeudAjoute {
   help?: string
   /** Rubriques auxquelles il se rattache ; vide = sujet de premier niveau. */
   parents: string[]
+  /**
+   * Polarités et parts qui le concernent. Absentes, celles de la grille
+   * s’appliquent — c’est le cas courant, et c’est ce qui garde un ajout
+   * comparable au reste. Les préciser sert aux sujets qui ne se posent que
+   * d’une place, ou qui ne se qualifient que d’une façon.
+   */
+  polarities?: string[]
+  parts?: string[]
   creeLe: number
 }
+
+/** Ce qu’il faut savoir pour créer un sujet ; l’identifiant, lui, est dérivé. */
+export type SujetAjoute = Omit<NoeudAjoute, 'id' | 'creeLe'>
 
 /** Ajouts d’une personne, rangés par grille. */
 export type Ajouts = Record<string, NoeudAjoute[]>
@@ -72,6 +83,8 @@ export function augmenterDefinition(
   const noeuds: NoeudDefinition[] = ajouts.map((ajout) => ({
     id: ajout.id,
     parents: ajout.parents.filter((parent) => connus.has(parent) || ajouts.some((autre) => autre.id === parent)),
+    ...(ajout.polarities?.length ? { polarities: ajout.polarities } : {}),
+    ...(ajout.parts?.length ? { parts: ajout.parts } : {}),
   }))
 
   return { ...definition, nodes: [...definition.nodes, ...noeuds] }

@@ -21,7 +21,6 @@ export interface Textes {
   avancement: (repondues: number, heritees: number, vides: number, total: number) => string
   contribuer: string
   inspiration: string
-  inspirationIntro: string
   inspirationKinklist: string
   inspirationThunometre: string
   reglages: string
@@ -65,7 +64,20 @@ export interface Textes {
   deplier: string
   ajouterSujet: string
   ajouterSujetIci: string
-  ajouterSujetInvite: string
+  ajouterSujetTitre: string
+  ajouterSujetIntro: string
+  ajouter: string
+  annuler: string
+  champLibelle: string
+  champAide: string
+  champAideAide: string
+  champRangement: string
+  champRangementAide: string
+  champPolarites: string
+  champPolaritesAide: string
+  champParts: string
+  champPartsAide: string
+  champsAvances: string
   retirerSujet: string
   retirerSujetConfirme: string
   sujetAjoute: string
@@ -94,7 +106,6 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
       `${repondues} répondues, ${heritees} héritées, ${vides} vides (sur ${total} étoiles)`,
     contribuer: 'Contribuer',
     inspiration: 'Inspirations',
-    inspirationIntro: 'Ce dont ce projet est issu, et ce dont il s’inspire.',
     inspirationKinklist: 'La liste dont viennent les items d’« Intimité », et le point de départ du projet.',
     inspirationThunometre: 'Dont viennent l’organisation du projet, les réglages et le fonctionnement hors ligne.',
     reglages: 'Réglages',
@@ -138,7 +149,20 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     deplier: 'Déplier',
     ajouterSujet: '+ sujet',
     ajouterSujetIci: 'Ajouter un sous-sujet ici',
-    ajouterSujetInvite: 'Libellé du nouveau sujet :',
+    ajouterSujetTitre: 'Ajouter un sujet',
+    ajouterSujetIntro: 'Il vous appartient : personne d’autre ne le verra, et il hérite comme n’importe quel sujet de la grille.',
+    ajouter: 'Ajouter',
+    annuler: 'Annuler',
+    champLibelle: 'Sujet',
+    champAide: 'Précision',
+    champAideAide: 'Ce qui lève l’ambiguïté, s’il y en a une.',
+    champRangement: 'Ranger sous',
+    champRangementAide: 'Rien de coché : le sujet apparaît au premier niveau. Plusieurs rubriques : il relève de chacune.',
+    champPolarites: 'Polarités',
+    champPolaritesAide: 'Les places depuis lesquelles ce sujet se pose. Tout décocher revient à garder celles de la grille.',
+    champParts: 'Parts',
+    champPartsAide: 'Les façons de le qualifier. Tout décocher revient à garder celles de la grille.',
+    champsAvances: 'Ce qui a déjà un réglage',
     retirerSujet: 'Retirer ce sujet',
     retirerSujetConfirme: 'Retirer ce sujet et ce qu’il contient ? Les réponses déjà posées dessus resteront enregistrées.',
     sujetAjoute: 'Ajouté par vous',
@@ -161,7 +185,6 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
       `${repondues} answered, ${heritees} inherited, ${vides} empty (of ${total} stars)`,
     contribuer: 'Contribute',
     inspiration: 'Inspirations',
-    inspirationIntro: 'What this project came from, and what it draws on.',
     inspirationKinklist: 'The list the “Intimacy” items come from, and the starting point of the project.',
     inspirationThunometre: 'Where the project layout, the settings and the offline support come from.',
     reglages: 'Settings',
@@ -205,7 +228,20 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     deplier: 'Expand',
     ajouterSujet: '+ subject',
     ajouterSujetIci: 'Add a sub-subject here',
-    ajouterSujetInvite: 'Label of the new subject:',
+    ajouterSujetTitre: 'Add a subject',
+    ajouterSujetIntro: 'It is yours: nobody else sees it, and it inherits like any subject of the grid.',
+    ajouter: 'Add',
+    annuler: 'Cancel',
+    champLibelle: 'Subject',
+    champAide: 'Detail',
+    champAideAide: 'What removes the ambiguity, if there is one.',
+    champRangement: 'File under',
+    champRangementAide: 'Nothing ticked: the subject shows at top level. Several sections: it belongs to each.',
+    champPolarites: 'Polarities',
+    champPolaritesAide: 'The places this subject arises from. Unticking everything keeps those of the grid.',
+    champParts: 'Parts',
+    champPartsAide: 'The ways to qualify it. Unticking everything keeps those of the grid.',
+    champsAvances: 'Already set for you',
     retirerSujet: 'Remove this subject',
     retirerSujetConfirme: 'Remove this subject and what it contains? Answers already given on it stay stored.',
     sujetAjoute: 'Added by you',

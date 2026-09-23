@@ -1,4 +1,4 @@
-import { identifiantAjout, type Ajouts, type NoeudAjoute } from '../domaine/ajouts.ts'
+import { identifiantAjout, type Ajouts, type NoeudAjoute, type SujetAjoute } from '../domaine/ajouts.ts'
 
 /**
  * Les sujets qu’une personne a ajoutés, rangés par grille.
@@ -37,19 +37,24 @@ export function creerAjouts(stockage: Storage, espace = 'cm') {
   function ajouter(
     personne: string,
     grille: string,
-    label: string,
-    parents: string[],
+    sujet: SujetAjoute,
     pris: Iterable<string>,
   ): NoeudAjoute {
-    const propre = label.trim()
+    const propre = sujet.label.trim()
     if (!propre) throw new TypeError('Un sujet sans libellé n’est pas un sujet.')
 
     const ajouts = tous(personne)
     const existants = pourGrille(personne, grille)
+    const aide = sujet.help?.trim()
     const noeud: NoeudAjoute = {
       id: identifiantAjout(propre, [...pris, ...existants.map((ajout) => ajout.id)]),
       label: propre,
-      parents: [...parents],
+      ...(aide ? { help: aide } : {}),
+      parents: [...sujet.parents],
+      // Ce qui vaut déjà par défaut n’est pas enregistré : un ajout qui ne dit
+      // rien suivra la grille même si elle change.
+      ...(sujet.polarities?.length ? { polarities: [...sujet.polarities] } : {}),
+      ...(sujet.parts?.length ? { parts: [...sujet.parts] } : {}),
       creeLe: Date.now(),
     }
     ecrire(personne, { ...ajouts, [grille]: [...existants, noeud] })

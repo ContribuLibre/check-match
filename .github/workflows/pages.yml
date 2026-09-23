@@ -2,6 +2,11 @@ name: Publier sur GitHub Pages
 
 # Publier ce qui est vérifié, et rien d’autre : la même porte d’entrée qu’en
 # local — grilles, types, tests, builds — avant toute mise en ligne.
+#
+# À faire une fois, à la main : Settings → Pages → Source : GitHub Actions.
+# Le jeton d’un workflow n’a pas le droit de créer le site lui-même
+# (« Resource not accessible by integration »), et l’option `enablement` de
+# `configure-pages` échoue donc sur un message qui n’aide personne.
 
 on:
   push:
@@ -23,7 +28,7 @@ jobs:
   construire:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # La version affichée en pied de page compte les commits : sans
           # l’historique complet, elle annoncerait n’importe quoi.
@@ -33,12 +38,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
 
-      # `enablement` active Pages si ce n’est pas déjà fait : sans lui, la
-      # première publication échoue tant que personne n’a cliqué dans les
-      # réglages du dépôt.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

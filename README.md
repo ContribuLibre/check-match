@@ -296,6 +296,20 @@ rendu, pour qu’une page réglée en sombre n’apparaisse pas d’abord en cla
 Chaque rubrique se replie, et le repli est retenu par grille. Une grille de deux
 cents entrées se parcourt ainsi rubrique par rubrique, sans dérouler le reste.
 
+## Mise en ligne
+
+Un pousser sur `main` déclenche `bun run check` puis publie `dist/` sur GitHub
+Pages : rien ne part en ligne qui n’ait passé la même porte qu’en local.
+
+Une chose est à faire **une fois**, à la main : *Settings → Pages → Source :
+GitHub Actions*. Le jeton d’un workflow n’a pas le droit de créer le site
+lui-même, et tant que ce n’est pas fait la publication s’arrête sur un
+« Resource not accessible by integration » qui n’explique rien.
+
+Le site fonctionne dans un sous-chemin (`/check-match/`) sans configuration :
+la page, le manifeste et le service worker n’utilisent que des chemins
+relatifs.
+
 ## Hors ligne et mises à jour
 
 L’application s’installe et fonctionne hors ligne. Une nouvelle version

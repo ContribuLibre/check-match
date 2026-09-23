@@ -1,4 +1,4 @@
-import { proposerDepuisEnfants } from '../domaine/agregation.ts'
+import { peutRemonter, proposerDepuis, type Direction } from '../domaine/agregation.ts'
 import type { Grille } from '../domaine/grille.ts'
 import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.ts'
 import type { Textes } from '../domaine/traduction.ts'
@@ -15,7 +15,7 @@ const echapper = (texte: string): string =>
 interface Etat {
   personne: string | null
   disponible: GrilleDisponible
-  ouvert: { noeud: string; facette: string } | null
+  ouvert: { noeud: string; polarite: string } | null
 }
 
 export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage({ stockage: localStorage })): void {
@@ -77,11 +77,11 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     let herites = 0
     let total = 0
     for (const noeud of grille.noeuds.values()) {
-      for (const facette of noeud.facettes) {
+      for (const polarite of noeud.polarites) {
         total += 1
-        const valeursFacette = Object.values(etoile(valeurs, noeud.id, facette))
-        if (valeursFacette.some((valeur) => valeur.origine === 'propre')) repondus += 1
-        else if (valeursFacette.some((valeur) => valeur.poids > 0)) herites += 1
+        const valeursPolarite = Object.values(etoile(valeurs, noeud.id, polarite))
+        if (valeursPolarite.some((valeur) => valeur.origine === 'propre')) repondus += 1
+        else if (valeursPolarite.some((valeur) => valeur.poids > 0)) herites += 1
       }
     }
     champs.avancement.textContent =
@@ -101,13 +101,13 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
 
   function enregistrer(reponse: Reponse): void {
     if (!etat.ouvert || !etat.personne) return
-    stockage.enregistrer(etat.personne, cle(etat.ouvert.noeud, etat.ouvert.facette), reponse)
+    stockage.enregistrer(etat.personne, cle(etat.ouvert.noeud, etat.ouvert.polarite), reponse)
     afficher()
   }
 
   const reponseCourante = (): Reponse => {
     if (!etat.ouvert || !etat.personne) return {}
-    return stockage.derniere(etat.personne, cle(etat.ouvert.noeud, etat.ouvert.facette))?.reponse ?? {}
+    return stockage.derniere(etat.personne, cle(etat.ouvert.noeud, etat.ouvert.polarite))?.reponse ?? {}
   }
 
   champs.ajout.addEventListener('click', () => {
@@ -135,16 +135,16 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
   })
 
   champs.arbre.addEventListener('click', (evenement) => {
-    const bouton = (evenement.target as HTMLElement).closest<HTMLElement>('[data-noeud][data-facette]')
+    const bouton = (evenement.target as HTMLElement).closest<HTMLElement>('[data-noeud][data-polarite]')
     if (!bouton) return
     if (!etat.personne) {
       alert('Créez d’abord une personne : les réponses sont rangées par personne.')
       return
     }
     const noeud = bouton.dataset.noeud!
-    const facette = bouton.dataset.facette!
-    const dejaOuvert = etat.ouvert?.noeud === noeud && etat.ouvert.facette === facette
-    etat.ouvert = dejaOuvert ? null : { noeud, facette }
+    const polarite = bouton.dataset.polarite!
+    const dejaOuvert = etat.ouvert?.noeud === noeud && etat.ouvert.polarite === polarite
+    etat.ouvert = dejaOuvert ? null : { noeud, polarite }
     afficher()
   })
 
@@ -159,20 +159,24 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
       enregistrer({})
       return
     }
-    if (cible.closest('[data-deduire]')) {
+    const deduire = cible.closest<HTMLElement>('[data-deduire]')
+    if (deduire) {
       const valeurs = calculerValeurs(etat.disponible.grille, reponses())
-      const proposition = proposerDepuisEnfants(etat.disponible.grille, valeurs, etat.ouvert!.noeud, etat.ouvert!.facette)
+      const proposition = proposerDepuis(
+        etat.disponible.grille, valeurs, etat.ouvert!.noeud, etat.ouvert!.polarite,
+        deduire.dataset.deduire as Direction,
+      )
       if (Object.keys(proposition).length) enregistrer(proposition)
       return
     }
     const palier = cible.closest<HTMLElement>('[data-palier]')
     if (palier) {
-      const critere = palier.dataset.critere!
+      const part = palier.dataset.part!
       const index = Number(palier.dataset.palier)
       const courante = { ...reponseCourante() }
       // Recliquer le palier déjà choisi le retire : on peut revenir à « pas répondu ».
-      if (courante[critere] === index) delete courante[critere]
-      else courante[critere] = index
+      if (courante[part] === index) delete courante[part]
+      else courante[part] = index
       enregistrer(courante)
     }
   })
@@ -182,20 +186,20 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
 
 /** Les dégradés sont posés une fois pour toute la page, pas dans chaque étoile. */
 function degradesCaches({ grille }: GrilleDisponible): string {
-  return `<svg width="0" height="0" aria-hidden="true" class="degrades">${degradesSvg(grille.id, grille.criteres)}</svg>`
+  return `<svg width="0" height="0" aria-hidden="true" class="degrades">${degradesSvg(grille.id, grille.parts)}</svg>`
 }
 
-function titreEtoile(textes: Textes, grille: Grille, valeurs: Valeurs, noeud: string, facette: string): string {
-  const etoileValeurs = etoile(valeurs, noeud, facette)
-  const morceaux = grille.criteres
-    .filter((critere) => etoileValeurs[critere.id] && etoileValeurs[critere.id]!.poids > 0)
-    .map((critere) => {
-      const valeur = etoileValeurs[critere.id]!
-      const palier = critere.paliers.reduce((meilleur, candidat) =>
+function titreEtoile(textes: Textes, grille: Grille, valeurs: Valeurs, noeud: string, polarite: string): string {
+  const etoileValeurs = etoile(valeurs, noeud, polarite)
+  const morceaux = grille.parts
+    .filter((part) => etoileValeurs[part.id] && etoileValeurs[part.id]!.poids > 0)
+    .map((part) => {
+      const valeur = etoileValeurs[part.id]!
+      const palier = part.paliers.reduce((meilleur, candidat) =>
         Math.abs(candidat.score - valeur.score) < Math.abs(meilleur.score - valeur.score) ? candidat : meilleur)
-      return `${textes.critere(critere.id)} : ${textes.palier(critere.id, palier.id)}`
+      return `${textes.part(part.id)} : ${textes.palier(part.id, palier.id)}`
     })
-  const prefixe = `${textes.noeud(noeud)} — ${textes.facette(facette)}`
+  const prefixe = `${textes.noeud(noeud)} — ${textes.polarite(polarite)}`
   return morceaux.length ? `${prefixe}. ${morceaux.join(', ')}` : `${prefixe}. Rien de renseigné.`
 }
 
@@ -206,15 +210,15 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): 
     if (!noeud) return ''
     // Un nœud à plusieurs parents apparaît sous chacun : il relève bien des deux.
     const repete = noeud.parents.length > 1
-    const etoiles = noeud.facettes.map((facette) => {
-      const valeursFacette = etoile(valeurs, id, facette)
-      const propre = Object.values(valeursFacette).some((valeur) => valeur.origine === 'propre')
-      const ouvert = etat.ouvert?.noeud === id && etat.ouvert.facette === facette
+    const etoiles = noeud.polarites.map((polarite) => {
+      const valeursPolarite = etoile(valeurs, id, polarite)
+      const propre = Object.values(valeursPolarite).some((valeur) => valeur.origine === 'propre')
+      const ouvert = etat.ouvert?.noeud === id && etat.ouvert.polarite === polarite
       return `<button type="button" class="etoile-bouton${propre ? ' propre' : ''}${ouvert ? ' ouvert' : ''}"
-        data-noeud="${echapper(id)}" data-facette="${echapper(facette)}"
-        title="${echapper(titreEtoile(textes, grille, valeurs, id, facette))}">
-        ${etoileSvg(grille.id, criteresDe(grille, noeud.criteres), valeursFacette, { taille: 40, degradesExternes: true })}
-        <span class="facette-nom">${echapper(textes.facette(facette))}</span>
+        data-noeud="${echapper(id)}" data-polarite="${echapper(polarite)}"
+        title="${echapper(titreEtoile(textes, grille, valeurs, id, polarite))}">
+        ${etoileSvg(grille.id, partsDe(grille, noeud.parts), valeursPolarite, { taille: 40, degradesExternes: true })}
+        <span class="polarite-nom">${echapper(textes.polarite(polarite))}</span>
       </button>`
     }).join('')
 
@@ -236,33 +240,49 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): 
   return `<ul class="arbre">${grille.racines.map((racine) => rendu(racine, [])).join('')}</ul>`
 }
 
-function criteresDe(grille: Grille, ids: string[]) {
-  return ids.map((id) => grille.critere(id)).filter((critere) => critere !== undefined)
+function partsDe(grille: Grille, ids: string[]) {
+  return ids.map((id) => grille.part(id)).filter((part) => part !== undefined)
+}
+
+/**
+ * La remontée est proposée sur chaque sens séparément, et seulement là où elle
+ * produirait quelque chose : un bouton qui ne ferait rien vaut moins qu’un
+ * bouton absent.
+ */
+function boutonsRemontee(grille: Grille, valeurs: Valeurs, ouvert: { noeud: string; polarite: string }): string {
+  const boutons: string[] = []
+  if (peutRemonter(grille, valeurs, ouvert.noeud, ouvert.polarite, 'sujets')) {
+    boutons.push('<button type="button" data-deduire="sujets" title="Résumer d’après ce qui est répondu dans les sous-éléments">Déduire des sous-éléments</button>')
+  }
+  if (peutRemonter(grille, valeurs, ouvert.noeud, ouvert.polarite, 'polarites')) {
+    boutons.push('<button type="button" data-deduire="polarites" title="Résumer d’après ce qui est répondu à chaque place">Déduire des places</button>')
+  }
+  return boutons.join('')
 }
 
 function editeurHtml(
   disponible: GrilleDisponible,
   valeurs: Valeurs,
-  ouvert: { noeud: string; facette: string },
+  ouvert: { noeud: string; polarite: string },
   stockage: Stockage,
   personne: string,
 ): string {
   const { grille, textes } = disponible
   const noeud = grille.noeuds.get(ouvert.noeud)
   if (!noeud) return ''
-  const valeursFacette = etoile(valeurs, ouvert.noeud, ouvert.facette)
-  const saisie = stockage.derniere(personne, cle(ouvert.noeud, ouvert.facette))?.reponse ?? {}
-  const historique = stockage.historique(personne, cle(ouvert.noeud, ouvert.facette))
+  const valeursPolarite = etoile(valeurs, ouvert.noeud, ouvert.polarite)
+  const saisie = stockage.derniere(personne, cle(ouvert.noeud, ouvert.polarite))?.reponse ?? {}
+  const historique = stockage.historique(personne, cle(ouvert.noeud, ouvert.polarite))
 
-  const criteres = criteresDe(grille, noeud.criteres).map((critere) => {
-    const valeur = valeursFacette[critere.id]
-    const choisi = saisie[critere.id]
-    const paliers = critere.paliers.map((palier, index) => {
-      const aide = textes.aidePalier(critere.id, palier.id)
+  const parts = partsDe(grille, noeud.parts).map((part) => {
+    const valeur = valeursPolarite[part.id]
+    const choisi = saisie[part.id]
+    const paliers = part.paliers.map((palier, index) => {
+      const aide = textes.aidePalier(part.id, palier.id)
       return `<button type="button" class="palier${choisi === index ? ' choisi' : ''}"
-        data-critere="${echapper(critere.id)}" data-palier="${index}"
-        style="--couleur: ${echapper(critere.couleurMax)}"
-        ${aide ? `title="${echapper(aide)}"` : ''}>${echapper(textes.palier(critere.id, palier.id))}</button>`
+        data-part="${echapper(part.id)}" data-palier="${index}"
+        style="--couleur: ${echapper(part.couleurMax)}"
+        ${aide ? `title="${echapper(aide)}"` : ''}>${echapper(textes.palier(part.id, palier.id))}</button>`
     }).join('')
 
     // Dire d’où vient la valeur affichée est indispensable : héritée, elle
@@ -273,11 +293,11 @@ function editeurHtml(
         ? `<span class="provenance herite">hérité (poids ${valeur.poids.toFixed(2)})</span>`
         : '<span class="provenance vide">non renseigné</span>'
 
-    return `<div class="critere">
-      <div class="critere-nom" style="--couleur: ${echapper(critere.couleurMax)}">
-        ${echapper(textes.critere(critere.id))} ${provenance}
+    return `<div class="part">
+      <div class="part-nom" style="--couleur: ${echapper(part.couleurMax)}">
+        ${echapper(textes.part(part.id))} ${provenance}
       </div>
-      ${textes.aideCritere(critere.id) ? `<p class="aide">${echapper(textes.aideCritere(critere.id))}</p>` : ''}
+      ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
       <div class="paliers">${paliers}</div>
     </div>`
   }).join('')
@@ -288,18 +308,18 @@ function editeurHtml(
     : ''
 
   return `<header class="editeur-entete">
-      <span class="grande-etoile">${etoileSvg(grille.id, criteresDe(grille, noeud.criteres), valeursFacette, { taille: 130, degradesExternes: true })}</span>
+      <span class="grande-etoile">${etoileSvg(grille.id, partsDe(grille, noeud.parts), valeursPolarite, { taille: 130, degradesExternes: true })}</span>
       <div>
-        <h3>${echapper(textes.noeud(ouvert.noeud))} — ${echapper(textes.facette(ouvert.facette))}</h3>
-        <p class="aide">${echapper(textes.aideFacette(ouvert.facette))}</p>
-        <code>${echapper(cle(ouvert.noeud, ouvert.facette))}</code>
+        <h3>${echapper(textes.noeud(ouvert.noeud))} — ${echapper(textes.polarite(ouvert.polarite))}</h3>
+        <p class="aide">${echapper(textes.aidePolarite(ouvert.polarite))}</p>
+        <code>${echapper(cle(ouvert.noeud, ouvert.polarite))}</code>
       </div>
       <div class="actions">
-        ${noeud.enfants.length ? '<button type="button" data-deduire>Déduire des sous-éléments</button>' : ''}
+        ${boutonsRemontee(grille, valeurs, ouvert)}
         <button type="button" data-effacer>Effacer</button>
         <button type="button" data-fermer>Fermer</button>
       </div>
     </header>
-    <div class="criteres">${criteres}</div>
+    <div class="parts">${parts}</div>
     ${revisions}`
 }

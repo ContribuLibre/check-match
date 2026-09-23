@@ -4,12 +4,13 @@ intro: >-
   around it: eight criteria instead of one axis, three facets, and answers that
   travel down a hierarchy.
 
-facettes:
+polarites:
+  general: { libelle: In general, aide: "Without telling the places apart: to get a rough answer quickly." }
   agir: { libelle: Doing, aide: What I do, initiate or practise myself. }
   recevoir: { libelle: Receiving, aide: What I ask for, want or receive from someone else. }
   temoin: { libelle: Witnessing, aide: Being present while it happens, neither doing it nor receiving it. }
 
-criteres:
+parts:
   experience:
     libelle: Experience
     paliers:

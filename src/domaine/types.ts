@@ -1,3 +1,5 @@
+import type { NomAgregateur } from './agregateurs.ts'
+
 /**
  * Une grille décrit *quoi* est demandé, jamais comment c’est répondu :
  * les réponses vivent dans le stockage, indexées par identifiant de nœud.
@@ -10,22 +12,38 @@ export interface Palier {
   score: number
 }
 
-/** Un critère est une branche de l’étoile, avec sa propre échelle et son propre dégradé. */
-export interface CritereDefinition {
+/** Comment résumer plusieurs valeurs, en descendant et en remontant. */
+export interface Agregation {
+  /** Combiner plusieurs sources d’héritage (plusieurs parents, ou les deux sens). */
+  heritage?: NomAgregateur
+  /** Déduire une rubrique de ses sous-nœuds, ou la polarité générale de ses polarités. */
+  remontee?: NomAgregateur
+}
+
+/** Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé. */
+export interface PartDefinition {
   id: string
   couleurMin: string
   couleurMax: string
   paliers: Palier[]
+  /** Surcharge l’agrégation de la grille : une limite se résume par le minimum, une envie par le maximum. */
+  agregation?: Agregation
 }
 
 /**
- * Une facette est une étoile entière.
- * Un même sujet se vit de plusieurs places : le faire, le recevoir, y assister.
- * Ces places n’ont aucune raison d’avoir les mêmes réponses.
+ * Une polarité est une étoile entière : la place depuis laquelle on répond.
+ *
+ * Elles forment un arbre, exactement comme les sujets. La polarité racine
+ * (« général ») ne distingue pas les places : elle permet de dégrossir vite,
+ * puis de préciser seulement là où les places divergent. L’héritage joue dans
+ * les deux sens — le général descend vers les places, les places se résument
+ * en général.
  */
-export interface FacetteDefinition {
+export interface PolariteDefinition {
   id: string
-  /** Facette proposée par défaut à la saisie ; les autres restent accessibles. */
+  /** Polarité englobante ; absente pour la racine. */
+  parent?: string
+  /** Polarité ouverte par défaut à la saisie. */
   principale?: boolean
 }
 
@@ -36,10 +54,14 @@ export interface NoeudDefinition {
   enfants?: NoeudDefinition[]
   /** Parents supplémentaires : un nœud peut relever de plusieurs rubriques. */
   parents?: string[]
-  /** Restreint les facettes applicables ; par défaut celles de la grille. */
-  facettes?: string[]
-  /** Restreint les critères applicables ; par défaut ceux de la grille. */
-  criteres?: string[]
+  /**
+   * Restreint les polarités applicables, **pour ce nœud et tout son sous-arbre**.
+   * Les polarités englobantes sont conservées d’office : sans elles, on ne
+   * pourrait plus dégrossir au-dessus du détail.
+   */
+  polarites?: string[]
+  /** Restreint les parts applicables, pour ce nœud et tout son sous-arbre. */
+  parts?: string[]
 }
 
 export interface GrilleDefinition {
@@ -49,13 +71,17 @@ export interface GrilleDefinition {
   langueParDefaut: string
   langues: Record<string, string>
   /**
-   * Part du poids conservée à chaque niveau de descente.
+   * Part du poids conservée à chaque niveau de descente dans les sujets.
    * Une réponse donnée sur une rubrique vaut pour ses sous-nœuds, mais moins
    * fort qu’une réponse donnée directement dessus : même score, poids moindre.
    */
   attenuation?: number
-  facettes: FacetteDefinition[]
-  criteres: CritereDefinition[]
+  /** Idem en descendant de la polarité générale vers les places particulières. */
+  attenuationPolarite?: number
+  /** Agrégation par défaut, surchargeable pour chaque part. */
+  agregation?: Agregation
+  polarites: PolariteDefinition[]
+  parts: PartDefinition[]
   noeuds: NoeudDefinition[]
 }
 
@@ -64,22 +90,22 @@ export interface Traduction {
   titre: string
   intro?: string
   noeuds: Record<string, { libelle: string; aide?: string }>
-  facettes: Record<string, { libelle: string; aide?: string }>
-  criteres: Record<string, { libelle: string; aide?: string; paliers: Record<string, { libelle: string; aide?: string }> }>
+  polarites: Record<string, { libelle: string; aide?: string }>
+  parts: Record<string, { libelle: string; aide?: string; paliers: Record<string, { libelle: string; aide?: string }> }>
 }
 
-/** Réponse saisie sur un couple (nœud, facette) : index de palier par critère. */
+/** Réponse saisie sur un couple (nœud, polarité) : index de palier par part. */
 export type Reponse = Record<string, number>
 
 /** D’où vient une valeur affichée, ce qui change entièrement sa lecture. */
 export type Origine = 'propre' | 'herite' | 'absent'
 
-/** Valeur calculée d’un critère : le score ne bouge pas en héritant, le poids si. */
-export interface ValeurCritere {
+/** Valeur calculée d’une part : le score ne bouge pas en héritant, le poids si. */
+export interface ValeurPart {
   score: number
   poids: number
   origine: Origine
 }
 
 /** Valeurs d’une étoile complète. */
-export type ValeurFacette = Record<string, ValeurCritere>
+export type ValeurPolarite = Record<string, ValeurPart>

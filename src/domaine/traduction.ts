@@ -17,14 +17,14 @@ export function creerTextes(traduction: Traduction) {
     intro: traduction.intro ?? '',
     noeud: (id: string): string => traduction.noeuds?.[id]?.libelle ?? id,
     aideNoeud: (id: string): string => traduction.noeuds?.[id]?.aide ?? '',
-    facette: (id: string): string => traduction.facettes?.[id]?.libelle ?? id,
-    aideFacette: (id: string): string => traduction.facettes?.[id]?.aide ?? '',
-    critere: (id: string): string => traduction.criteres?.[id]?.libelle ?? id,
-    aideCritere: (id: string): string => traduction.criteres?.[id]?.aide ?? '',
-    palier: (critere: string, palier: string): string =>
-      traduction.criteres?.[critere]?.paliers?.[palier]?.libelle ?? palier,
-    aidePalier: (critere: string, palier: string): string =>
-      traduction.criteres?.[critere]?.paliers?.[palier]?.aide ?? '',
+    polarite: (id: string): string => traduction.polarites?.[id]?.libelle ?? id,
+    aidePolarite: (id: string): string => traduction.polarites?.[id]?.aide ?? '',
+    part: (id: string): string => traduction.parts?.[id]?.libelle ?? id,
+    aidePart: (id: string): string => traduction.parts?.[id]?.aide ?? '',
+    palier: (part: string, palier: string): string =>
+      traduction.parts?.[part]?.paliers?.[palier]?.libelle ?? palier,
+    aidePalier: (part: string, palier: string): string =>
+      traduction.parts?.[part]?.paliers?.[palier]?.aide ?? '',
   }
 }
 
@@ -43,14 +43,14 @@ export function clesManquantes(grille: Grille, traduction: Traduction): string[]
   for (const id of grille.noeuds.keys()) {
     if (!traduction.noeuds?.[id]?.libelle) manquantes.push(`noeuds.${id}`)
   }
-  for (const facette of grille.facettes) {
-    if (!traduction.facettes?.[facette.id]?.libelle) manquantes.push(`facettes.${facette.id}`)
+  for (const polarite of grille.polarites.values()) {
+    if (!traduction.polarites?.[polarite.id]?.libelle) manquantes.push(`polarites.${polarite.id}`)
   }
-  for (const critere of grille.criteres) {
-    const traduit = traduction.criteres?.[critere.id]
-    if (!traduit?.libelle) manquantes.push(`criteres.${critere.id}`)
-    for (const palier of critere.paliers) {
-      if (!traduit?.paliers?.[palier.id]?.libelle) manquantes.push(`criteres.${critere.id}.paliers.${palier.id}`)
+  for (const part of grille.parts) {
+    const traduit = traduction.parts?.[part.id]
+    if (!traduit?.libelle) manquantes.push(`parts.${part.id}`)
+    for (const palier of part.paliers) {
+      if (!traduit?.paliers?.[palier.id]?.libelle) manquantes.push(`parts.${part.id}.paliers.${palier.id}`)
     }
   }
   return manquantes

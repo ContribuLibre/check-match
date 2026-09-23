@@ -8,14 +8,27 @@ langues:
 # Une réponse posée sur une rubrique vaut pour tout ce qu’elle contient, avec le
 # même score mais la moitié du poids à chaque niveau de descente.
 attenuation: 0.5
+# Idem en descendant du général vers les places particulières.
+attenuationPolarite: 0.5
 
-facettes:
-  - id: agir
+# Comment résumer plusieurs valeurs en une, par défaut.
+agregation:
+  heritage: moyenne
+  remontee: moyenne
+
+# Les polarités forment un arbre. Le général ne distingue pas les places : il
+# sert à dégrossir, puis on précise là où les places divergent.
+polarites:
+  - id: general
     principale: true
+  - id: agir
+    parent: general
   - id: recevoir
+    parent: general
   - id: temoin
+    parent: general
 
-criteres:
+parts:
   - id: avis
     couleurMin: "#C00"
     couleurMax: "#5B0"
@@ -28,6 +41,10 @@ criteres:
   - id: importance
     couleurMin: "#BBB"
     couleurMax: "#F60"
+    # Il suffit d’un sujet qui compte pour que la rubrique compte : la moyenne
+    # diluerait ce qui est justement le plus saillant.
+    agregation:
+      remontee: max
     paliers:
       - { id: indifferent, score: 0 }
       - { id: accessoire, score: 0.2 }
@@ -37,6 +54,9 @@ criteres:
   - id: autonomie
     couleurMin: "#07A"
     couleurMax: "#C0B"
+    # C’est le besoin de coopération le plus fort qui contraint l’ensemble.
+    agregation:
+      remontee: max
     paliers:
       - { id: quoi-quil-en-coute, score: 0 }
       - { id: dans-mon-coin, score: 0.2 }
@@ -56,7 +76,7 @@ noeuds:
         enfants:
           - id: conversations-tardives
       - id: silence
-        facettes: [recevoir, temoin]
+        polarites: [recevoir, temoin]
 
   - id: espaces
     enfants:
@@ -75,7 +95,7 @@ noeuds:
       - id: repas-partages
       - id: courses-communes
       - id: regimes
-        facettes: [agir, recevoir]
+        polarites: [agir, recevoir]
 
   - id: rythmes
     enfants:

@@ -3,7 +3,10 @@ intro: >-
   Se situer sur ce qui fait le quotidien d’un lieu partagé, sujet par sujet,
   en distinguant ce qu’on fait, ce qu’on reçoit et ce dont on est témoin.
 
-facettes:
+polarites:
+  general:
+    libelle: En général
+    aide: "Sans distinguer les places : pour dégrossir vite, ou pour ce qui ne se découpe pas."
   agir:
     libelle: Faire
     aide: Ce que je produis, déclenche ou pratique moi-même.
@@ -14,7 +17,7 @@ facettes:
     libelle: Être témoin
     aide: Être là pendant que ça a lieu sans en être la destinataire ni l’autrice.
 
-criteres:
+parts:
   avis:
     libelle: Mon avis
     aide: Ce que j’en pense, indépendamment de l’importance que ça a pour moi.

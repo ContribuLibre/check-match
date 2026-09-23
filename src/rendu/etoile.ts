@@ -2,9 +2,9 @@
  * Géométrie pure de l’étoile : aucune dépendance au DOM, donc testable telle
  * quelle et réutilisable pour un export.
  *
- * Chaque critère possède un secteur angulaire, dessiné en pointe :
+ * Chaque part possède un secteur angulaire, dessiné en pointe :
  * centre → bord gauche à mi-rayon → pointe → bord droit à mi-rayon.
- * Les secteurs sont à angle fixe, donc un critère est toujours à la même place
+ * Les secteurs sont à angle fixe, donc une part est toujours à la même place
  * et deux étoiles se comparent d’un coup d’œil.
  */
 
@@ -48,7 +48,7 @@ export function porteeBranche(score: number): number {
 }
 
 /**
- * @param valeurs une par critère, dans l’ordre des branches
+ * @param valeurs une par part, dans l’ordre des branches
  * @param taille  diamètre du dessin
  */
 export function geometrieEtoile(

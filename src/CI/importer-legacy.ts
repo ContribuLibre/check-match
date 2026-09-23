@@ -7,7 +7,7 @@
  *
  * Les colonnes de l’ancien format ne sont pas reprises : elles disaient déjà,
  * maladroitement et différemment d’une rubrique à l’autre (Giving/Receiving,
- * Self/Partner, Dominant/Submissive…), ce que les facettes disent maintenant
+ * Self/Partner, Dominant/Submissive…), ce que les polarités disent maintenant
  * partout de la même façon. Ce qui est repris, c’est la hiérarchie et le texte.
  *
  * Usage : bun src/CI/importer-legacy.ts <fichier.txt> <id-grille> > grille.yml
@@ -43,7 +43,7 @@ export function analyser(texte: string): RubriqueImportee[] {
       rubriques.push(courante)
       return
     }
-    if (/^\(.*\)$/.test(ligne)) return // colonnes de l’ancien format, remplacées par les facettes
+    if (/^\(.*\)$/.test(ligne)) return // colonnes de l’ancien format, remplacées par les polarités
 
     const element = /^\*\s*(.+)$/.exec(ligne)
     if (element?.[1]) {

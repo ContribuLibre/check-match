@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { construireGrille, ErreurGrille } from './grille.ts'
 import { calculerValeurs, cle, etoile, type Reponses } from './heritage.ts'
-import { proposerDepuisEnfants } from './agregation.ts'
+import { proposerDepuis } from './agregation.ts'
 import type { GrilleDefinition } from './types.ts'
 
-const criteres = [
+const parts = [
   {
     id: 'avis',
     couleurMin: '#E00',
@@ -28,16 +28,25 @@ const criteres = [
   },
 ]
 
-const definition = (noeuds: GrilleDefinition['noeuds'], attenuation?: number): GrilleDefinition => ({
+const polarites = [
+  { id: 'general', principale: true },
+  { id: 'agir', parent: 'general' },
+  { id: 'recevoir', parent: 'general' },
+]
+
+const definition = (
+  noeuds: GrilleDefinition['noeuds'],
+  extra: Partial<GrilleDefinition> = {},
+): GrilleDefinition => ({
   schemaVersion: 1,
   id: 'test',
   version: '1',
   langueParDefaut: 'fr',
   langues: { fr: './fr.yml' },
-  attenuation,
-  facettes: [{ id: 'agir', principale: true }, { id: 'recevoir' }],
-  criteres,
+  polarites,
+  parts,
   noeuds,
+  ...extra,
 })
 
 const grilleSimple = construireGrille(definition([
@@ -82,13 +91,65 @@ describe('construction du graphe', () => {
   })
 })
 
-describe('héritage descendant', () => {
+describe('arbre des polarités', () => {
+  it('exige une polarité générale, et une seule', () => {
+    expect(grilleSimple.polariteRacine).toBe('general')
+    expect(() => construireGrille(definition([{ id: 'a' }], {
+      polarites: [{ id: 'agir' }, { id: 'recevoir' }],
+    }))).toThrow(/exactement une polarité générale/)
+  })
+
+  it('classe les polarités de la générale vers les particulières', () => {
+    expect(grilleSimple.ordrePolarites).toEqual(['general', 'agir', 'recevoir'])
+    expect(grilleSimple.polarites.get('general')?.enfants).toEqual(['agir', 'recevoir'])
+  })
+
+  it('accepte des polarités plus fines que le triptyque', () => {
+    const grille = construireGrille(definition([{ id: 'a' }], {
+      polarites: [
+        { id: 'general' },
+        { id: 'agir', parent: 'general' },
+        { id: 'agir-seul', parent: 'agir' },
+        { id: 'agir-ensemble', parent: 'agir' },
+      ],
+    }))
+    expect(grille.polarites.get('agir-seul')?.niveau).toBe(2)
+  })
+
+  it('refuse une polarité coupée de la générale', () => {
+    expect(() => construireGrille(definition([{ id: 'a' }], {
+      polarites: [{ id: 'general' }, { id: 'perdue', parent: 'inexistante' }],
+    }))).toThrow(/parent inconnu/)
+  })
+})
+
+describe('restriction des polarités', () => {
+  const grille = construireGrille(definition([
+    {
+      id: 'silence',
+      polarites: ['recevoir'],
+      enfants: [{ id: 'silence-nuit' }],
+    },
+    { id: 'musique' },
+  ]))
+
+  it('garde la polarité englobante, sinon on ne peut plus dégrossir', () => {
+    expect(grille.noeuds.get('silence')?.polarites).toEqual(['general', 'recevoir'])
+  })
+
+  it('se propage au sous-arbre', () => {
+    // Restreindre une rubrique n’aurait aucun sens si ses éléments rouvraient tout.
+    expect(grille.noeuds.get('silence-nuit')?.polarites).toEqual(['general', 'recevoir'])
+    expect(grille.noeuds.get('musique')?.polarites).toEqual(['general', 'agir', 'recevoir'])
+  })
+})
+
+describe('héritage dans la direction des sujets', () => {
   it('donne aux descendants le même score, avec un poids atténué par niveau', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/agir': { avis: 3 } }))
 
     expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 1, origine: 'propre' })
     expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
-    // Deux niveaux plus bas : le score ne bouge toujours pas, le poids oui.
     expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 1, poids: 0.25, origine: 'herite' })
   })
 
@@ -100,7 +161,7 @@ describe('héritage descendant', () => {
     expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 1, origine: 'propre' })
   })
 
-  it('hérite critère par critère, pas étoile par étoile', () => {
+  it('hérite part par part, pas étoile par étoile', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({
       'musique/agir': { avis: 3, importance: 2 },
       'chant/agir': { avis: 0 },
@@ -115,16 +176,47 @@ describe('héritage descendant', () => {
     expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 0, origine: 'absent' })
   })
 
-  it('traite chaque facette séparément', () => {
-    const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/agir': { avis: 3 } }))
-    expect(etoile(valeurs, 'chant', 'agir').avis?.poids).toBe(0.5)
-    expect(etoile(valeurs, 'chant', 'recevoir').avis?.origine).toBe('absent')
-  })
-
   it('suit l’atténuation déclarée par la grille', () => {
-    const douce = construireGrille(definition([{ id: 'a', enfants: [{ id: 'b' }] }], 0.9))
+    const douce = construireGrille(definition([{ id: 'a', enfants: [{ id: 'b' }] }], { attenuation: 0.9 }))
     const valeurs = calculerValeurs(douce, reponses({ 'a/agir': { avis: 3 } }))
     expect(etoile(valeurs, 'b', 'agir').avis?.poids).toBeCloseTo(0.9, 6)
+  })
+})
+
+describe('héritage dans la direction des polarités', () => {
+  it('fait descendre le général vers chaque place, avec un poids atténué', () => {
+    // Dégrossir en général doit renseigner d’un coup faire, recevoir, assister.
+    const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/general': { avis: 3 } }))
+
+    expect(etoile(valeurs, 'musique', 'general').avis).toEqual({ score: 1, poids: 1, origine: 'propre' })
+    expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+  })
+
+  it('laisse une place particulière contredire le général', () => {
+    const valeurs = calculerValeurs(grilleSimple, reponses({
+      'musique/general': { avis: 3 },
+      'musique/recevoir': { avis: 0 },
+    }))
+    expect(etoile(valeurs, 'musique', 'agir').avis?.score).toBe(1)
+    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 0, poids: 1, origine: 'propre' })
+  })
+
+  it('combine les deux sens sur un sous-nœud', () => {
+    // « instrument/agir » n’a ni réponse propre, ni parent direct répondu sur
+    // « agir » : il hérite de musique/agir (lui-même hérité du général).
+    const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/general': { avis: 3 } }))
+    const instrument = etoile(valeurs, 'instrument', 'agir').avis
+    expect(instrument?.origine).toBe('herite')
+    expect(instrument?.score).toBe(1)
+    // Deux franchissements : un de polarité, un de sujet.
+    expect(instrument?.poids).toBeCloseTo(0.25, 6)
+  })
+
+  it('suit sa propre atténuation, distincte de celle des sujets', () => {
+    const grille = construireGrille(definition([{ id: 'a' }], { attenuationPolarite: 0.8 }))
+    const valeurs = calculerValeurs(grille, reponses({ 'a/general': { avis: 3 } }))
+    expect(etoile(valeurs, 'a', 'agir').avis?.poids).toBeCloseTo(0.8, 6)
   })
 })
 
@@ -136,26 +228,23 @@ describe('héritage depuis plusieurs parents', () => {
 
   it('prend la moyenne des parents', () => {
     const valeurs = calculerValeurs(grille, reponses({
-      'musique/agir': { avis: 3 }, // score 1
-      'sortie/agir': { avis: 0 }, // score 0
+      'musique/agir': { avis: 3 },
+      'sortie/agir': { avis: 0 },
     }))
     expect(etoile(valeurs, 'concert', 'agir').avis).toEqual({ score: 0.5, poids: 0.5, origine: 'herite' })
   })
 
   it('pondère la moyenne par le poids de chaque parent', () => {
-    // « sortie » répond directement (poids 1), « musique » n’a qu’un héritage
-    // lointain : son avis doit peser moins dans la moyenne.
     const profonde = construireGrille(definition([
       { id: 'racine', enfants: [{ id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] }] },
       { id: 'sortie' },
     ]))
     const valeurs = calculerValeurs(profonde, reponses({
-      'racine/agir': { avis: 3 }, // musique hérite : score 1, poids 0,5
-      'sortie/agir': { avis: 0 }, // score 0, poids 1
+      'racine/agir': { avis: 3 },
+      'sortie/agir': { avis: 0 },
     }))
-    const avis = etoile(valeurs, 'concert', 'agir').avis
-    // (1 × 0,5 + 0 × 1) / 1,5 = 0,333 : plus proche du parent qui a vraiment répondu.
-    expect(avis?.score).toBeCloseTo(1 / 3, 6)
+    // musique hérite (poids 0,5) ; sortie a répondu (poids 1) : sortie pèse plus.
+    expect(etoile(valeurs, 'concert', 'agir').avis?.score).toBeCloseTo(1 / 3, 6)
   })
 
   it('ignore un parent sans valeur au lieu de le compter comme zéro', () => {
@@ -164,47 +253,100 @@ describe('héritage depuis plusieurs parents', () => {
   })
 })
 
-describe('remontée depuis les enfants', () => {
-  it('propose la moyenne des enfants, calée sur le palier le plus proche', () => {
-    const valeurs = calculerValeurs(grilleSimple, reponses({
-      'instrument/agir': { avis: 3 }, // score 1
-      'chant/agir': { avis: 0 }, // score 0
+describe('agrégateurs configurables', () => {
+  const avecAgregation = (nom: 'min' | 'max' | 'mediane') => construireGrille(definition([
+    { id: 'musique', enfants: [{ id: 'concert', parents: ['sortie'] }] },
+    { id: 'sortie' },
+  ], { agregation: { heritage: nom, remontee: nom } }))
+
+  it('résume un héritage multi-parents par le minimum', () => {
+    // Une limite : c’est le parent le plus restrictif qui contraint.
+    const valeurs = calculerValeurs(avecAgregation('min'), reponses({
+      'musique/agir': { avis: 3 },
+      'sortie/agir': { avis: 0 },
     }))
-    // Moyenne 0,5 → palier « ok ».
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({ avis: 2 })
+    expect(etoile(valeurs, 'concert', 'agir').avis?.score).toBe(0)
   })
 
-  it('ne compte pas les enfants sans réponse', () => {
-    const valeurs = calculerValeurs(grilleSimple, reponses({ 'chant/agir': { avis: 3 } }))
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({ avis: 3 })
+  it('ou par le maximum', () => {
+    const valeurs = calculerValeurs(avecAgregation('max'), reponses({
+      'musique/agir': { avis: 3 },
+      'sortie/agir': { avis: 0 },
+    }))
+    expect(etoile(valeurs, 'concert', 'agir').avis?.score).toBe(1)
+  })
+
+  it('se surcharge part par part', () => {
+    const grille = construireGrille(definition([{ id: 'musique', enfants: [{ id: 'chant' }] }], {
+      parts: [
+        { ...parts[0]!, agregation: { remontee: 'min' } },
+        parts[1]!,
+      ],
+    }))
+    expect(grille.agregationDe('avis', 'remontee')).toBe('min')
+    expect(grille.agregationDe('importance', 'remontee')).toBe('moyenne')
+    expect(grille.agregationDe('avis', 'heritage')).toBe('moyenne')
+  })
+
+  it('refuse un agrégateur inconnu', () => {
+    expect(() => construireGrille(definition([{ id: 'a' }], {
+      agregation: { heritage: 'mediane-ponderee' as never },
+    }))).toThrow(/inconnu/)
+  })
+})
+
+describe('remontée', () => {
+  it('résume une rubrique d’après ses éléments', () => {
+    const valeurs = calculerValeurs(grilleSimple, reponses({
+      'instrument/agir': { avis: 3 },
+      'chant/agir': { avis: 0 },
+    }))
+    // Moyenne 0,5 → palier « ok ».
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 2 })
   })
 
   it('descend chercher les réponses à n’importe quelle profondeur', () => {
-    // « batterie » est deux niveaux sous « musique » : sa réponse compte quand même.
     const valeurs = calculerValeurs(grilleSimple, reponses({ 'batterie/agir': { avis: 3 } }))
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({ avis: 3 })
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 3 })
+  })
+
+  it('déduit le général de ce qui a été dit à chaque place', () => {
+    const valeurs = calculerValeurs(grilleSimple, reponses({
+      'musique/agir': { avis: 3 },
+      'musique/recevoir': { avis: 0 },
+    }))
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'general', 'polarites')).toEqual({ avis: 2 })
+  })
+
+  it('résume selon l’agrégateur demandé', () => {
+    const grille = construireGrille(definition([{ id: 'musique', enfants: [{ id: 'chant' }, { id: 'cor' }] }], {
+      agregation: { remontee: 'min' },
+    }))
+    const valeurs = calculerValeurs(grille, reponses({
+      'chant/agir': { avis: 3 },
+      'cor/agir': { avis: 0 },
+    }))
+    // Le minimum, et non la moyenne : une seule limite basse contraint l’ensemble.
+    expect(proposerDepuis(grille, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 0 })
   })
 
   it('ne se renvoie pas à elle-même ce qu’elle a diffusé vers le bas', () => {
-    // Seule la rubrique a répondu : ses descendants n’ont que des valeurs
-    // héritées d’elle. Il n’y a donc rien à remonter, sinon elle se confirmerait
-    // toute seule et la proposition n’apprendrait rien.
     const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/agir': { avis: 3 } }))
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({})
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({})
   })
 
-  it('ne propose rien quand aucun enfant n’a de valeur', () => {
+  it('ne propose rien quand rien n’a été répondu en dessous', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({}))
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({})
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'general')).toEqual({})
   })
 
-  it('reste une proposition : la rubrique peut ensuite dire autre chose', () => {
+  it('reste une proposition : le nœud peut ensuite dire autre chose', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({
       'instrument/agir': { avis: 3 },
       'chant/agir': { avis: 3 },
       'musique/agir': { avis: 0 },
     }))
-    expect(proposerDepuisEnfants(grilleSimple, valeurs, 'musique', 'agir')).toEqual({ avis: 3 })
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 3 })
     expect(etoile(valeurs, 'musique', 'agir').avis?.score).toBe(0)
   })
 })

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { degradesEtoile, geometrieEtoile, PORTEE_MINIMALE, porteeBranche } from './etoile.ts'
 import { etoileSvg } from './indicateur.ts'
-import type { CritereDefinition, ValeurFacette } from '../domaine/types.ts'
+import type { PartDefinition, ValeurPolarite } from '../domaine/types.ts'
 
 const portee = (point: { x: number; y: number }): number => Math.hypot(point.x, point.y)
 const valeurs = (scores: (number | null)[], poids = 1) =>
   scores.map((score) => ({ score, poids: score === null ? 0 : poids }))
 
-const criteres: CritereDefinition[] = ['a', 'b', 'c'].map((id) => ({
+const parts: PartDefinition[] = ['a', 'b', 'c'].map((id) => ({
   id,
   couleurMin: '#111',
   couleurMax: '#eee',
@@ -15,7 +15,7 @@ const criteres: CritereDefinition[] = ['a', 'b', 'c'].map((id) => ({
 }))
 
 describe('géométrie de l’étoile', () => {
-  it('donne un secteur par critère, quel que soit leur nombre', () => {
+  it('donne un secteur par part, quel que soit leur nombre', () => {
     for (const nombre of [1, 3, 8, 13]) {
       const etoile = geometrieEtoile(valeurs(Array.from({ length: nombre }, () => 0.5)))
       expect(etoile.branches).toBe(nombre)
@@ -67,11 +67,11 @@ describe('géométrie de l’étoile', () => {
 })
 
 describe('rendu SVG', () => {
-  const etoile = (valeursFacette: ValeurFacette, options = {}) =>
-    etoileSvg('demo', criteres, valeursFacette, options)
+  const etoile = (valeursPolarite: ValeurPolarite, options = {}) =>
+    etoileSvg('demo', parts, valeursPolarite, options)
   const compte = (svg: string, motif: string) => svg.split(motif).length - 1
 
-  it('dessine une piste par critère et un remplissage par valeur', () => {
+  it('dessine une piste par part et un remplissage par valeur', () => {
     const svg = etoile({
       a: { score: 1, poids: 1, origine: 'propre' },
       b: { score: 0, poids: 0, origine: 'absent' },
@@ -101,7 +101,7 @@ describe('rendu SVG', () => {
   })
 
   it('échappe ce qui vient des définitions de grille', () => {
-    const piege: CritereDefinition[] = [{
+    const piege: PartDefinition[] = [{
       id: 'x',
       couleurMin: '#000',
       couleurMax: '"><script>alert(1)</script>',

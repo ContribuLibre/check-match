@@ -120,8 +120,8 @@ main { padding: 1rem 1.2rem; }
 
 .etoile-bouton svg { width: 40px; height: 40px; display: block; }
 .etoile-bouton.ouvert { border-color: var(--accent); background: var(--panneau-haut); }
-.facette-nom { color: var(--encre-pale); font-size: .68rem; }
-.etoile-bouton.propre .facette-nom { color: var(--encre); }
+.polarite-nom { color: var(--encre-pale); font-size: .68rem; }
+.etoile-bouton.propre .polarite-nom { color: var(--encre); }
 
 /* --- éditeur ------------------------------------------------------------ */
 
@@ -145,13 +145,13 @@ main { padding: 1rem 1.2rem; }
 .editeur-entete .actions { margin-left: auto; display: flex; gap: .4rem; flex-wrap: wrap; }
 .grande-etoile svg { width: 130px; height: 130px; display: block; }
 
-.criteres {
+.parts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
   gap: .8rem 1.4rem;
 }
 
-.critere-nom {
+.part-nom {
   display: flex;
   gap: .5rem;
   align-items: baseline;
@@ -174,7 +174,7 @@ main { padding: 1rem 1.2rem; }
   background: var(--couleur);
   color: #101215;
   font-weight: 600;
-  /* Les couleurs de critères couvrent toute la gamme, certaines très sombres. */
+  /* Les couleurs de parts couvrent toute la gamme, certaines très sombres. */
   text-shadow: 0 0 3px #fff9, 0 0 1px #fff;
 }
 

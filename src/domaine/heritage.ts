@@ -1,105 +1,109 @@
+import { agreger, type Contribution } from './agregateurs.ts'
 import type { Grille } from './grille.ts'
-import type { Reponse, ValeurCritere, ValeurFacette } from './types.ts'
+import type { Reponse, ValeurPart, ValeurPolarite } from './types.ts'
 
-/** Clé d’une étoile : une réponse porte toujours sur un couple (nœud, facette). */
-export function cle(noeud: string, facette: string): string {
-  return `${noeud}/${facette}`
+/** Clé d’une étoile : une réponse porte toujours sur un couple (nœud, polarité). */
+export function cle(noeud: string, polarite: string): string {
+  return `${noeud}/${polarite}`
 }
 
 /** Réponses saisies, indexées par `cle()`. */
 export type Reponses = Map<string, Reponse>
 
 /** Valeurs calculées, indexées par `cle()`. */
-export type Valeurs = Map<string, ValeurFacette>
+export type Valeurs = Map<string, ValeurPolarite>
 
-const ABSENT: ValeurCritere = { score: 0, poids: 0, origine: 'absent' }
+const ABSENT: ValeurPart = { score: 0, poids: 0, origine: 'absent' }
 
 /**
  * Calcule les valeurs de toute la grille à partir des réponses saisies.
  *
- * Deux règles, appliquées critère par critère — le grain est le critère, pas
- * l’étoile, car on peut très bien avoir répondu à une branche et pas aux autres :
+ * L’héritage descend dans **deux directions**, avec exactement la même règle :
  *
- * 1. Répondre sur une rubrique vaut réponse sur tout ce qu’elle contient, avec
- *    le **même score** mais un **poids atténué** à chaque niveau de descente.
- *    Une réponse directe pèse 1, sa fille 0,5, sa petite-fille 0,25.
- * 2. Un nœud à plusieurs parents non répondu prend la **moyenne** de ses parents,
- *    pondérée par leur poids : un parent répondu directement pèse plus lourd
- *    qu’un parent qui héritait lui-même de loin.
+ * - direction des sujets : une rubrique répondue vaut pour ses sous-nœuds ;
+ * - direction des polarités : la polarité générale vaut pour les places
+ *   particulières — répondre « en général » sur la musique renseigne d’un coup
+ *   « en faire », « en recevoir » et « y assister ».
  *
- * Le parcours suit l’ordre topologique, donc les parents sont toujours calculés
- * avant leurs enfants et un seul passage suffit.
+ * Dans les deux cas le **score ne bouge pas**, seul le **poids** est atténué à
+ * chaque niveau franchi. Toutes les sources disponibles sont ensuite résumées
+ * par l’agrégateur de la part : la moyenne pondérée par défaut, mais une limite
+ * se résume mieux par son minimum et une envie par son maximum.
+ *
+ * Le grain est la part et non l’étoile : on peut très bien avoir répondu à
+ * une branche et pas aux autres.
+ *
+ * Le parcours suit l’ordre topologique des polarités *puis* celui des nœuds,
+ * si bien que toute source est calculée avant d’être lue, en un seul passage.
  */
 export function calculerValeurs(grille: Grille, reponses: Reponses): Valeurs {
   const valeurs: Valeurs = new Map()
 
-  for (const facette of grille.facettes) {
+  for (const polariteId of grille.ordrePolarites) {
+    const polarite = grille.polarites.get(polariteId)
+    if (!polarite) continue
+
     for (const id of grille.ordre) {
       const noeud = grille.noeuds.get(id)
-      if (!noeud || !noeud.facettes.includes(facette.id)) continue
+      if (!noeud || !noeud.polarites.includes(polariteId)) continue
 
-      const propre = reponses.get(cle(id, facette.id))
-      const etoile: ValeurFacette = {}
+      const propre = reponses.get(cle(id, polariteId))
+      const etoileValeurs: ValeurPolarite = {}
 
-      for (const critereId of noeud.criteres) {
-        const critere = grille.critere(critereId)
-        if (!critere) continue
+      for (const partId of noeud.parts) {
+        const part = grille.part(partId)
+        if (!part) continue
 
-        const palierChoisi = propre?.[critereId]
-        if (palierChoisi !== undefined && critere.paliers[palierChoisi]) {
-          etoile[critereId] = { score: critere.paliers[palierChoisi].score, poids: 1, origine: 'propre' }
+        const palierChoisi = propre?.[partId]
+        if (palierChoisi !== undefined && part.paliers[palierChoisi]) {
+          etoileValeurs[partId] = { score: part.paliers[palierChoisi].score, poids: 1, origine: 'propre' }
           continue
         }
 
-        etoile[critereId] = herite(grille, valeurs, noeud.parents, facette.id, critereId)
+        // Sources d’héritage : les rubriques au-dessus, et la polarité englobante.
+        const sources: Contribution[] = []
+        for (const parent of noeud.parents) {
+          const valeur = valeurs.get(cle(parent, polariteId))?.[partId]
+          if (valeur && valeur.poids > 0) {
+            sources.push({ score: valeur.score, poids: valeur.poids * grille.attenuation })
+          }
+        }
+        if (polarite.parent && noeud.polarites.includes(polarite.parent)) {
+          const valeur = valeurs.get(cle(id, polarite.parent))?.[partId]
+          if (valeur && valeur.poids > 0) {
+            sources.push({ score: valeur.score, poids: valeur.poids * grille.attenuationPolarite })
+          }
+        }
+
+        etoileValeurs[partId] = resumer(grille, partId, sources)
       }
 
-      valeurs.set(cle(id, facette.id), etoile)
+      valeurs.set(cle(id, polariteId), etoileValeurs)
     }
   }
 
   return valeurs
 }
 
-/** Moyenne pondérée des parents qui portent une valeur, atténuée d’un niveau. */
-function herite(
-  grille: Grille,
-  valeurs: Valeurs,
-  parents: string[],
-  facetteId: string,
-  critereId: string,
-): ValeurCritere {
-  let sommePonderee = 0
-  let sommePoids = 0
-  let contributeurs = 0
-
-  for (const parent of parents) {
-    const valeurParent = valeurs.get(cle(parent, facetteId))?.[critereId]
-    if (!valeurParent || valeurParent.poids <= 0) continue
-    sommePonderee += valeurParent.score * valeurParent.poids
-    sommePoids += valeurParent.poids
-    contributeurs += 1
-  }
-
-  if (!contributeurs) return ABSENT
-  return {
-    score: sommePonderee / sommePoids,
-    poids: (sommePoids / contributeurs) * grille.attenuation,
-    origine: 'herite',
-  }
+/** Résume des sources d’héritage en une valeur ; le poids retenu est celui des sources. */
+function resumer(grille: Grille, partId: string, sources: Contribution[]): ValeurPart {
+  const score = agreger(grille.agregationDe(partId, 'heritage'), sources)
+  if (score === null) return ABSENT
+  const poids = sources.reduce((total, source) => total + source.poids, 0) / sources.length
+  return { score, poids, origine: 'herite' }
 }
 
-/** Valeur d’une étoile, vide si le nœud ne porte pas cette facette. */
-export function etoile(valeurs: Valeurs, noeud: string, facette: string): ValeurFacette {
-  return valeurs.get(cle(noeud, facette)) ?? {}
+/** Valeur d’une étoile, vide si le nœud ne porte pas cette polarité. */
+export function etoile(valeurs: Valeurs, noeud: string, polarite: string): ValeurPolarite {
+  return valeurs.get(cle(noeud, polarite)) ?? {}
 }
 
-/** Vrai dès qu’au moins un critère porte une valeur, héritée comprise. */
-export function estRenseignee(etoileValeurs: ValeurFacette): boolean {
-  return Object.values(etoileValeurs).some((valeur) => valeur.poids > 0)
+/** Vrai dès qu’au moins une part porte une valeur, héritée comprise. */
+export function estRenseignee(valeursEtoile: ValeurPolarite): boolean {
+  return Object.values(valeursEtoile).some((valeur) => valeur.poids > 0)
 }
 
-/** Vrai si au moins un critère a été répondu directement sur ce nœud. */
-export function estRepondue(etoileValeurs: ValeurFacette): boolean {
-  return Object.values(etoileValeurs).some((valeur) => valeur.origine === 'propre')
+/** Vrai si au moins une part a été répondu directement sur ce nœud. */
+export function estRepondue(valeursEtoile: ValeurPolarite): boolean {
+  return Object.values(valeursEtoile).some((valeur) => valeur.origine === 'propre')
 }

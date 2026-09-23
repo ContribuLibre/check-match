@@ -19,14 +19,14 @@ tests, build. Une tâche n’est terminée que lorsqu’elle passe en entier.
 
 Le code, les commentaires, les noms de tests et les messages de commit sont en
 français. Les identifiants techniques des données (identifiants de nœuds, de
-critères, de paliers) restent tels qu’ils sont définis dans les grilles.
+parts, de paliers) restent tels qu’ils sont définis dans les grilles.
 
 ## Ce qui ne doit pas se perdre
 
 Trois règles portent le modèle ; les changer demande d’en mesurer l’effet sur
 les trois autres.
 
-1. **Le score ne bouge pas en héritant, le poids si.** Une rubrique répondue vaut
+1. **Le score ne bouge pas en héritant, le poids si.** Une rubrique répondue, ou une polarité générale répondue, vaut
    pour ses sous-nœuds avec la même valeur et un poids atténué par niveau. Le
    poids dit la force de l’engagement, pas son contenu.
 2. **Zéro n’est pas « pas renseigné ».** Répondre au plus bas est une réponse, et
@@ -40,3 +40,10 @@ Structure et textes sont séparés : `grille.yml` porte les identifiants et le
 graphe, `<langue>.yml` porte les libellés. Ajouter une langue ne doit jamais
 toucher aux identifiants — c’est ce qui garde les réponses valables d’une langue
 à l’autre, et comparables entre deux grilles qui partagent des sujets.
+
+4. **L’héritage joue dans deux directions.** Les sujets et les polarités sont
+   deux arbres, parcourus par la même règle. Un changement sur l’un doit valoir
+   pour l’autre, sinon l’un des deux devient un cas particulier à part.
+5. **La moyenne n’est pas le résumé par défaut du métier.** Chaque part choisit
+   son agrégateur : une limite se résume par son minimum, une envie par son
+   maximum. Remettre une moyenne partout effacerait ce qui est saillant.

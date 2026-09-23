@@ -23,14 +23,14 @@ export function validerGrille(dossier: string): string[] {
   const definition = parse(readFileSync(cheminDefinition, 'utf8')) as GrilleDefinition
   const grille = construireGrille(definition)
 
-  for (const critere of grille.criteres) {
-    const scores = critere.paliers.map((palier) => palier.score)
-    if (scores.length < 2) problemes.push(`${grille.id}/${critere.id} : moins de deux paliers`)
-    if (scores[0] !== 0) problemes.push(`${grille.id}/${critere.id} : le premier palier ne vaut pas 0`)
-    if (scores[scores.length - 1] !== 1) problemes.push(`${grille.id}/${critere.id} : le dernier palier ne vaut pas 1`)
+  for (const part of grille.parts) {
+    const scores = part.paliers.map((palier) => palier.score)
+    if (scores.length < 2) problemes.push(`${grille.id}/${part.id} : moins de deux paliers`)
+    if (scores[0] !== 0) problemes.push(`${grille.id}/${part.id} : le premier palier ne vaut pas 0`)
+    if (scores[scores.length - 1] !== 1) problemes.push(`${grille.id}/${part.id} : le dernier palier ne vaut pas 1`)
     for (const [index, score] of scores.entries()) {
       if (index && score <= (scores[index - 1] ?? 0)) {
-        problemes.push(`${grille.id}/${critere.id} : les scores ne sont pas croissants (${score})`)
+        problemes.push(`${grille.id}/${part.id} : les scores ne sont pas croissants (${score})`)
       }
     }
   }

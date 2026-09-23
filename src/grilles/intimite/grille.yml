@@ -6,15 +6,27 @@ langues:
   en: ./en.yml
 
 attenuation: 0.5
+attenuationPolarite: 0.5
 
-facettes:
-  - id: agir
+agregation:
+  heritage: moyenne
+  remontee: moyenne
+
+polarites:
+  - id: general
     principale: true
+  - id: agir
+    parent: general
   - id: recevoir
+    parent: general
   - id: temoin
+    parent: general
 
-criteres:
+parts:
   - id: experience
+    # Avoir pratiqué un élément donne de l’expérience sur la rubrique.
+    agregation:
+      remontee: max
     couleurMin: "#04C"
     couleurMax: "#FC0"
     paliers:
@@ -25,6 +37,9 @@ criteres:
       - { id: good, score: 0.8 }
       - { id: expert, score: 1 }
   - id: excitment
+    # Il suffit d’un élément qui allume pour que la rubrique allume.
+    agregation:
+      remontee: max
     couleurMin: "#AAA"
     couleurMax: "#F60"
     paliers:
@@ -34,6 +49,9 @@ criteres:
       - { id: love, score: 0.8 }
       - { id: total-fantasy, score: 1 }
   - id: disgust
+    # Un dégoût franc sur un seul élément marque toute la rubrique.
+    agregation:
+      remontee: max
     couleurMin: "#848"
     couleurMax: "#660"
     paliers:
@@ -43,6 +61,9 @@ criteres:
       - { id: disgust, score: 0.66 }
       - { id: vomiting, score: 1 }
   - id: exhibition
+    # La discrétion la plus exigeante commande : on ne s’expose pas « en moyenne ».
+    agregation:
+      remontee: min
     couleurMin: "#111"
     couleurMax: "#F8C"
     paliers:
@@ -54,6 +75,9 @@ criteres:
       - { id: public, score: 0.9 }
       - { id: star, score: 1 }
   - id: fear
+    # Idem pour la peur : elle ne se dilue pas dans une moyenne.
+    agregation:
+      remontee: max
     couleurMin: "#8D6"
     couleurMax: "#8DF"
     paliers:
@@ -64,6 +88,9 @@ criteres:
       - { id: terror, score: 0.8 }
       - { id: petrified, score: 1 }
   - id: acceptance
+    # C’est l’élément le moins acceptable qui fixe la limite de la rubrique.
+    agregation:
+      remontee: min
     couleurMin: "#E00"
     couleurMax: "#6F0"
     paliers:
@@ -75,6 +102,9 @@ criteres:
       - { id: mostly, score: 0.8 }
       - { id: always, score: 1 }
   - id: aftercare
+    # C’est le besoin le plus fort qui doit être prévu.
+    agregation:
+      remontee: max
     couleurMin: "#666"
     couleurMax: "#FD0"
     paliers:

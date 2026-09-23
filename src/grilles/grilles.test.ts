@@ -13,7 +13,7 @@ describe('grilles livrées', () => {
     }
   })
 
-  it('traduisent tous leurs nœuds, facettes, critères et paliers', () => {
+  it('traduisent tous leurs nœuds, polarites, parts et paliers', () => {
     for (const { grille, traduction } of grilles) {
       expect(clesManquantes(grille, traduction), `grille « ${grille.id} »`).toEqual([])
     }
@@ -21,8 +21,8 @@ describe('grilles livrées', () => {
 
   it('gardent des scores ordonnés et bornés à 0..1', () => {
     for (const { grille } of grilles) {
-      for (const critere of grille.criteres) {
-        const scores = critere.paliers.map((palier) => palier.score)
+      for (const part of grille.parts) {
+        const scores = part.paliers.map((palier) => palier.score)
         expect(scores[0]).toBe(0)
         expect(scores[scores.length - 1]).toBe(1)
         for (const [index, score] of scores.entries()) {
@@ -38,8 +38,21 @@ describe('grilles livrées', () => {
 describe('vie collective', () => {
   const disponible = grilleParId('vie-collective')
 
-  it('propose les trois facettes : faire, recevoir, être témoin', () => {
-    expect(disponible?.grille.facettes.map((facette) => facette.id)).toEqual(['agir', 'recevoir', 'temoin'])
+  it('propose le général puis les trois places', () => {
+    expect([...(disponible?.grille.polarites.keys() ?? [])]).toEqual(['general', 'agir', 'recevoir', 'temoin'])
+    expect(disponible?.grille.polariteRacine).toBe('general')
+  })
+
+  it('fait descendre le général vers chaque place', () => {
+    const grille = disponible!.grille
+    const valeurs = calculerValeurs(grille, new Map([[cle('musique', 'general'), { avis: 4 }]]))
+    expect(etoile(valeurs, 'musique', 'temoin').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+  })
+
+  it('résume l’importance par le maximum, pas par la moyenne', () => {
+    // Un seul sujet vital rend la rubrique vitale ; la moyenne l’effacerait.
+    expect(disponible?.grille.agregationDe('importance', 'remontee')).toBe('max')
+    expect(disponible?.grille.agregationDe('avis', 'remontee')).toBe('moyenne')
   })
 
   it('porte un nœud à deux parents', () => {
@@ -53,9 +66,9 @@ describe('vie collective', () => {
     expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 0, poids: 0.25, origine: 'herite' })
   })
 
-  it('restreint les facettes là où une seule a du sens', () => {
+  it('restreint les polarités là où une place n’a pas de sens, en gardant le général', () => {
     // On ne « fait » pas du silence comme on fait de la musique.
-    expect(disponible?.grille.noeuds.get('silence')?.facettes).toEqual(['recevoir', 'temoin'])
+    expect(disponible?.grille.noeuds.get('silence')?.polarites).toEqual(['general', 'recevoir', 'temoin'])
   })
 })
 
@@ -67,14 +80,14 @@ describe('grille issue du format historique', () => {
     expect(disponible?.grille.noeuds.get('skinny')?.parents).toEqual(['bodies'])
   })
 
-  it('porte les huit critères du modèle de référence', () => {
-    expect(disponible?.grille.criteres.map((critere) => critere.id)).toEqual([
+  it('porte les huit parts du modèle de référence', () => {
+    expect(disponible?.grille.parts.map((part) => part.id)).toEqual([
       'experience', 'excitment', 'disgust', 'exhibition', 'fear', 'acceptance', 'aftercare', 'explicit',
     ])
   })
 
   it('garde les scores irréguliers du modèle', () => {
-    const acceptance = disponible?.grille.criteres.find((critere) => critere.id === 'acceptance')
+    const acceptance = disponible?.grille.parts.find((part) => part.id === 'acceptance')
     expect(acceptance?.paliers.map((palier) => palier.score)).toEqual([0, 0.1, 0.25, 0.5, 0.6, 0.8, 1])
   })
 })

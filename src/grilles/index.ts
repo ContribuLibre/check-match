@@ -11,6 +11,8 @@ import enIntimite from './intimite/en.yml'
 
 export interface GrilleDisponible {
   grille: Grille
+  /** Vraie pour une checklist reçue de quelqu’un, fausse pour une grille livrée. */
+  importee: boolean
   /** Langue de repli, celle qui doit être complète. */
   langueParDefaut: string
   traductions: Record<string, Traduction>
@@ -27,7 +29,15 @@ export interface GrilleDisponible {
   avecAjouts(ajouts: NoeudAjoute[]): GrilleDisponible
 }
 
-function preparer(definitionBrute: unknown, traductions: Record<string, unknown>): GrilleDisponible {
+/**
+ * Construit une grille prête à afficher, d’où qu’elle vienne : livrée avec
+ * l’application, ou reçue de quelqu’un sous forme de checklist exportée.
+ */
+export function preparer(
+  definitionBrute: unknown,
+  traductions: Record<string, unknown>,
+  importee = false,
+): GrilleDisponible {
   const definition = definitionBrute as GrilleDefinition
   const grille = construireGrille(definition)
   const parLangue = traductions as Record<string, Traduction>
@@ -45,6 +55,7 @@ function preparer(definitionBrute: unknown, traductions: Record<string, unknown>
 
   return {
     grille,
+    importee,
     langueParDefaut,
     traductions: parLangue,
     textesPour,
@@ -55,8 +66,9 @@ function preparer(definitionBrute: unknown, traductions: Record<string, unknown>
         augmenterDefinition(definition, ajouts),
         Object.fromEntries(Object.entries(parLangue)
           .map(([langue, traduction]) => [langue, augmenterTraduction(traduction, ajouts)])),
+        importee,
       )
-      : preparer(definition, parLangue)),
+      : preparer(definition, parLangue, importee)),
   }
 }
 

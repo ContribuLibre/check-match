@@ -81,12 +81,16 @@ export interface Textes {
   retirerSujet: string
   retirerSujetConfirme: string
   sujetAjoute: string
-  exporter: string
+  echanger: string
   exporterReponses: string
   exporterChecklist: string
-  importerReponses: string
-  importEchoue: string
   exporterChecklistAide: string
+  importer: string
+  importerAide: string
+  importEchoue: string
+  grilleImportee: string
+  retirerGrille: string
+  retirerGrilleConfirme: string
 }
 
 /**
@@ -166,12 +170,16 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     retirerSujet: 'Retirer ce sujet',
     retirerSujetConfirme: 'Retirer ce sujet et ce qu’il contient ? Les réponses déjà posées dessus resteront enregistrées.',
     sujetAjoute: 'Ajouté par vous',
-    exporter: 'Exporter',
-    exporterReponses: 'Mes réponses',
-    exporterChecklist: 'La checklist, sans réponses',
-    importerReponses: 'Importer des réponses',
-    importEchoue: 'Fichier illisible ou d’un autre format.',
+    echanger: 'Échanger',
+    exporterReponses: 'Exporter mes réponses',
+    exporterChecklist: 'Exporter la checklist, sans réponses',
     exporterChecklistAide: 'Les sujets et la façon de les qualifier, vos ajouts compris — à envoyer à qui veut répondre sur la même base.',
+    importer: 'Ouvrir un fichier reçu',
+    importerAide: 'Une checklist s’ajoute aux grilles proposées ; des réponses rejoignent la personne dont elles viennent, révision par révision.',
+    importEchoue: 'Fichier illisible ou d’un autre format.',
+    grilleImportee: '(reçue)',
+    retirerGrille: 'Retirer cette checklist reçue',
+    retirerGrilleConfirme: 'Retirer cette checklist ? Les réponses posées dessus restent enregistrées, et vaudront encore si vous la réimportez.',
   },
   en: {
     titre: 'check-match',
@@ -245,12 +253,16 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     retirerSujet: 'Remove this subject',
     retirerSujetConfirme: 'Remove this subject and what it contains? Answers already given on it stay stored.',
     sujetAjoute: 'Added by you',
-    exporter: 'Export',
-    exporterReponses: 'My answers',
-    exporterChecklist: 'The checklist, without answers',
-    importerReponses: 'Import answers',
-    importEchoue: 'Unreadable file, or another format.',
+    echanger: 'Exchange',
+    exporterReponses: 'Export my answers',
+    exporterChecklist: 'Export the checklist, without answers',
     exporterChecklistAide: 'The subjects and how to qualify them, your additions included — to send to whoever answers on the same basis.',
+    importer: 'Open a received file',
+    importerAide: 'A checklist joins the offered grids; answers go back to the person they come from, revision by revision.',
+    importEchoue: 'Unreadable file, or another format.',
+    grilleImportee: '(received)',
+    retirerGrille: 'Remove this received checklist',
+    retirerGrilleConfirme: 'Remove this checklist? Answers given on it stay stored, and will still hold if you import it again.',
   },
 }
 

@@ -5,7 +5,7 @@ import type { Textes as TextesGrille } from '../domaine/traduction.ts'
 import type { Reponse } from '../domaine/types.ts'
 import { creerStockage, stockagePersistant, type Stockage } from '../donnees/stockage.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
-import { grilles, type GrilleDisponible } from '../grilles/index.ts'
+import { grilles, preparer, type GrilleDisponible } from '../grilles/index.ts'
 import { LANGUES_LIBELLES, textesUi, type Textes } from './i18n.ts'
 import {
   creerPreferences, LANGUES, NIVEAUX, THEMES,
@@ -19,6 +19,8 @@ import { composerChecklist, composerReponses, nomFichier, telecharger } from './
 import { ouvrirFormulaire } from './lightbox.ts'
 import { formulaireSujet, lireSujet } from './sujet-formulaire.ts'
 import { DEPOT, ouvrirContribuer, ouvrirInspirations, type Inspiration } from './contribuer.ts'
+import { choisirFichier, ErreurImport, lireFichier } from './import.ts'
+import { creerGrillesImportees } from '../donnees/grilles-importees.ts'
 // Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
 // peut charger aucune image à côté de lui.
 import logoSvg from '../../public/icons/icon.svg?raw'
@@ -73,11 +75,30 @@ export function demarrer(
 
   let replis = creerReplis(etat.disponible.grille.id, support.stockage)
   const ajouts = creerAjouts(support.stockage)
+  const importees = creerGrillesImportees(support.stockage)
 
-  /** La grille livrée, augmentée des sujets que cette personne a ajoutés. */
+  /**
+   * Les grilles proposées : celles livrées, puis les checklists reçues.
+   * Une checklist illisible est passée sous silence plutôt que de faire tomber
+   * la page — elle a pu être écrite par une version plus récente.
+   */
+  const toutesLesGrilles = (): GrilleDisponible[] => [
+    ...grilles,
+    ...importees.toutes().flatMap((checklist) => {
+      try {
+        return [preparer(checklist.definition, checklist.traductions, true)]
+      } catch {
+        return []
+      }
+    }),
+  ]
+
+  /** La grille choisie, augmentée des sujets que cette personne a ajoutés. */
   const grilleCourante = (): GrilleDisponible => {
-    const livree = grilles.find((d) => d.grille.id === etat.disponible.grille.id) ?? grilles[0]!
-    return etat.personne ? livree.avecAjouts(ajouts.pourGrille(etat.personne, livree.grille.id)) : livree
+    const toutes = toutesLesGrilles()
+    const base = toutes.find((d) => d.grille.id === etat.disponible.grille.id
+      && d.importee === etat.disponible.importee) ?? toutes[0]!
+    return etat.personne ? base.avecAjouts(ajouts.pourGrille(etat.personne, base.grille.id)) : base
   }
 
   racine.innerHTML = `
@@ -106,7 +127,7 @@ export function demarrer(
     // Le panneau de réglages reste ouvert d’un rendu à l’autre : le refermer à
     // chaque clic empêcherait d’essayer deux réglages de suite.
     const reglagesOuverts = champs.entete.querySelector<HTMLDetailsElement>('[data-reglages]')?.open ?? false
-    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts)
+    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts, toutesLesGrilles())
     afficherAvancement(grille, valeurs, ctx)
     champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
     champs.pied.innerHTML = piedHtml(ctx)
@@ -190,10 +211,26 @@ export function demarrer(
       return
     }
     if (cible.closest('[data-exporter-checklist]')) {
-      const livree = grilles.find((d) => d.grille.id === etat.disponible.grille.id)!
-      telecharger(nomFichier('checklist', livree.grille.id),
-        composerChecklist(livree.definition, livree.traductions,
-          ajouts.pourGrille(etat.personne!, livree.grille.id)))
+      // La grille telle qu’elle est livrée ou telle qu’elle a été reçue, plus
+      // les ajouts : l’étape d’augmentation par personne n’a pas à s’y ajouter
+      // deux fois.
+      const base = toutesLesGrilles().find((d) => d.grille.id === etat.disponible.grille.id
+        && d.importee === etat.disponible.importee)!
+      telecharger(nomFichier('checklist', base.grille.id),
+        composerChecklist(base.definition, base.traductions,
+          ajouts.pourGrille(etat.personne!, base.grille.id)))
+      return
+    }
+    if (cible.closest('[data-importer]')) {
+      void importer()
+      return
+    }
+    if (cible.closest('[data-retirer-grille]')) {
+      if (!confirm(textesUi(prefs.langue).retirerGrilleConfirme)) return
+      importees.retirer(etat.disponible.grille.id)
+      etat.disponible = grilles[0]!
+      etat.ouvert = null
+      afficher()
       return
     }
     if (cible.closest('[data-contribuer]')) {
@@ -229,7 +266,7 @@ export function demarrer(
       etat.personne = champ.value || null
       etat.ouvert = null
     } else if (champ.matches('[data-grille]')) {
-      etat.disponible = grilles.find((d) => d.grille.id === champ.value) ?? grilles[0]!
+      etat.disponible = toutesLesGrilles().find((d) => refGrille(d) === champ.value) ?? grilles[0]!
       replis = creerReplis(etat.disponible.grille.id, support.stockage)
       etat.ouvert = null
     } else if (champ.matches('[data-langue]')) {
@@ -331,6 +368,34 @@ export function demarrer(
     }
   }
 
+  /**
+   * Relit un fichier exporté. Le même bouton accepte les deux formats : c’est
+   * le fichier qui dit ce qu’il est, et on ne demande pas à quelqu’un de le
+   * savoir avant de l’ouvrir.
+   */
+  async function importer(): Promise<void> {
+    const ui = textesUi(prefs.langue)
+    const fichier = await choisirFichier()
+    if (!fichier) return
+    try {
+      const lecture = await lireFichier(fichier)
+      if (lecture.type === 'checklist') {
+        importees.ajouter(lecture.charge)
+        // On bascule dessus : l’avoir importée sans la voir n’aurait aucun sens.
+        etat.disponible = preparer(lecture.charge.definition, lecture.charge.traductions, true)
+        replis = creerReplis(etat.disponible.grille.id, support.stockage)
+      } else {
+        etat.personne = stockage.importer(lecture.charge.contenu as never).id
+      }
+      etat.ouvert = null
+      afficher()
+    } catch (erreur) {
+      alert(erreur instanceof ErreurImport && erreur.message !== 'format'
+        ? `${ui.importEchoue}\n${erreur.message}`
+        : ui.importEchoue)
+    }
+  }
+
   champs.pied.addEventListener('click', (evenement) => {
     if ((evenement.target as HTMLElement).closest('[data-appliquer-maj]')) void appliquerMiseAJour()
   })
@@ -349,7 +414,22 @@ export function demarrer(
 
 // --- en-tête --------------------------------------------------------------
 
-function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean): string {
+/**
+ * Désigne une grille dans le sélecteur.
+ * Une checklist reçue peut porter l’identifiant d’une grille livrée — c’est même
+ * le cas quand quelqu’un renvoie la sienne, complétée : il faut donc pouvoir
+ * choisir l’une ou l’autre.
+ */
+function refGrille(disponible: GrilleDisponible): string {
+  return `${disponible.importee ? 'i' : 'l'}:${disponible.grille.id}`
+}
+
+function enteteHtml(
+  ctx: Contexte,
+  stockage: Stockage,
+  reglagesOuverts: boolean,
+  disponibles: GrilleDisponible[],
+): string {
   const { etat, ui, prefs } = ctx
   const personnes = stockage.personnes()
 
@@ -368,9 +448,14 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean)
     <button type="button" data-renommer title="${echapper(ui.renommer)}" aria-label="${echapper(ui.renommer)}">✎</button>
     <button type="button" data-ajout-personne>${echapper(ui.ajouterPersonne)}</button>`
 
+  const courante = refGrille(etat.disponible)
   const quelleGrille = `<label class="champ">${echapper(ui.grille)}
-    <select data-grille aria-label="${echapper(ui.grille)}">${grilles.map((disponible) =>
-      `<option value="${echapper(disponible.grille.id)}"${disponible.grille.id === etat.disponible.grille.id ? ' selected' : ''}>${echapper(disponible.textesPour(prefs.langue).titre)}</option>`).join('')}</select></label>`
+    <select data-grille aria-label="${echapper(ui.grille)}">${disponibles.map((disponible) =>
+      `<option value="${echapper(refGrille(disponible))}"${refGrille(disponible) === courante ? ' selected' : ''}>${
+        echapper(disponible.textesPour(prefs.langue).titre)}${disponible.importee ? ` ${ui.grilleImportee}` : ''}</option>`).join('')}</select></label>${
+    etat.disponible.importee
+      ? `<button type="button" data-retirer-grille title="${echapper(ui.retirerGrille)}" aria-label="${echapper(ui.retirerGrille)}">×</button>`
+      : ''}`
 
   const langue = `<label class="champ">${echapper(ui.langue)}
     <select data-langue aria-label="${echapper(ui.langue)}">${LANGUES.map((code) =>
@@ -396,11 +481,13 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean)
   </details>`
 
   const outils = `<details class="reglages" data-exports>
-    <summary>${echapper(ui.exporter)}</summary>
+    <summary>${echapper(ui.echanger)}</summary>
     <div class="reglages-panneau">
       <button type="button" data-exporter-reponses>${echapper(ui.exporterReponses)}</button>
       <button type="button" data-exporter-checklist>${echapper(ui.exporterChecklist)}</button>
       <p class="aide">${echapper(ui.exporterChecklistAide)}</p>
+      <button type="button" data-importer>${echapper(ui.importer)}</button>
+      <p class="aide">${echapper(ui.importerAide)}</p>
     </div>
   </details>`
 

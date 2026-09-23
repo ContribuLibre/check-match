@@ -183,3 +183,9 @@ Pas encore fait : la comparaison entre personnes, l’export d’image, l’édi
 grille depuis l’interface, les langues supplémentaires.
 
 L’implémentation précédente est conservée sur la branche `legacy`.
+
+## Licence
+
+[GNU AGPL v3 ou ultérieure](LICENSE). La clause réseau compte ici : toute
+personne à qui l’application est servie doit pouvoir en obtenir le code source,
+y compris modifié.

@@ -29,6 +29,7 @@ le dit dans son pied de page : les réponses ne survivront pas à la fermeture.
 | **polarité** | la place depuis laquelle on répond : en général, en faisant, en recevant, en assistant. Une polarité = une étoile entière |
 | **part** | une branche de l’étoile : une dimension d’appréciation, avec sa propre échelle et son propre dégradé. Les parts peuvent se regrouper, et un regroupement ne se dessine pas |
 | **palier** | un cran d’une part, avec un score 0..1 volontairement irrégulier |
+| **extrême** | un bout d’une échelle continue : deux pour une tension, trois pour un triangle |
 
 ## Ce que ça fait
 
@@ -84,6 +85,42 @@ vraiment répondu compte plus qu’un parent qui héritait lui-même de loin.
 Le poids se lit dans l’étoile : une valeur héritée est d’autant plus pâle qu’elle
 vient de loin.
 
+### Trois façons de répondre
+
+Toutes les questions ne se posent pas en « plus ou moins ». Une part déclare
+donc sa forme, sans que le modèle change pour autant : une valeur reste un score
+entre 0 et 1 avec son poids, et l’héritage ignore d’où elle vient.
+
+| forme | ce qu’on fait | ce qu’on peut dire en plus |
+|---|---|---|
+| **crans** (défaut) | on clique une réponse nommée | — |
+| **tension** | on se place entre deux extrêmes | l’étendue de ce qui varie, en glissant d’un bout à l’autre |
+| **triangle** | on pose un point entre trois extrêmes | l’amplitude autour, en glissant depuis le point |
+
+Une tension met deux façons de faire **qui se valent** face à face — « au fil de
+l’eau » contre « posé d’avance » — et aucune n’est un moins de l’autre. En
+interface complète, un glissé dit l’étendue de ce qu’on vit : « ça dépend des
+fois » est une réponse, et souvent la vraie. Elle se lit en boîte à moustaches :
+bornes, et premiers et derniers déciles.
+
+Un triangle met trois directions autour d’un point. Le point posé **est** la
+répartition vers les trois branches — la seule qui ne va pas de soi, mais qui se
+donne d’un geste. Les repères déclarés par la grille découpent le triangle en
+cellules de Voronoï et nomment l’endroit où l’on est tombé ; sans repères, le
+triangle n’est pas découpé.
+
+```yaml
+- id: cadre
+  kind: tension
+  poles: [souple, prevu]
+
+- id: decider
+  kind: triangle
+  poles: [chacun, ensemble, delegue]   # ce sont ses trois branches
+  zones:
+    - { id: un-peu-des-trois, position: [1, 1, 1] }
+```
+
 ### La remontée
 
 À l’inverse, un nœud peut proposer sa réponse d’après ce qui a été répondu « en
@@ -94,6 +131,16 @@ C’est une **proposition**, pas un calcul permanent : renseigner une rubrique e
 une prise de position, qui doit pouvoir dire autre chose que la somme de ses
 parties. Seules comptent les réponses réellement posées en dessous, jamais les
 valeurs que le nœud a lui-même diffusées vers le bas.
+
+Une exception, parce qu’elle résume au lieu de poser une question de plus : les
+places particulières remontent **toutes seules** vers la polarité qui les
+englobe, et ce qu’elles y déduisent redescend ensuite vers les places restées
+vides. Sans cela, un sous-nœud en saurait plus que son propre parent, puisqu’il
+hérite du général, lui.
+
+Sur une échelle en tension, la remontée déduit plus qu’une moyenne : quand
+chaque élément a été situé d’un curseur, la rubrique en tire aussi la dispersion
+— qui est justement ce qu’une moyenne seule efface.
 
 ### Les agrégateurs
 
@@ -136,6 +183,28 @@ lui, et garde ce qui tient aussi à la grille livrée.
 Les ajouts appartiennent à la personne, pas à la grille : deux personnes du même
 navigateur ne voient pas les sujets l’une de l’autre.
 
+### Ajouter ses propres échelles
+
+Une grille qualifie ses sujets d’une certaine façon ; ce n’est pas toujours la
+bonne pour tout le monde. On ajoute donc ses propres parts — des crans, une
+tension, un triangle — en écrivant leurs valeurs une par ligne. Un score peut
+suivre après une barre verticale quand les crans ne sont pas réguliers ; sinon
+ils se répartissent d’eux-mêmes.
+
+```
+Rien | 0
+Un peu | 0.2
+Beaucoup | 1
+```
+
+Une échelle ajoutée peut ne concerner que certains sujets, ce qui est même
+l’usage principal : une question particulière appelle souvent une façon de
+répondre qui n’aurait aucun sens ailleurs. Cocher une rubrique l’étend à tout ce
+qu’elle contient ; ne rien cocher la pose sur toute la grille.
+
+Les repères nommés d’un triangle ne se saisissent pas depuis l’interface : ils
+demandent des coordonnées, et restent l’affaire d’une grille écrite à la main.
+
 ### Exporter
 
 Deux choses bien distinctes, en JSON :
@@ -143,12 +212,28 @@ Deux choses bien distinctes, en JSON :
 - **ses réponses** — ce qu’on a dit, historique compris. Ça ne se donne qu’à qui
   on veut ;
 - **sa checklist** — les sujets, les polarités, les parts et les textes dans
-  toutes les langues, **sans aucune réponse**, ajouts compris. C’est ce qu’on
-  envoie à quelqu’un pour qu’il réponde sur la même base, donc ce qui rend la
-  comparaison possible.
+  toutes les langues, **sans aucune réponse**, sujets et échelles ajoutés
+  compris. C’est ce qu’on envoie à quelqu’un pour qu’il réponde sur la même
+  base, donc ce qui rend la comparaison possible.
 
 Le YAML reste le format pour écrire une grille à la main ; le JSON est celui qui
 circule. Une checklist exportée se reconstruit telle quelle de l’autre côté.
+
+### Importer
+
+Le même bouton relit les deux : c’est le fichier qui dit ce qu’il est. Une
+checklist reçue rejoint les grilles proposées, marquée comme telle, et se retire
+d’un clic ; des réponses reçues rejoignent la personne dont elles viennent,
+révision par révision.
+
+Une checklist est construite pour de bon avant d’être acceptée : mieux vaut
+refuser à l’ouverture, en disant pourquoi, qu’afficher une grille qui casse le
+calcul trois clics plus loin. Un fichier qui n’annonce pas son format est refusé
+plutôt que deviné.
+
+Une checklist reçue garde son identifiant, même s’il est celui d’une grille
+livrée : les deux coexistent alors, et partagent de toute façon les réponses de
+ce qu’elles ont en commun, puisqu’une réponse appartient au sujet.
 
 ## L’interface
 
@@ -272,9 +357,10 @@ l’ambiguïté ; il apparaît en infobulle.
 Deux grilles livrées : **vie collective** (le cas d’usage visé) et **intimité**
 (les items viennent de l’ancienne kinklist, tout le reste est neuf).
 
-Pas encore fait : la comparaison entre personnes, la relecture d’un export
-(réponses comme checklist), l’export d’image, l’édition depuis l’interface
-au-delà de l’ajout de sujets, les langues supplémentaires.
+Pas encore fait : la comparaison entre personnes, l’export d’image, la
+modification d’un sujet ou d’une échelle déjà ajoutés (on les retire et on les
+refait), les repères de triangle depuis l’interface, les langues
+supplémentaires.
 
 L’implémentation précédente est conservée sur la branche `legacy`.
 

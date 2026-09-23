@@ -27,7 +27,7 @@ export interface Champ {
   id: string
   libelle: string
   aide?: string
-  type: 'texte' | 'zone' | 'cases'
+  type: 'texte' | 'zone' | 'cases' | 'radios' | 'couleur'
   /** Valeur de départ d’un champ de texte. */
   valeur?: string
   /** Options cochées au départ, pour un champ à cases. */
@@ -56,6 +56,30 @@ export type ValeursFormulaire = Record<string, string | string[]>
 
 function champHtml(champ: Champ): string {
   const aide = champ.aide ? `<p class="aide">${echapper(champ.aide)}</p>` : ''
+
+  if (champ.type === 'radios') {
+    const options = (champ.options ?? []).map((option, index) => `
+      <label class="case"${option.aide ? ` title="${echapper(option.aide)}"` : ''}>
+        <input type="radio" name="${echapper(champ.id)}" value="${echapper(option.valeur)}"${
+          (champ.valeur ?? (index === 0 ? option.valeur : '')) === option.valeur ? ' checked' : ''}>
+        <span>${echapper(option.libelle)}</span>
+      </label>`).join('')
+    return `<fieldset class="champ-groupe">
+      <legend>${echapper(champ.libelle)}</legend>
+      ${aide}
+      <div class="cases cases-en-ligne">${options}</div>
+    </fieldset>`
+  }
+
+  if (champ.type === 'couleur') {
+    return `<div class="champ-ligne champ-couleur">
+      <label for="champ-${echapper(champ.id)}">${echapper(champ.libelle)}</label>
+      ${aide}
+      <input type="color" name="${echapper(champ.id)}" id="champ-${echapper(champ.id)}"
+        value="${echapper(champ.valeur ?? '#888888')}">
+    </div>`
+  }
+
   if (champ.type === 'cases') {
     const options = (champ.options ?? []).map((option) => `
       <label class="case" style="--niveau: ${option.niveau ?? 0}"${option.aide ? ` title="${echapper(option.aide)}"` : ''}>

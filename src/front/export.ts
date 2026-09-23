@@ -1,4 +1,6 @@
 import { augmenterDefinition, augmenterTraduction, type NoeudAjoute } from '../domaine/ajouts.ts'
+import { augmenterDefinitionParts, augmenterTraductionParts } from '../domaine/parts-ajoutees.ts'
+import type { Ajouts } from '../grilles/index.ts'
 import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
 
 /**
@@ -32,16 +34,20 @@ export interface ReponsesExportees {
 export function composerChecklist(
   definition: GrilleDefinition,
   traductions: Record<string, Traduction>,
-  ajouts: NoeudAjoute[],
+  ajouts: Ajouts | NoeudAjoute[] = {},
 ): ChecklistExportee {
+  const { noeuds = [], parts = [] } = Array.isArray(ajouts) ? { noeuds: ajouts, parts: [] } : ajouts
+  // Les échelles d’abord, les sujets ensuite : dans cet ordre, un sujet ajouté
+  // hérite des échelles comme n’importe quel autre.
   const traduites = Object.fromEntries(
-    Object.entries(traductions).map(([langue, traduction]) => [langue, augmenterTraduction(traduction, ajouts)]),
+    Object.entries(traductions).map(([langue, traduction]) =>
+      [langue, augmenterTraduction(augmenterTraductionParts(traduction, parts), noeuds)]),
   )
   return {
     format: 'check-match/checklist',
     version: 1,
     exporteLe: new Date().toISOString(),
-    definition: augmenterDefinition(definition, ajouts),
+    definition: augmenterDefinition(augmenterDefinitionParts(definition, parts), noeuds),
     traductions: traduites,
   }
 }

@@ -95,6 +95,27 @@ export interface Textes {
   tensionEtendueAide: string
   tensionEtendue: (min: number, bas: number, haut: number, max: number) => string
   triangleAide: string
+  ajouterEchelle: string
+  ajouterEchelleTitre: string
+  ajouterEchelleIntro: string
+  champEchelleNom: string
+  champForme: string
+  champFormeAide: string
+  formeCrans: string
+  formeCransAide: string
+  formeTension: string
+  formeTensionAide: string
+  formeTriangle: string
+  formeTriangleAide: string
+  champValeurs: string
+  champValeursAide: string
+  champSujetsConcernes: string
+  champSujetsConcernesAide: string
+  champCouleurBasse: string
+  champCouleurHaute: string
+  retirerEchelle: string
+  retirerEchelleConfirme: string
+  echelleAjoutee: string
 }
 
 /**
@@ -189,6 +210,27 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
       `Selon les cas : de ${min} % à ${max} %, le plus souvent entre ${bas} % et ${haut} %.`,
     triangleAide: 'Posez un point entre les trois. Glissez pour dire de combien ça varie autour.',
+    ajouterEchelle: '+ échelle',
+    ajouterEchelleTitre: 'Ajouter une échelle',
+    ajouterEchelleIntro: 'Une façon de qualifier les sujets qui vous manque. Elle vous appartient, comme vos sujets ajoutés.',
+    champEchelleNom: 'Nom de l’échelle',
+    champForme: 'Forme',
+    champFormeAide: 'Comment on y répond.',
+    formeCrans: 'Des crans',
+    formeCransAide: 'Des réponses nommées, du plus bas au plus haut. C’est ce qui se compare le mieux.',
+    formeTension: 'Entre deux extrêmes',
+    formeTensionAide: 'Un curseur entre deux façons de faire qui se valent, et l’étendue de ce qui varie.',
+    formeTriangle: 'Entre trois extrêmes',
+    formeTriangleAide: 'Un point entre trois directions, avec l’amplitude autour.',
+    champValeurs: 'Les valeurs, une par ligne',
+    champValeursAide: 'Des crans du plus bas au plus haut, ou les extrêmes (deux, ou trois). Un score entre 0 et 1 peut suivre après « | » quand les crans ne sont pas réguliers.',
+    champSujetsConcernes: 'Sujets concernés',
+    champSujetsConcernesAide: 'Rien de coché : l’échelle vaut pour toute la grille. Une rubrique cochée l’étend à ce qu’elle contient.',
+    champCouleurBasse: 'Couleur au plus bas',
+    champCouleurHaute: 'Couleur au plus haut',
+    retirerEchelle: 'Retirer cette échelle',
+    retirerEchelleConfirme: 'Retirer cette échelle ? Les réponses posées dessus restent enregistrées.',
+    echelleAjoutee: 'Échelle ajoutée par vous',
   },
   en: {
     titre: 'check-match',
@@ -277,6 +319,27 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     tensionEtendue: (min: number, bas: number, haut: number, max: number) =>
       `Depending: from ${min} % to ${max} %, most often between ${bas} % and ${haut} %.`,
     triangleAide: 'Place a point between the three. Drag to say how much it varies around it.',
+    ajouterEchelle: '+ scale',
+    ajouterEchelleTitre: 'Add a scale',
+    ajouterEchelleIntro: 'A way of qualifying subjects that you are missing. It is yours, like your added subjects.',
+    champEchelleNom: 'Scale name',
+    champForme: 'Shape',
+    champFormeAide: 'How it is answered.',
+    formeCrans: 'Steps',
+    formeCransAide: 'Named answers, from lowest to highest. This is what compares best.',
+    formeTension: 'Between two extremes',
+    formeTensionAide: 'A slider between two ways that are worth as much, and the range of what varies.',
+    formeTriangle: 'Between three extremes',
+    formeTriangleAide: 'A point between three directions, with the spread around it.',
+    champValeurs: 'The values, one per line',
+    champValeursAide: 'Steps from lowest to highest, or the extremes (two, or three). A score between 0 and 1 may follow after “|” when steps are not regular.',
+    champSujetsConcernes: 'Subjects concerned',
+    champSujetsConcernesAide: 'Nothing ticked: the scale holds for the whole grid. A ticked section extends it to what it contains.',
+    champCouleurBasse: 'Colour at the low end',
+    champCouleurHaute: 'Colour at the high end',
+    retirerEchelle: 'Remove this scale',
+    retirerEchelleConfirme: 'Remove this scale? Answers given on it stay stored.',
+    echelleAjoutee: 'Scale added by you',
   },
 }
 

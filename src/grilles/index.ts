@@ -1,4 +1,7 @@
 import { augmenterDefinition, augmenterTraduction, type NoeudAjoute } from '../domaine/ajouts.ts'
+import {
+  augmenterDefinitionParts, augmenterTraductionParts, type PartAjoutee,
+} from '../domaine/parts-ajoutees.ts'
 import { construireGrille, type Grille } from '../domaine/grille.ts'
 import { creerTextes, type Textes } from '../domaine/traduction.ts'
 import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
@@ -25,8 +28,14 @@ export interface GrilleDisponible {
   textes: Textes
   /** La définition d’origine, pour l’exporter augmentée des ajouts. */
   definition: GrilleDefinition
-  /** La même grille, augmentée des sujets ajoutés par une personne. */
-  avecAjouts(ajouts: NoeudAjoute[]): GrilleDisponible
+  /** La même grille, augmentée des sujets et des échelles ajoutés par une personne. */
+  avecAjouts(ajouts: Ajouts): GrilleDisponible
+}
+
+/** Ce qu’une personne a ajouté à une grille : des sujets, des échelles. */
+export interface Ajouts {
+  noeuds?: NoeudAjoute[]
+  parts?: PartAjoutee[]
 }
 
 /**
@@ -61,14 +70,17 @@ export function preparer(
     textesPour,
     textes: textesPour(langueParDefaut),
     definition,
-    avecAjouts: (ajouts) => (ajouts.length
-      ? preparer(
-        augmenterDefinition(definition, ajouts),
-        Object.fromEntries(Object.entries(parLangue)
-          .map(([langue, traduction]) => [langue, augmenterTraduction(traduction, ajouts)])),
+    avecAjouts: ({ noeuds = [], parts = [] }) => {
+      if (!noeuds.length && !parts.length) return preparer(definition, parLangue, importee)
+      // Les échelles d’abord : un sujet ajouté doit pouvoir en hériter comme
+      // n’importe quel autre, donc elles doivent déjà être sur ses parents.
+      return preparer(
+        augmenterDefinition(augmenterDefinitionParts(definition, parts), noeuds),
+        Object.fromEntries(Object.entries(parLangue).map(([langue, traduction]) =>
+          [langue, augmenterTraduction(augmenterTraductionParts(traduction, parts), noeuds)])),
         importee,
       )
-      : preparer(definition, parLangue, importee)),
+    },
   }
 }
 

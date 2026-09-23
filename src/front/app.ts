@@ -18,6 +18,8 @@ import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from '
 import { creerReplis, type Replis } from './repli.ts'
 import { estAjoute } from '../domaine/ajouts.ts'
 import { creerAjouts } from '../donnees/ajouts-stockage.ts'
+import { creerPartsAjoutees } from '../donnees/parts-stockage.ts'
+import { formulaireEchelle, lireEchelle } from './echelle-formulaire.ts'
 import { composerChecklist, composerReponses, nomFichier, telecharger } from './export.ts'
 import { ouvrirFormulaire } from './lightbox.ts'
 import { formulaireSujet, lireSujet } from './sujet-formulaire.ts'
@@ -78,6 +80,7 @@ export function demarrer(
 
   let replis = creerReplis(etat.disponible.grille.id, support.stockage)
   const ajouts = creerAjouts(support.stockage)
+  const echelles = creerPartsAjoutees(support.stockage)
   const importees = creerGrillesImportees(support.stockage)
 
   /**
@@ -101,7 +104,11 @@ export function demarrer(
     const toutes = toutesLesGrilles()
     const base = toutes.find((d) => d.grille.id === etat.disponible.grille.id
       && d.importee === etat.disponible.importee) ?? toutes[0]!
-    return etat.personne ? base.avecAjouts(ajouts.pourGrille(etat.personne, base.grille.id)) : base
+    if (!etat.personne) return base
+    return base.avecAjouts({
+      noeuds: ajouts.pourGrille(etat.personne, base.grille.id),
+      parts: echelles.pourGrille(etat.personne, base.grille.id),
+    })
   }
 
   racine.innerHTML = `
@@ -207,6 +214,10 @@ export function demarrer(
       void ajouterSujet([])
       return
     }
+    if (cible.closest('[data-ajouter-echelle]')) {
+      void ajouterEchelle()
+      return
+    }
     if (cible.closest('[data-exporter-reponses]')) {
       const grilleId = etat.disponible.grille.id
       telecharger(nomFichier('reponses', grilleId),
@@ -220,8 +231,10 @@ export function demarrer(
       const base = toutesLesGrilles().find((d) => d.grille.id === etat.disponible.grille.id
         && d.importee === etat.disponible.importee)!
       telecharger(nomFichier('checklist', base.grille.id),
-        composerChecklist(base.definition, base.traductions,
-          ajouts.pourGrille(etat.personne!, base.grille.id)))
+        composerChecklist(base.definition, base.traductions, {
+          noeuds: ajouts.pourGrille(etat.personne!, base.grille.id),
+          parts: echelles.pourGrille(etat.personne!, base.grille.id),
+        }))
       return
     }
     if (cible.closest('[data-importer]')) {
@@ -325,6 +338,14 @@ export function demarrer(
     }
     if (cible.closest('[data-effacer]')) return enregistrer({})
 
+    const retraitEchelle = cible.closest<HTMLElement>('[data-retirer-echelle]')
+    if (retraitEchelle) {
+      if (!confirm(textesUi(prefs.langue).retirerEchelleConfirme)) return
+      echelles.retirer(etat.personne!, etat.disponible.grille.id, retraitEchelle.dataset.retirerEchelle!)
+      afficher()
+      return
+    }
+
     const deduire = cible.closest<HTMLElement>('[data-deduire]')
     if (deduire) {
       const valeurs = calculerValeurs(etat.disponible.grille, reponses())
@@ -403,6 +424,26 @@ export function demarrer(
       ajouts.ajouter(etat.personne, etat.disponible.grille.id, sujet, etat.disponible.grille.noeuds.keys())
       // Un sujet ajouté sous une rubrique repliée resterait invisible.
       for (const parent of sujet.parents) if (replis.estReplie(parent)) replis.basculer(parent)
+      afficher()
+    } catch (erreur) {
+      alert(erreur instanceof Error ? erreur.message : String(erreur))
+    }
+  }
+
+  /**
+   * Ouvre le formulaire d’échelle, puis l’ajoute à la grille.
+   * Une échelle ajoutée se pose sur les sujets visés — ou sur toute la grille
+   * si on n’en vise aucun — et se répond ensuite comme n’importe quelle autre.
+   */
+  async function ajouterEchelle(): Promise<void> {
+    if (!etat.personne) return
+    const ui = textesUi(prefs.langue)
+    const saisi = await ouvrirFormulaire(formulaireEchelle(etat.disponible, ui, prefs.langue))
+    if (!saisi) return
+    try {
+      echelles.ajouter(etat.personne, etat.disponible.grille.id,
+        lireEchelle(saisi, etat.disponible.grille),
+        etat.disponible.grille.parts.map((part) => part.id))
       afficher()
     } catch (erreur) {
       alert(erreur instanceof Error ? erreur.message : String(erreur))
@@ -534,6 +575,7 @@ function enteteHtml(
 
   const pliage = `<div class="pliage">
     <button type="button" data-ajouter-racine title="${echapper(ui.ajouterSujet)}">${echapper(ui.ajouterSujet)}</button>
+    <button type="button" data-ajouter-echelle title="${echapper(ui.ajouterEchelleTitre)}">${echapper(ui.ajouterEchelle)}</button>
     <button type="button" data-tout-replier title="${echapper(ui.toutReplier)}">⊟</button>
     <button type="button" data-tout-deplier title="${echapper(ui.toutDeplier)}">⊞</button>
   </div>`
@@ -869,9 +911,14 @@ function editeurHtml(
         ? `<span class="provenance herite">${echapper(ui.herite)}${echapper(detail)}</span>`
         : `<span class="provenance vide">${echapper(ui.nonRenseigne)}</span>`
 
+    // Une échelle ajoutée se retire d’où elle est : sa racine, pas ses branches.
+    const propre = estAjoute(part.id) && !grille.arbreParts.get(part.id)?.parent
     return `<div class="part${regroupement ? ' regroupement' : ''}">
       <div class="part-nom" style="--couleur: ${echapper(part.maxColor)}">
-        ${echapper(textes.part(part.id))}${regroupement ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''} ${provenance}
+        ${echapper(textes.part(part.id))}${regroupement ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''}
+        ${propre ? `<span class="marque-ajout" title="${echapper(ui.echelleAjoutee)}">✚</span>
+          <button type="button" class="retirer-echelle" data-retirer-echelle="${echapper(part.id)}"
+            title="${echapper(ui.retirerEchelle)}">×</button>` : ''} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
       ${saisieHtml(part, valeur, choisi, textes, ctx)}

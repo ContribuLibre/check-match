@@ -29,10 +29,19 @@ les trois autres.
 1. **Le score ne bouge pas en héritant, le poids si.** Une rubrique répondue, ou une polarité générale répondue, vaut
    pour ses sous-nœuds avec la même valeur et un poids atténué par niveau. Le
    poids dit la force de l’engagement, pas son contenu.
+   C’est vrai quelle que soit la forme de l’échelle : des crans, une tension
+   entre deux extrêmes ou un point dans un triangle produisent tous un score
+   entre 0 et 1. Ce qui change est la saisie et la lecture, jamais ce qui
+   circule ensuite — l’héritage et les agrégateurs ne connaissent que le score.
 2. **Zéro n’est pas « pas renseigné ».** Répondre au plus bas est une réponse, et
    se dessine (triangle tronqué) ; ne pas avoir répondu ne dessine rien.
 3. **La remontée ne remonte que des réponses propres.** Sinon une rubrique se
-   confirme elle-même à travers ce qu’elle a diffusé vers le bas.
+   confirme elle-même à travers ce qu’elle a diffusé vers le bas. Vaut aussi
+   pour la remontée automatique des places vers la polarité qui les englobe.
+8. **La variabilité est une information, pas un défaut.** L’étendue d’une
+   tension et l’amplitude d’un triangle se disent à côté du score, jamais à sa
+   place. Les résumer en une moyenne effacerait précisément ce qu’ils
+   apportent : « ça dépend des fois » est une réponse.
 
 ## Les grilles sont des données, pas du code
 
@@ -42,8 +51,8 @@ toucher aux identifiants — c’est ce qui garde les réponses valables d’une
 à l’autre, et comparables entre deux grilles qui partagent des sujets.
 
 Ce qu’une personne ajoute depuis l’interface est de la donnée aussi, mais d’une
-autre main : un sujet ajouté porte un identifiant préfixé `+`, réservé à cet
-usage. C’est ce qui garantit qu’une mise à jour de la grille livrée et les
+autre main : un sujet **ou une échelle** ajoutés portent un identifiant préfixé
+`+`, réservé à cet usage. C’est ce qui garantit qu’une mise à jour de la grille livrée et les
 ajouts de quelqu’un ne peuvent jamais s’écraser l’un l’autre. Une grille peut
 évoluer sous des ajouts qui ne l’ont pas suivie : un ajout dont le parent a
 disparu remonte au premier niveau plutôt que d’empêcher le chargement.

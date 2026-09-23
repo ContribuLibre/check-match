@@ -536,3 +536,6 @@ main { padding: 1rem 1.2rem; }
 
 .tension-lecture { margin-top: .2rem; opacity: .85; }
 .tension-lecture svg { width: 100%; max-width: 22rem; height: 36px; }
+
+.cases-en-ligne { display: flex; flex-wrap: wrap; gap: .1rem .9rem; max-height: none; }
+.champ-couleur input[type="color"] { width: 4rem; height: 2rem; padding: 0; border: 1px solid var(--trait-ui); border-radius: 7px; background: none; }

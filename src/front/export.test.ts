@@ -61,7 +61,9 @@ describe('nom de fichier', () => {
 describe('les grilles livrées savent accueillir des ajouts', () => {
   it('sans toucher à la grille d’origine', () => {
     const avant = grilles[0]!.grille.noeuds.size
-    const augmentee = grilles[0]!.avecAjouts([{ id: '+x', label: 'X', parents: [], creeLe: 0 }])
+    const augmentee = grilles[0]!.avecAjouts({
+      noeuds: [{ id: '+x', label: 'X', parents: [], creeLe: 0 }],
+    })
     expect(augmentee.grille.noeuds.size).toBe(avant + 1)
     expect(grilles[0]!.grille.noeuds.size).toBe(avant)
   })

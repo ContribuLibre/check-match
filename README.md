@@ -115,8 +115,40 @@ qu’elles ont en commun. Les identifiants vivent dans la structure, les libell�
 dans les fichiers de langue : traduire n’oblige jamais à toucher aux identifiants.
 
 Chaque personne a son propre bac : plusieurs personnes sur le même navigateur ne
-s’écrasent pas. Réécrire une réponse l’écrase dans les 24 h ; au-delà, la
+s’écrasent pas. Une personne existe dès l’arrivée sur la page, et se renomme
+après coup : on n’a à s’occuper des personnes que le jour où on veut en
+distinguer plusieurs. Réécrire une réponse l’écrase dans les 24 h ; au-delà, la
 précédente est conservée et une révision s’ajoute, pour suivre les évolutions.
+
+### Ajouter ses propres sujets
+
+Aucune grille ne prévoit tout. Depuis l’interface, on ajoute un sujet et on le
+range dans l’arborescence — sous une rubrique, sous un autre ajout, ou au
+premier niveau. Il hérite et remonte comme n’importe quel sujet livré.
+
+Un identifiant ajouté commence par `+` (`+poubelles`), et ne peut donc jamais
+entrer en collision avec un identifiant de la grille livrée : une mise à jour de
+la grille n’écrase pas ce qu’on a ajouté, ni l’inverse. Si le parent choisi
+disparaît d’une version ultérieure, le sujet remonte au premier niveau plutôt
+que d’empêcher le chargement. Retirer un sujet emporte ce qui ne tenait qu’à
+lui, et garde ce qui tient aussi à la grille livrée.
+
+Les ajouts appartiennent à la personne, pas à la grille : deux personnes du même
+navigateur ne voient pas les sujets l’une de l’autre.
+
+### Exporter
+
+Deux choses bien distinctes, en JSON :
+
+- **ses réponses** — ce qu’on a dit, historique compris. Ça ne se donne qu’à qui
+  on veut ;
+- **sa checklist** — les sujets, les polarités, les parts et les textes dans
+  toutes les langues, **sans aucune réponse**, ajouts compris. C’est ce qu’on
+  envoie à quelqu’un pour qu’il réponde sur la même base, donc ce qui rend la
+  comparaison possible.
+
+Le YAML reste le format pour écrire une grille à la main ; le JSON est celui qui
+circule. Une checklist exportée se reconstruit telle quelle de l’autre côté.
 
 ## L’interface
 
@@ -133,6 +165,9 @@ juste cocher quelques items est le meilleur moyen de le faire fuir.
 Thème auto / clair / sombre, et langue de l’interface (fr, en) — les trois
 réglages sont retenus par le navigateur. Le thème est posé avant le premier
 rendu, pour qu’une page réglée en sombre n’apparaisse pas d’abord en clair.
+
+Chaque rubrique se replie, et le repli est retenu par grille. Une grille de deux
+cents entrées se parcourt ainsi rubrique par rubrique, sans dérouler le reste.
 
 ## Hors ligne et mises à jour
 
@@ -237,8 +272,9 @@ l’ambiguïté ; il apparaît en infobulle.
 Deux grilles livrées : **vie collective** (le cas d’usage visé) et **intimité**
 (les items viennent de l’ancienne kinklist, tout le reste est neuf).
 
-Pas encore fait : la comparaison entre personnes, l’export d’image, l’édition de
-grille depuis l’interface, les langues supplémentaires.
+Pas encore fait : la comparaison entre personnes, la relecture d’un export
+(réponses comme checklist), l’export d’image, l’édition depuis l’interface
+au-delà de l’ajout de sujets, les langues supplémentaires.
 
 L’implémentation précédente est conservée sur la branche `legacy`.
 

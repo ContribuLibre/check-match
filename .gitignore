@@ -3,4 +3,5 @@ dist
 dist-local
 .idea
 .coder
+coder.config.jsx
 .DS_Store

@@ -63,6 +63,18 @@ export interface Textes {
   toutDeplier: string
   replier: string
   deplier: string
+  ajouterSujet: string
+  ajouterSujetIci: string
+  ajouterSujetInvite: string
+  retirerSujet: string
+  retirerSujetConfirme: string
+  sujetAjoute: string
+  exporter: string
+  exporterReponses: string
+  exporterChecklist: string
+  importerReponses: string
+  importEchoue: string
+  exporterChecklistAide: string
 }
 
 /**
@@ -124,6 +136,18 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     toutDeplier: 'Tout déplier',
     replier: 'Replier',
     deplier: 'Déplier',
+    ajouterSujet: '+ sujet',
+    ajouterSujetIci: 'Ajouter un sous-sujet ici',
+    ajouterSujetInvite: 'Libellé du nouveau sujet :',
+    retirerSujet: 'Retirer ce sujet',
+    retirerSujetConfirme: 'Retirer ce sujet et ce qu’il contient ? Les réponses déjà posées dessus resteront enregistrées.',
+    sujetAjoute: 'Ajouté par vous',
+    exporter: 'Exporter',
+    exporterReponses: 'Mes réponses',
+    exporterChecklist: 'La checklist, sans réponses',
+    importerReponses: 'Importer des réponses',
+    importEchoue: 'Fichier illisible ou d’un autre format.',
+    exporterChecklistAide: 'Les sujets et la façon de les qualifier, vos ajouts compris — à envoyer à qui veut répondre sur la même base.',
   },
   en: {
     titre: 'check-match',
@@ -179,6 +203,18 @@ const TEXTES: { fr: Textes } & Partial<Record<Langue, Partial<Textes>>> = {
     toutDeplier: 'Expand all',
     replier: 'Collapse',
     deplier: 'Expand',
+    ajouterSujet: '+ subject',
+    ajouterSujetIci: 'Add a sub-subject here',
+    ajouterSujetInvite: 'Label of the new subject:',
+    retirerSujet: 'Remove this subject',
+    retirerSujetConfirme: 'Remove this subject and what it contains? Answers already given on it stay stored.',
+    sujetAjoute: 'Added by you',
+    exporter: 'Export',
+    exporterReponses: 'My answers',
+    exporterChecklist: 'The checklist, without answers',
+    importerReponses: 'Import answers',
+    importEchoue: 'Unreadable file, or another format.',
+    exporterChecklistAide: 'The subjects and how to qualify them, your additions included — to send to whoever answers on the same basis.',
   },
 }
 

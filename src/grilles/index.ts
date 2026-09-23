@@ -1,3 +1,4 @@
+import { augmenterDefinition, augmenterTraduction, type NoeudAjoute } from '../domaine/ajouts.ts'
 import { construireGrille, type Grille } from '../domaine/grille.ts'
 import { creerTextes, type Textes } from '../domaine/traduction.ts'
 import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
@@ -20,12 +21,17 @@ export interface GrilleDisponible {
   textesPour(langue: string): Textes
   /** Textes dans la langue par défaut, pour lister les grilles avant tout choix. */
   textes: Textes
+  /** La définition d’origine, pour l’exporter augmentée des ajouts. */
+  definition: GrilleDefinition
+  /** La même grille, augmentée des sujets ajoutés par une personne. */
+  avecAjouts(ajouts: NoeudAjoute[]): GrilleDisponible
 }
 
-function preparer(definition: unknown, traductions: Record<string, unknown>): GrilleDisponible {
-  const grille = construireGrille(definition as GrilleDefinition)
+function preparer(definitionBrute: unknown, traductions: Record<string, unknown>): GrilleDisponible {
+  const definition = definitionBrute as GrilleDefinition
+  const grille = construireGrille(definition)
   const parLangue = traductions as Record<string, Traduction>
-  const langueParDefaut = (definition as GrilleDefinition).defaultLocale
+  const langueParDefaut = definition.defaultLocale
   const repli = parLangue[langueParDefaut] ?? Object.values(parLangue)[0]!
 
   const cache = new Map<string, Textes>()
@@ -43,6 +49,14 @@ function preparer(definition: unknown, traductions: Record<string, unknown>): Gr
     traductions: parLangue,
     textesPour,
     textes: textesPour(langueParDefaut),
+    definition,
+    avecAjouts: (ajouts) => (ajouts.length
+      ? preparer(
+        augmenterDefinition(definition, ajouts),
+        Object.fromEntries(Object.entries(parLangue)
+          .map(([langue, traduction]) => [langue, augmenterTraduction(traduction, ajouts)])),
+      )
+      : preparer(definition, parLangue)),
   }
 }
 

@@ -13,6 +13,9 @@ import {
 } from './preferences.ts'
 import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
 import { creerReplis, type Replis } from './repli.ts'
+import { estAjoute } from '../domaine/ajouts.ts'
+import { creerAjouts } from '../donnees/ajouts-stockage.ts'
+import { composerChecklist, composerReponses, nomFichier, telecharger } from './export.ts'
 // Intégrée à la compilation : le build hors ligne est un fichier unique, qui ne
 // peut charger aucune image à côté de lui.
 import logoSvg from '../../public/icons/icon.svg?raw'
@@ -67,6 +70,13 @@ export function demarrer(
   }
 
   let replis = creerReplis(etat.disponible.grille.id, support.stockage)
+  const ajouts = creerAjouts(support.stockage)
+
+  /** La grille livrée, augmentée des sujets que cette personne a ajoutés. */
+  const grilleCourante = (): GrilleDisponible => {
+    const livree = grilles.find((d) => d.grille.id === etat.disponible.grille.id) ?? grilles[0]!
+    return etat.personne ? livree.avecAjouts(ajouts.pourGrille(etat.personne, livree.grille.id)) : livree
+  }
 
   racine.innerHTML = `
     <header class="entete" data-entete></header>
@@ -86,6 +96,7 @@ export function demarrer(
     etat.personne ? stockage.reponsesCourantes(etat.personne) : new Map()
 
   function afficher(): void {
+    etat.disponible = grilleCourante()
     const ctx = contexte()
     const { grille } = etat.disponible
     const valeurs = calculerValeurs(grille, reponses())
@@ -167,6 +178,23 @@ export function demarrer(
       }
       return
     }
+    if (cible.closest('[data-ajouter-racine]')) {
+      ajouterSujet([])
+      return
+    }
+    if (cible.closest('[data-exporter-reponses]')) {
+      const grilleId = etat.disponible.grille.id
+      telecharger(nomFichier('reponses', grilleId),
+        composerReponses(grilleId, stockage.exporter(etat.personne!)))
+      return
+    }
+    if (cible.closest('[data-exporter-checklist]')) {
+      const livree = grilles.find((d) => d.grille.id === etat.disponible.grille.id)!
+      telecharger(nomFichier('checklist', livree.grille.id),
+        composerChecklist(livree.definition, livree.traductions,
+          ajouts.pourGrille(etat.personne!, livree.grille.id)))
+      return
+    }
     if (cible.closest('[data-tout-replier]')) {
       replis.toutReplier([...etat.disponible.grille.noeuds.values()]
         .filter((noeud) => noeud.enfants.length).map((noeud) => noeud.id))
@@ -210,7 +238,23 @@ export function demarrer(
       afficher()
       return
     }
-    const bouton = (evenement.target as HTMLElement).closest<HTMLElement>('[data-noeud][data-polarite]')
+    const cible = evenement.target as HTMLElement
+
+    const ajout = cible.closest<HTMLElement>('[data-ajouter-sous]')
+    if (ajout) {
+      ajouterSujet([ajout.dataset.ajouterSous!])
+      return
+    }
+    const retrait = cible.closest<HTMLElement>('[data-retirer]')
+    if (retrait) {
+      if (!confirm(textesUi(prefs.langue).retirerSujetConfirme)) return
+      ajouts.retirer(etat.personne!, etat.disponible.grille.id, retrait.dataset.retirer!)
+      etat.ouvert = null
+      afficher()
+      return
+    }
+
+    const bouton = cible.closest<HTMLElement>('[data-noeud][data-polarite]')
     if (!bouton) return
     if (!etat.personne) {
       alert(textesUi(prefs.langue).personneDabord)
@@ -254,6 +298,23 @@ export function demarrer(
       enregistrer(courante)
     }
   })
+
+  /** Demande un libellé et range le sujet sous les parents donnés. */
+  function ajouterSujet(parents: string[]): void {
+    if (!etat.personne) return
+    const ui = textesUi(prefs.langue)
+    const label = prompt(ui.ajouterSujetInvite)
+    if (!label?.trim()) return
+    try {
+      ajouts.ajouter(etat.personne, etat.disponible.grille.id, label, parents,
+        etat.disponible.grille.noeuds.keys())
+      // Un sujet ajouté sous une rubrique repliée resterait invisible.
+      for (const parent of parents) if (replis.estReplie(parent)) replis.basculer(parent)
+      afficher()
+    } catch (erreur) {
+      alert(erreur instanceof Error ? erreur.message : String(erreur))
+    }
+  }
 
   champs.pied.addEventListener('click', (evenement) => {
     if ((evenement.target as HTMLElement).closest('[data-appliquer-maj]')) void appliquerMiseAJour()
@@ -330,7 +391,17 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
     </div>
   </details>`
 
+  const outils = `<details class="reglages" data-exports>
+    <summary>${echapper(ui.exporter)}</summary>
+    <div class="reglages-panneau">
+      <button type="button" data-exporter-reponses>${echapper(ui.exporterReponses)}</button>
+      <button type="button" data-exporter-checklist>${echapper(ui.exporterChecklist)}</button>
+      <p class="aide">${echapper(ui.exporterChecklistAide)}</p>
+    </div>
+  </details>`
+
   const pliage = `<div class="pliage">
+    <button type="button" data-ajouter-racine title="${echapper(ui.ajouterSujet)}">${echapper(ui.ajouterSujet)}</button>
     <button type="button" data-tout-replier title="${echapper(ui.toutReplier)}">⊟</button>
     <button type="button" data-tout-deplier title="${echapper(ui.toutDeplier)}">⊞</button>
   </div>`
@@ -339,7 +410,7 @@ function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean,
     <a href="${DEPOT}"${EXTERNE}>${echapper(ui.contribuer)}</a>
   </nav>${inspirations}`
 
-  return `${marque}${qui}${quelleGrille}${pliage}${liens}${langue}${reglages}
+  return `${marque}${qui}${quelleGrille}${pliage}${outils}${liens}${langue}${reglages}
     <span class="avancement" data-avancement></span>`
 }
 
@@ -429,6 +500,7 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte
     const aide = textes.aideNoeud(id)
     const enfants = noeud.enfants.filter((enfant) => !chemin.includes(enfant))
     const replie = replis.estReplie(id)
+    const propre = estAjoute(id)
     // Le nombre de sous-sujets cachés : sans lui, une rubrique repliée ne dit
     // pas ce qu’elle contient.
     const pliage = enfants.length
@@ -444,7 +516,12 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte
           ${pliage}
           <span class="libelle">${echapper(textes.noeud(id))}</span>
           ${repete ? `<span class="multi" title="${echapper(ui.plusieursRubriques)}">↔</span>` : ''}
+          ${propre ? `<span class="marque-ajout" title="${echapper(ui.sujetAjoute)}">✚</span>` : ''}
           ${aide ? `<span class="aide">${echapper(aide)}</span>` : ''}
+          <span class="actions-noeud">
+            <button type="button" data-ajouter-sous="${echapper(id)}" title="${echapper(ui.ajouterSujetIci)}">+</button>
+            ${propre ? `<button type="button" data-retirer="${echapper(id)}" title="${echapper(ui.retirerSujet)}">×</button>` : ''}
+          </span>
         </div>
         <div class="etoiles">${etoiles}</div>
       </div>

@@ -41,6 +41,13 @@ graphe, `<langue>.yml` porte les libellés. Ajouter une langue ne doit jamais
 toucher aux identifiants — c’est ce qui garde les réponses valables d’une langue
 à l’autre, et comparables entre deux grilles qui partagent des sujets.
 
+Ce qu’une personne ajoute depuis l’interface est de la donnée aussi, mais d’une
+autre main : un sujet ajouté porte un identifiant préfixé `+`, réservé à cet
+usage. C’est ce qui garantit qu’une mise à jour de la grille livrée et les
+ajouts de quelqu’un ne peuvent jamais s’écraser l’un l’autre. Une grille peut
+évoluer sous des ajouts qui ne l’ont pas suivie : un ajout dont le parent a
+disparu remonte au premier niveau plutôt que d’empêcher le chargement.
+
 4. **L’héritage joue dans trois dimensions.** Sujets, polarités et parts sont
    trois arbres parcourus par la même règle. Un changement sur l’un doit valoir
    pour les autres, sinon l’un devient un cas particulier à part.

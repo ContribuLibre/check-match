@@ -16,7 +16,7 @@ bun run build    # site statique dans dist/
 |---|---|
 | **nœud** | un sujet : rubrique ou élément, c’est la même chose — seule la place dans le graphe diffère |
 | **polarité** | la place depuis laquelle on répond : en général, en faisant, en recevant, en assistant. Une polarité = une étoile entière |
-| **part** | une branche de l’étoile : une dimension d’appréciation, avec sa propre échelle et son propre dégradé |
+| **part** | une branche de l’étoile : une dimension d’appréciation, avec sa propre échelle et son propre dégradé. Les parts peuvent se regrouper, et un regroupement ne se dessine pas |
 | **palier** | un cran d’une part, avec un score 0..1 volontairement irrégulier |
 
 ## Ce que ça fait
@@ -26,14 +26,40 @@ et depuis plusieurs polarités. Pour la musique : en jouer, en demander, être l
 pendant qu’il y en a — trois choses qui n’ont aucune raison d’avoir la même
 réponse.
 
-### L’héritage, dans deux directions
+### L’héritage, dans trois dimensions
 
 Répondre quelque part vaut réponse ailleurs, avec le **même score** mais un
-**poids atténué** à chaque niveau franchi. Cela joue dans deux directions, avec
-exactement la même règle :
+**poids atténué** à chaque niveau franchi. Cela joue dans trois dimensions :
 
 - **sujets** : une rubrique répondue vaut pour tout ce qu’elle contient ;
-- **polarités** : la polarité **générale** vaut pour les places particulières.
+- **polarités** : la polarité **générale** vaut pour les places particulières ;
+- **parts** : une part de regroupement se répartit sur ses branches.
+
+Une part de regroupement sert à cocher vite un sujet sans détailler chaque
+branche. Elle ne se dessine pas, et elle **ne descend nulle part sans
+répartition déclarée** : dire « j’aime bien » en général ne dit pas si c’est
+l’envie, l’acceptation ou l’expérience qui est visée. La grille le déclare, et
+peut viser une seule branche comme pondérer différemment chacune :
+
+```yaml
+spread: { avis: 1, importance: 0.4 }   # l’autonomie, elle, reste à renseigner
+```
+
+Dans l’autre sens, les branches remontent vers leur regroupement
+automatiquement, **au maximum** par défaut : une part générale dit ce qui
+ressort, pas la moyenne de branches qui ne parlent pas de la même chose.
+
+#### Le plus court chemin d’abord
+
+Ces dimensions ne se valent pas. Descendre dans les sujets garde la même place
+et la même branche : c’est l’héritage qui dit le plus. Changer de polarité ou de
+part est un **détour** — aimer *recevoir* une chose en dit long sur le fait d’en
+recevoir une autre de la même catégorie, et beaucoup moins sur l’envie d’en
+*produire*.
+
+On ne mélange donc pas : parmi les sources disponibles, seules celles du plus
+petit nombre de détours sont retenues. Les autres servent en dernier recours,
+faute de mieux — « pas grand-chose » n’est pas « rien ».
 
 La polarité générale est ce qui permet de dégrossir vite, sans distinguer les
 places, puis de préciser seulement là où elles divergent. Une place peut ensuite

@@ -73,24 +73,24 @@ describe('rendu SVG', () => {
 
   it('dessine une piste par part et un remplissage par valeur', () => {
     const svg = etoile({
-      a: { score: 1, poids: 1, origine: 'propre' },
-      b: { score: 0, poids: 0, origine: 'absent' },
-      c: { score: 0.5, poids: 0.5, origine: 'herite' },
+      a: { score: 1, poids: 1, origine: 'propre', detours: 0 },
+      b: { score: 0, poids: 0, origine: 'absent', detours: 0 },
+      c: { score: 0.5, poids: 0.5, origine: 'herite', detours: 0 },
     })
     expect(compte(svg, 'class="piste"')).toBe(3)
     expect(compte(svg, 'class="reponse"')).toBe(2)
   })
 
   it('rend le poids lisible : une valeur héritée est plus pâle', () => {
-    const propre = etoile({ a: { score: 1, poids: 1, origine: 'propre' } })
-    const herite = etoile({ a: { score: 1, poids: 0.25, origine: 'herite' } })
+    const propre = etoile({ a: { score: 1, poids: 1, origine: 'propre', detours: 0 } })
+    const herite = etoile({ a: { score: 1, poids: 0.25, origine: 'herite', detours: 0 } })
     expect(propre).toContain('fill-opacity="1"')
     expect(herite).toContain('fill-opacity="0.44"')
   })
 
   it('ne dessine aucun remplissage quand rien n’est renseigné', () => {
     expect(etoile({})).not.toContain('class="reponse"')
-    expect(etoile({ a: { score: 0, poids: 0, origine: 'absent' } })).not.toContain('class="reponse"')
+    expect(etoile({ a: { score: 0, poids: 0, origine: 'absent', detours: 0 } })).not.toContain('class="reponse"')
   })
 
   it('embarque ses dégradés, ou les délègue à la page', () => {
@@ -107,7 +107,7 @@ describe('rendu SVG', () => {
       maxColor: '"><script>alert(1)</script>',
       steps: [{ id: 'bas', score: 0 }],
     }]
-    const svg = etoileSvg('g', piege, { x: { score: 1, poids: 1, origine: 'propre' } })
+    const svg = etoileSvg('g', piege, { x: { score: 1, poids: 1, origine: 'propre', detours: 0 } })
     expect(svg).not.toContain('<script>')
     expect(svg).toContain('&lt;script&gt;')
   })

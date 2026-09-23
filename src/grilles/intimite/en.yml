@@ -11,6 +11,15 @@ polarities:
   temoin: { label: Witnessing, help: Being present while it happens, neither doing it nor receiving it. }
 
 parts:
+  overall:
+    label: Overall
+    help: "To tick quickly: counts mostly as excitement, and somewhat as acceptance."
+    steps:
+      none: { label: none }
+      a-little: { label: a little }
+      like: { label: like }
+      love: { label: love }
+      total-fantasy: { label: total fantasy }
   experience:
     label: Experience
     steps:

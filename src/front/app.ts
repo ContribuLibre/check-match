@@ -217,7 +217,7 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): 
       return `<button type="button" class="etoile-bouton${propre ? ' propre' : ''}${ouvert ? ' ouvert' : ''}"
         data-noeud="${echapper(id)}" data-polarite="${echapper(polarite)}"
         title="${echapper(titreEtoile(textes, grille, valeurs, id, polarite))}">
-        ${etoileSvg(grille.id, partsDe(grille, noeud.parts), valeursPolarite, { taille: 40, degradesExternes: true })}
+        ${etoileSvg(grille.id, branchesDe(grille, noeud.parts), valeursPolarite, { taille: 40, degradesExternes: true })}
         <span class="polarite-nom">${echapper(textes.polarite(polarite))}</span>
       </button>`
     }).join('')
@@ -240,8 +240,18 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): 
   return `<ul class="arbre">${grille.racines.map((racine) => rendu(racine, [])).join('')}</ul>`
 }
 
+/** Les parts applicables à un nœud, dans l’ordre de la grille. */
 function partsDe(grille: Grille, ids: string[]) {
   return ids.map((id) => grille.part(id)).filter((part) => part !== undefined)
+}
+
+/**
+ * Les branches dessinées : uniquement les feuilles.
+ * Une part de regroupement sert à cocher vite, elle ne dit rien de plus que ce
+ * qu’elle a réparti sur ses branches — la dessiner doublerait l’information.
+ */
+function branchesDe(grille: Grille, ids: string[]) {
+  return partsDe(grille, ids).filter((part) => grille.partsFeuilles.includes(part.id))
 }
 
 /**
@@ -275,6 +285,7 @@ function editeurHtml(
   const historique = stockage.historique(personne, cle(ouvert.noeud, ouvert.polarite))
 
   const parts = partsDe(grille, noeud.parts).map((part) => {
+    const regroupement = (grille.arbreParts.get(part.id)?.enfants ?? []).length > 0
     const valeur = valeursPolarite[part.id]
     const choisi = saisie[part.id]
     const paliers = part.steps.map((palier, index) => {
@@ -293,9 +304,9 @@ function editeurHtml(
         ? `<span class="provenance herite">hérité (poids ${valeur.poids.toFixed(2)})</span>`
         : '<span class="provenance vide">non renseigné</span>'
 
-    return `<div class="part">
+    return `<div class="part${regroupement ? ' regroupement' : ''}">
       <div class="part-nom" style="--couleur: ${echapper(part.maxColor)}">
-        ${echapper(textes.part(part.id))} ${provenance}
+        ${echapper(textes.part(part.id))}${regroupement ? ' <span class="rapide">saisie rapide</span>' : ''} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
       <div class="paliers">${paliers}</div>
@@ -308,7 +319,7 @@ function editeurHtml(
     : ''
 
   return `<header class="editeur-entete">
-      <span class="grande-etoile">${etoileSvg(grille.id, partsDe(grille, noeud.parts), valeursPolarite, { taille: 130, degradesExternes: true })}</span>
+      <span class="grande-etoile">${etoileSvg(grille.id, branchesDe(grille, noeud.parts), valeursPolarite, { taille: 130, degradesExternes: true })}</span>
       <div>
         <h3>${echapper(textes.noeud(ouvert.noeud))} — ${echapper(textes.polarite(ouvert.polarite))}</h3>
         <p class="aide">${echapper(textes.aidePolarite(ouvert.polarite))}</p>

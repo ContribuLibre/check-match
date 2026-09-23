@@ -181,3 +181,17 @@ main { padding: 1rem 1.2rem; }
 .historique { margin-top: 1rem; padding-top: .7rem; border-top: 1px solid var(--trait-ui); }
 .historique h4 { margin: 0 0 .3rem; font-size: .78rem; color: var(--encre-pale); text-transform: uppercase; letter-spacing: .06em; }
 .historique ol { margin: 0; padding-left: 1.2rem; color: var(--encre-pale); font-size: .78rem; }
+
+/* Une part de regroupement n’est pas une branche de l’étoile : elle sert à
+   cocher vite, et se distingue de ce qu’elle alimente. */
+.part.regroupement { padding: .4rem .6rem; border: 1px dashed var(--trait-ui); border-radius: 8px; }
+.rapide {
+  padding: 0 .3rem;
+  border-radius: 4px;
+  background: var(--panneau-haut);
+  color: var(--encre-pale);
+  font-size: .65rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}

@@ -148,9 +148,9 @@ describe('héritage dans la direction des sujets', () => {
   it('donne aux descendants le même score, avec un poids atténué par niveau', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/agir': { avis: 3 } }))
 
-    expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 1, origine: 'propre' })
-    expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
-    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 1, poids: 0.25, origine: 'herite' })
+    expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 1, origine: 'propre', detours: 0 })
+    expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 0 })
+    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 1, poids: 0.25, origine: 'herite', detours: 0 })
   })
 
   it('laisse une réponse propre l’emporter sur l’héritage', () => {
@@ -158,7 +158,7 @@ describe('héritage dans la direction des sujets', () => {
       'musique/agir': { avis: 3 },
       'batterie/agir': { avis: 0 },
     }))
-    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 1, origine: 'propre' })
+    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 1, origine: 'propre', detours: 0 })
   })
 
   it('hérite part par part, pas étoile par étoile', () => {
@@ -168,12 +168,12 @@ describe('héritage dans la direction des sujets', () => {
     }))
     const chant = etoile(valeurs, 'chant', 'agir')
     expect(chant.avis?.origine).toBe('propre')
-    expect(chant.importance).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+    expect(chant.importance).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 0 })
   })
 
   it('n’invente rien là où personne n’a répondu', () => {
     const valeurs = calculerValeurs(grilleSimple, reponses({}))
-    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 0, origine: 'absent' })
+    expect(etoile(valeurs, 'batterie', 'agir').avis).toEqual({ score: 0, poids: 0, origine: 'absent', detours: 0 })
   })
 
   it('suit l’atténuation déclarée par la grille', () => {
@@ -188,9 +188,10 @@ describe('héritage dans la direction des polarités', () => {
     // Dégrossir en général doit renseigner d’un coup faire, recevoir, assister.
     const valeurs = calculerValeurs(grilleSimple, reponses({ 'musique/general': { avis: 3 } }))
 
-    expect(etoile(valeurs, 'musique', 'general').avis).toEqual({ score: 1, poids: 1, origine: 'propre' })
-    expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
-    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+    expect(etoile(valeurs, 'musique', 'general').avis).toEqual({ score: 1, poids: 1, origine: 'propre', detours: 0 })
+    // Un détour : on a changé de place.
+    expect(etoile(valeurs, 'musique', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 1 })
+    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 1 })
   })
 
   it('laisse une place particulière contredire le général', () => {
@@ -199,7 +200,7 @@ describe('héritage dans la direction des polarités', () => {
       'musique/recevoir': { avis: 0 },
     }))
     expect(etoile(valeurs, 'musique', 'agir').avis?.score).toBe(1)
-    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 0, poids: 1, origine: 'propre' })
+    expect(etoile(valeurs, 'musique', 'recevoir').avis).toEqual({ score: 0, poids: 1, origine: 'propre', detours: 0 })
   })
 
   it('combine les deux sens sur un sous-nœud', () => {
@@ -231,7 +232,7 @@ describe('héritage depuis plusieurs parents', () => {
       'musique/agir': { avis: 3 },
       'sortie/agir': { avis: 0 },
     }))
-    expect(etoile(valeurs, 'concert', 'agir').avis).toEqual({ score: 0.5, poids: 0.5, origine: 'herite' })
+    expect(etoile(valeurs, 'concert', 'agir').avis).toEqual({ score: 0.5, poids: 0.5, origine: 'herite', detours: 0 })
   })
 
   it('pondère la moyenne par le poids de chaque parent', () => {
@@ -249,7 +250,7 @@ describe('héritage depuis plusieurs parents', () => {
 
   it('ignore un parent sans valeur au lieu de le compter comme zéro', () => {
     const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { avis: 3 } }))
-    expect(etoile(valeurs, 'concert', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+    expect(etoile(valeurs, 'concert', 'agir').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 0 })
   })
 })
 
@@ -348,5 +349,103 @@ describe('remontée', () => {
     }))
     expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 3 })
     expect(etoile(valeurs, 'musique', 'agir').avis?.score).toBe(0)
+  })
+})
+
+describe('héritage dans la direction des parts', () => {
+  // « rapide » regroupe « avis » et « importance », et déclare comment elle se
+  // répartit : tout vers l’avis, rien vers l’importance.
+  const avecRegroupement = (spread?: Record<string, number>) => construireGrille(definition(
+    [{ id: 'musique', children: [{ id: 'chant' }] }],
+    {
+      parts: [
+        { id: 'rapide', minColor: '#888', maxColor: '#ccc', spread, steps: parts[0]!.steps },
+        { ...parts[0]!, parent: 'rapide' },
+        { ...parts[1]!, parent: 'rapide' },
+      ],
+    },
+  ))
+
+  it('ne descend nulle part sans répartition déclarée', () => {
+    // Aucune répartition n’allant de soi, cocher « en gros » ne doit rien
+    // inventer sur des branches qui ne parlent pas de la même chose.
+    const grille = avecRegroupement(undefined)
+    const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { rapide: 3 } }))
+    expect(etoile(valeurs, 'musique', 'agir').rapide?.origine).toBe('propre')
+    expect(etoile(valeurs, 'musique', 'agir').avis?.origine).toBe('absent')
+  })
+
+  it('vise une seule branche, les autres restant non renseignées', () => {
+    const grille = avecRegroupement({ avis: 1 })
+    const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { rapide: 3 } }))
+    const etoileMusique = etoile(valeurs, 'musique', 'agir')
+    expect(etoileMusique.avis).toEqual({ score: 1, poids: 1, origine: 'herite', detours: 1 })
+    expect(etoileMusique.importance?.origine).toBe('absent')
+  })
+
+  it('pondère différemment chaque branche', () => {
+    const grille = avecRegroupement({ avis: 1, importance: 0.25 })
+    const etoileMusique = etoile(
+      calculerValeurs(grille, reponses({ 'musique/agir': { rapide: 3 } })), 'musique', 'agir',
+    )
+    expect(etoileMusique.avis?.poids).toBe(1)
+    expect(etoileMusique.importance?.poids).toBe(0.25)
+    // Même score : seule la force de l’héritage change.
+    expect(etoileMusique.importance?.score).toBe(1)
+  })
+
+  it('remonte des branches vers le regroupement, au maximum par défaut', () => {
+    const grille = avecRegroupement({ avis: 1 })
+    const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { avis: 0, importance: 2 } }))
+    // avis = 0, importance = 1 → le regroupement retient ce qui ressort.
+    expect(etoile(valeurs, 'musique', 'agir').rapide?.score).toBe(1)
+  })
+
+  it('laisse une réponse posée sur le regroupement l’emporter sur la remontée', () => {
+    const grille = avecRegroupement({ avis: 1 })
+    const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { rapide: 0, importance: 2 } }))
+    expect(etoile(valeurs, 'musique', 'agir').rapide).toEqual({ score: 0, poids: 1, origine: 'propre', detours: 0 })
+  })
+
+  it('refuse une répartition vers une part qui n’est pas une fille', () => {
+    expect(() => avecRegroupement({ inexistante: 1 })).toThrow(/part inconnue/)
+  })
+})
+
+describe('le plus court chemin d’abord', () => {
+  const grille = construireGrille(definition([
+    { id: 'son', children: [{ id: 'musique', children: [{ id: 'chant' }] }] },
+  ]))
+
+  it('préfère l’héritage par sujet à l’héritage par polarité, même de plus loin', () => {
+    // « son/recevoir » est répondu, donc chant/recevoir peut l’hériter par les
+    // sujets (deux niveaux, aucun détour). « chant/general » est aussi répondu
+    // et donnerait un poids plus fort, mais en changeant de place : aimer
+    // recevoir en dit plus long sur le fait de recevoir autre chose que sur
+    // l’envie de produire.
+    const valeurs = calculerValeurs(grille, reponses({
+      'son/recevoir': { avis: 3 },
+      'chant/general': { avis: 0 },
+    }))
+    const chant = etoile(valeurs, 'chant', 'recevoir').avis
+    expect(chant?.detours).toBe(0)
+    expect(chant?.score).toBe(1)
+  })
+
+  it('accepte le détour quand rien de plus court n’existe', () => {
+    // Rien sur la polarité « recevoir » : faute de mieux, on prend le général.
+    const valeurs = calculerValeurs(grille, reponses({ 'chant/general': { avis: 3 } }))
+    const chant = etoile(valeurs, 'chant', 'recevoir').avis
+    expect(chant?.detours).toBe(1)
+    expect(chant?.score).toBe(1)
+  })
+
+  it('ne noie pas une source directe dans une source détournée', () => {
+    const valeurs = calculerValeurs(grille, reponses({
+      'musique/recevoir': { avis: 3 }, // score 1, sans détour
+      'chant/general': { avis: 0 }, // score 0, un détour
+    }))
+    // La moyenne des deux donnerait 0,5 : c’est exactement ce qu’on refuse.
+    expect(etoile(valeurs, 'chant', 'recevoir').avis?.score).toBe(1)
   })
 })

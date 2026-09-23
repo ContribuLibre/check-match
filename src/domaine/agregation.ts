@@ -3,7 +3,7 @@ import { descendants, sousPolarites, type Grille } from './grille.ts'
 import { cle, type Valeurs } from './heritage.ts'
 import type { Reponse } from './types.ts'
 
-/** Dans quelle direction remonter : les sous-sujets, les sous-polarités, ou les deux. */
+/** Dans quelle direction remonter. */
 export type Direction = 'sujets' | 'polarites' | 'les-deux'
 
 /**

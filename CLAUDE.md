@@ -41,9 +41,15 @@ graphe, `<langue>.yml` porte les libellés. Ajouter une langue ne doit jamais
 toucher aux identifiants — c’est ce qui garde les réponses valables d’une langue
 à l’autre, et comparables entre deux grilles qui partagent des sujets.
 
-4. **L’héritage joue dans deux directions.** Les sujets et les polarités sont
-   deux arbres, parcourus par la même règle. Un changement sur l’un doit valoir
-   pour l’autre, sinon l’un des deux devient un cas particulier à part.
+4. **L’héritage joue dans trois dimensions.** Sujets, polarités et parts sont
+   trois arbres parcourus par la même règle. Un changement sur l’un doit valoir
+   pour les autres, sinon l’un devient un cas particulier à part.
+6. **Le plus court chemin d’abord.** Descendre dans les sujets ne coûte pas de
+   détour ; changer de polarité ou de part en coûte un. Seules les sources du
+   plus petit nombre de détours sont retenues — mélanger un héritage direct
+   avec un héritage venu d’ailleurs noierait le premier dans le second.
+7. **Aucune répartition ne va de soi vers les parts.** Une part de regroupement
+   sans `spread` ne descend nulle part, et c’est voulu.
 5. **La moyenne n’est pas le résumé par défaut du métier.** Chaque part choisit
    son agrégateur : une limite se résume par son minimum, une envie par son
    maximum. Remettre une moyenne partout effacerait ce qui est saillant.

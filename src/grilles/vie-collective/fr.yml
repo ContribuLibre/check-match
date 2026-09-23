@@ -18,6 +18,15 @@ polarities:
     help: Être là pendant que ça a lieu sans en être la destinataire ni l’autrice.
 
 parts:
+  apercu:
+    label: En deux mots
+    help: "Pour cocher vite sans détailler : vaut surtout comme avis, et suggère que le sujet compte."
+    steps:
+      contre: { label: Contre }
+      reticence: { label: Réticence }
+      sans-avis: { label: Sans avis }
+      favorable: { label: Favorable }
+      tiens-y: { label: J’y tiens }
   avis:
     label: Mon avis
     help: Ce que j’en pense, indépendamment de l’importance que ça a pour moi.

@@ -24,6 +24,13 @@ export interface Polarite {
   principale: boolean
 }
 
+/** Une part et sa place dans l’arbre des parts. */
+export interface Part {
+  definition: PartDefinition
+  parent: string | null
+  enfants: string[]
+}
+
 export interface Grille {
   id: string
   version: string
@@ -34,7 +41,17 @@ export interface Grille {
   /** Polarités de la racine vers les feuilles : un parent arrive toujours avant ses enfants. */
   ordrePolarites: string[]
   polariteRacine: string
+  /**
+   * Toutes les parts, **dans l’ordre de déclaration** : c’est l’ordre des
+   * branches de l’étoile, et il doit rester stable pour que deux étoiles se
+   * comparent d’un coup d’œil.
+   */
   parts: PartDefinition[]
+  /** Les mêmes, des regroupements vers les feuilles : l’ordre du calcul. */
+  ordreParts: string[]
+  arbreParts: Map<string, Part>
+  /** Parts sans enfant : les seules qui se dessinent en branches d’étoile. */
+  partsFeuilles: string[]
   noeuds: Map<string, Noeud>
   racines: string[]
   ordre: string[]
@@ -55,15 +72,15 @@ export class ErreurGrille extends Error {}
  */
 export function construireGrille(definition: GrilleDefinition): Grille {
   const polarites = construirePolarites(definition.polarities, definition.id)
-  const partsConnues = new Set(definition.parts.map((part) => part.id))
-  if (!partsConnues.size) throw new ErreurGrille(`La grille « ${definition.id} » n’a aucune part.`)
+  const arbreParts = construireParts(definition.parts, definition.id)
+  const partsConnues = new Set(arbreParts.keys())
 
   for (const part of definition.parts) verifierAgregation(part.aggregation, `${definition.id}/${part.id}`)
   verifierAgregation(definition.aggregation, definition.id)
 
   const noeuds = new Map<string, Noeud>()
   const polaritesParDefaut = [...polarites.keys()]
-  const partsParDefaut = definition.parts.map((part) => part.id)
+  const partsParDefaut = [...arbreParts.keys()]
 
   /**
    * Les restrictions se propagent au sous-arbre : restreindre une rubrique aux
@@ -131,7 +148,7 @@ export function construireGrille(definition: GrilleDefinition): Grille {
       : 0
   }
 
-  const parPart = new Map(definition.parts.map((part) => [part.id, part]))
+  const parPart = new Map([...arbreParts.values()].map((part) => [part.definition.id, part.definition]))
   const agregation = { ...AGREGATION_PAR_DEFAUT, ...definition.aggregation }
   const racinePolarite = [...polarites.values()].find((polarite) => !polarite.parent)
 
@@ -145,6 +162,11 @@ export function construireGrille(definition: GrilleDefinition): Grille {
     ordrePolarites: [...polarites.keys()],
     polariteRacine: racinePolarite?.id ?? '',
     parts: definition.parts,
+    ordreParts: [...arbreParts.keys()],
+    arbreParts,
+    partsFeuilles: definition.parts
+      .filter((part) => !arbreParts.get(part.id)?.enfants.length)
+      .map((part) => part.id),
     noeuds,
     racines,
     ordre,
@@ -159,6 +181,56 @@ function verifierAgregation(agregation: Agregation | undefined, ou: string): voi
       throw new ErreurGrille(`${ou} : agrégateur « ${nom} » inconnu pour « ${sens} ».`)
     }
   }
+}
+
+/**
+ * Les parts forment un arbre, éventuellement plat.
+ *
+ * Une part qui a des enfants est une part de regroupement : elle sert à cocher
+ * vite, et ne se dessine pas. Contrairement aux polarités, aucune racine unique
+ * n’est exigée — une grille peut très bien n’avoir que des branches de plain-pied.
+ */
+function construireParts(definitions: PartDefinition[], grilleId: string): Map<string, Part> {
+  if (!definitions?.length) throw new ErreurGrille(`La grille « ${grilleId} » n’a aucune part.`)
+
+  const parts = new Map<string, Part>()
+  for (const definition of definitions) {
+    if (parts.has(definition.id)) throw new ErreurGrille(`La part « ${definition.id} » est définie deux fois.`)
+    parts.set(definition.id, { definition, parent: definition.parent ?? null, enfants: [] })
+  }
+
+  for (const part of parts.values()) {
+    if (!part.parent) continue
+    const parent = parts.get(part.parent)
+    if (!parent) throw new ErreurGrille(`La part « ${part.definition.id} » cite le parent inconnu « ${part.parent} ».`)
+    parent.enfants.push(part.definition.id)
+  }
+
+  for (const part of parts.values()) {
+    for (const cible of Object.keys(part.definition.spread ?? {})) {
+      if (!parts.has(cible)) {
+        throw new ErreurGrille(`La part « ${part.definition.id} » répartit vers la part inconnue « ${cible} ».`)
+      }
+      if (parts.get(cible)?.parent !== part.definition.id) {
+        throw new ErreurGrille(`La part « ${part.definition.id} » répartit vers « ${cible} », qui n’est pas une de ses filles.`)
+      }
+    }
+  }
+
+  // Des racines vers les feuilles, en refusant les cycles.
+  const ordonnees = new Map<string, Part>()
+  const file = [...parts.values()].filter((part) => !part.parent).map((part) => part.definition.id)
+  while (file.length) {
+    const id = file.shift()!
+    const part = parts.get(id)!
+    ordonnees.set(id, part)
+    file.push(...part.enfants)
+  }
+  if (ordonnees.size !== parts.size) {
+    const bloquees = [...parts.keys()].filter((id) => !ordonnees.has(id))
+    throw new ErreurGrille(`Cycle entre les parts : ${bloquees.join(', ')}.`)
+  }
+  return ordonnees
 }
 
 /**

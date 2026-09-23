@@ -29,7 +29,25 @@ polarities:
     parent: general
 
 parts:
+  # Part de regroupement : elle ne se dessine pas, elle sert à cocher vite un
+  # sujet. Sa répartition dit ce que « cocher vite » veut dire ici : surtout un
+  # avis, et l’indication que le sujet compte un peu. L’autonomie, elle, ne se
+  # devine pas — elle reste à renseigner.
+  - id: apercu
+    minColor: "#888"
+    maxColor: "#BBB"
+    spread:
+      avis: 1
+      importance: 0.4
+    steps:
+      - { id: contre, score: 0 }
+      - { id: reticence, score: 0.15 }
+      - { id: sans-avis, score: 0.4 }
+      - { id: favorable, score: 0.7 }
+      - { id: tiens-y, score: 1 }
+
   - id: avis
+    parent: apercu
     minColor: "#C00"
     maxColor: "#5B0"
     steps:
@@ -39,6 +57,7 @@ parts:
       - { id: favorable, score: 0.7 }
       - { id: tiens-y, score: 1 }
   - id: importance
+    parent: apercu
     minColor: "#BBB"
     maxColor: "#F60"
     # Il suffit d’un sujet qui compte pour que la rubrique compte : la moyenne

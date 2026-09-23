@@ -26,14 +26,33 @@ export interface Agregation {
   rollup?: NomAgregateur
 }
 
-/** Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé. */
+/**
+ * Une part est une branche de l’étoile, avec sa propre échelle et son propre dégradé.
+ *
+ * Les parts peuvent elles aussi former un arbre. Une part de regroupement — une
+ * part « générale » — permet de cocher vite un sujet sans détailler chaque
+ * branche. Elle ne se dessine pas : seules les feuilles sont des branches.
+ */
 export interface PartDefinition {
   id: string
+  /** Part englobante. Absent = part de premier niveau. */
+  parent?: string
   minColor: string
   maxColor: string
   steps: Palier[]
   /** Surcharge l’agrégation de la grille : une limite se résume par le minimum, une envie par le maximum. */
   aggregation?: Agregation
+  /**
+   * Comment une valeur posée ici se répartit sur les parts filles, facteur de
+   * poids par part.
+   *
+   * Sans `spread`, une part de regroupement **ne descend nulle part** : il n’y a
+   * pas de répartition qui aille de soi. Dire « j’aime bien » en général ne dit
+   * pas si c’est l’envie, l’acceptation ou l’expérience qui est visée — c’est à
+   * la grille de le déclarer. Une part absente de la répartition reste non
+   * renseignée, ce qui permet de viser une seule branche.
+   */
+  spread?: Record<string, number>
 }
 
 /**
@@ -111,6 +130,15 @@ export interface ValeurPart {
   score: number
   poids: number
   origine: Origine
+  /**
+   * Nombre de changements de dimension traversés pour obtenir cette valeur.
+   *
+   * Descendre dans les sujets ne compte pas : c’est l’héritage naturel, celui
+   * qui dit le plus. Changer de polarité ou de part compte pour un détour.
+   * Aimer *recevoir* une chose en dit long sur le fait d’en recevoir une autre
+   * de la même catégorie, et beaucoup moins sur l’envie d’en *produire*.
+   */
+  detours: number
 }
 
 /** Valeurs d’une étoile complète. */

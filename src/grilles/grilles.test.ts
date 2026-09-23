@@ -46,7 +46,7 @@ describe('vie collective', () => {
   it('fait descendre le général vers chaque place', () => {
     const grille = disponible!.grille
     const valeurs = calculerValeurs(grille, new Map([[cle('musique', 'general'), { avis: 4 }]]))
-    expect(etoile(valeurs, 'musique', 'temoin').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite' })
+    expect(etoile(valeurs, 'musique', 'temoin').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 1 })
   })
 
   it('résume l’importance par le maximum, pas par la moyenne', () => {
@@ -63,7 +63,7 @@ describe('vie collective', () => {
     const grille = disponible!.grille
     const valeurs = calculerValeurs(grille, new Map([[cle('son', 'agir'), { avis: 0 }]]))
     // « son » → « musique » → « instrument » : deux niveaux, poids divisé par quatre.
-    expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 0, poids: 0.25, origine: 'herite' })
+    expect(etoile(valeurs, 'instrument', 'agir').avis).toEqual({ score: 0, poids: 0.25, origine: 'herite', detours: 0 })
   })
 
   it('restreint les polarités là où une place n’a pas de sens, en gardant le général', () => {
@@ -80,10 +80,20 @@ describe('grille issue du format historique', () => {
     expect(disponible?.grille.noeuds.get('skinny')?.parents).toEqual(['bodies'])
   })
 
-  it('porte les huit parts du modèle de référence', () => {
-    expect(disponible?.grille.parts.map((part) => part.id)).toEqual([
+  it('dessine les huit branches du modèle de référence', () => {
+    // La part de regroupement « overall » sert à cocher vite ; elle n’est pas
+    // une branche de l’étoile.
+    // L’ordre est celui de la déclaration, donc celui du modèle de référence :
+    // une branche doit toujours se retrouver au même endroit de l’étoile.
+    expect(disponible?.grille.partsFeuilles).toEqual([
       'experience', 'excitment', 'disgust', 'exhibition', 'fear', 'acceptance', 'aftercare', 'explicit',
     ])
+    expect(disponible?.grille.parts).toHaveLength(9)
+  })
+
+  it('cible la saisie rapide sur l’envie, et un peu sur l’acceptation', () => {
+    const overall = disponible?.grille.parts.find((part) => part.id === 'overall')
+    expect(overall?.spread).toEqual({ excitment: 1, acceptance: 0.5 })
   })
 
   it('garde les scores irréguliers du modèle', () => {

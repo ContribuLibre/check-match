@@ -15,12 +15,24 @@ import type { GrilleDefinition, Traduction } from '../domaine/types.ts'
 
 const racineGrilles = new URL('../grilles/', import.meta.url).pathname
 
+/** Lit un YAML en transformant une erreur de syntaxe en message lisible. */
+function lireYaml<T>(chemin: string): { valeur?: T; probleme?: string } {
+  try {
+    return { valeur: parse(readFileSync(chemin, 'utf8')) as T }
+  } catch (erreur) {
+    const message = erreur instanceof Error ? erreur.message.split('\n')[0] : String(erreur)
+    return { probleme: `${chemin} : YAML invalide — ${message}` }
+  }
+}
+
 export function validerGrille(dossier: string): string[] {
   const problemes: string[] = []
   const cheminDefinition = join(dossier, 'grille.yml')
   if (!existsSync(cheminDefinition)) return [`${dossier} : pas de grille.yml`]
 
-  const definition = parse(readFileSync(cheminDefinition, 'utf8')) as GrilleDefinition
+  const lu = lireYaml<GrilleDefinition>(cheminDefinition)
+  if (!lu.valeur) return [lu.probleme ?? `${cheminDefinition} : illisible`]
+  const definition = lu.valeur
   const grille = construireGrille(definition)
 
   for (const part of grille.parts) {
@@ -46,7 +58,12 @@ export function validerGrille(dossier: string): string[] {
       problemes.push(`${grille.id} : traduction « ${langue} » introuvable (${chemin})`)
       continue
     }
-    const traduction = parse(readFileSync(cheminLangue, 'utf8')) as Traduction
+    const lue = lireYaml<Traduction>(cheminLangue)
+    if (!lue.valeur) {
+      problemes.push(lue.probleme ?? `${cheminLangue} : illisible`)
+      continue
+    }
+    const traduction = lue.valeur
     for (const manquante of clesManquantes(grille, traduction)) {
       problemes.push(`${grille.id}/${langue} : « ${manquante} » sans libellé`)
     }

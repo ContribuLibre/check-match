@@ -23,6 +23,21 @@ polarities:
     parent: general
 
 parts:
+  # Cocher vite dit surtout l’envie, et un peu l’acceptation. Le reste —
+  # l’expérience, la peur, l’aftercare — ne se déduit pas d’une case cochée.
+  - id: overall
+    minColor: "#999"
+    maxColor: "#DDD"
+    spread:
+      excitment: 1
+      acceptance: 0.5
+    steps:
+      - { id: none, score: 0 }
+      - { id: a-little, score: 0.2 }
+      - { id: like, score: 0.5 }
+      - { id: love, score: 0.8 }
+      - { id: total-fantasy, score: 1 }
+
   - id: experience
     # Avoir pratiqué un élément donne de l’expérience sur la rubrique.
     aggregation:
@@ -37,6 +52,7 @@ parts:
       - { id: good, score: 0.8 }
       - { id: expert, score: 1 }
   - id: excitment
+    parent: overall
     # Il suffit d’un élément qui allume pour que la rubrique allume.
     aggregation:
       rollup: max
@@ -88,6 +104,7 @@ parts:
       - { id: terror, score: 0.8 }
       - { id: petrified, score: 1 }
   - id: acceptance
+    parent: overall
     # C’est l’élément le moins acceptable qui fixe la limite de la rubrique.
     aggregation:
       rollup: min

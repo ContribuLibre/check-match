@@ -33,7 +33,12 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
 
+      # `enablement` active Pages si ce n’est pas déjà fait : sans lui, la
+      # première publication échoue tant que personne n’a cliqué dans les
+      # réglages du dépôt.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

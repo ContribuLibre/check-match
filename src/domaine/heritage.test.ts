@@ -221,6 +221,79 @@ describe('héritage dans la direction des polarités', () => {
   })
 })
 
+describe('remontée des places vers la polarité qui les englobe', () => {
+  const avecTemoin: GrilleDefinition['polarities'] = [
+    { id: 'general', primary: true },
+    { id: 'agir', parent: 'general' },
+    { id: 'recevoir', parent: 'general' },
+    { id: 'temoin', parent: 'general' },
+  ]
+  const grille = construireGrille(definition([
+    { id: 'musique', children: [{ id: 'instrument' }] },
+  ], { polarities: avecTemoin }))
+
+  it('déduit le général de ce qu’on a dit à chaque place', () => {
+    // Répondre place par place doit renseigner le général : il sert autant à
+    // résumer après qu’à dégrossir avant.
+    const valeurs = calculerValeurs(grille, reponses({
+      'musique/agir': { avis: 3 },
+      'musique/recevoir': { avis: 3 },
+    }))
+    expect(etoile(valeurs, 'musique', 'general').avis)
+      .toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 1 })
+  })
+
+  it('laisse une réponse posée sur le général l’emporter', () => {
+    const valeurs = calculerValeurs(grille, reponses({
+      'musique/general': { avis: 0 },
+      'musique/agir': { avis: 3 },
+    }))
+    expect(etoile(valeurs, 'musique', 'general').avis)
+      .toEqual({ score: 0, poids: 1, origine: 'propre', detours: 0 })
+  })
+
+  it('redescend vers les places restées vides', () => {
+    // Sinon le nœud en saurait moins que ses propres sous-nœuds, qui héritent
+    // du général, eux.
+    const valeurs = calculerValeurs(grille, reponses({
+      'musique/agir': { avis: 3 },
+      'musique/recevoir': { avis: 3 },
+    }))
+    expect(etoile(valeurs, 'musique', 'temoin').avis)
+      .toEqual({ score: 1, poids: 0.25, origine: 'herite', detours: 2 })
+  })
+
+  it('vaut ensuite pour les sous-nœuds', () => {
+    const valeurs = calculerValeurs(grille, reponses({ 'musique/agir': { avis: 3 } }))
+    expect(etoile(valeurs, 'instrument', 'general').avis)
+      .toEqual({ score: 1, poids: 0.25, origine: 'herite', detours: 1 })
+  })
+
+  it('suit l’agrégateur de remontée de la part', () => {
+    // Deux places qui divergent : ce qui ressort n’est pas la même chose selon
+    // qu’on résume une limite ou une envie.
+    const divergent = { 'musique/agir': { avis: 3 }, 'musique/recevoir': { avis: 0 } }
+    const auMin = construireGrille(definition([{ id: 'musique' }], {
+      polarities: avecTemoin,
+      parts: [{ ...parts[0]!, aggregation: { rollup: 'min' } }],
+    }))
+    const auMax = construireGrille(definition([{ id: 'musique' }], {
+      polarities: avecTemoin,
+      parts: [{ ...parts[0]!, aggregation: { rollup: 'max' } }],
+    }))
+    expect(etoile(calculerValeurs(auMin, reponses(divergent)), 'musique', 'general').avis?.score).toBe(0)
+    expect(etoile(calculerValeurs(auMax, reponses(divergent)), 'musique', 'general').avis?.score).toBe(1)
+  })
+
+  it('ne remonte pas pour autant dans la direction des sujets', () => {
+    // Résumer une rubrique d’après ses éléments reste une prise de position
+    // qu’on accepte d’un geste, pas un calcul qui se fait tout seul.
+    const valeurs = calculerValeurs(grille, reponses({ 'instrument/agir': { avis: 3 } }))
+    expect(etoile(valeurs, 'instrument', 'general').avis?.origine).toBe('herite')
+    expect(etoile(valeurs, 'musique', 'general').avis?.poids ?? 0).toBe(0)
+  })
+})
+
 describe('héritage depuis plusieurs parents', () => {
   const grille = construireGrille(definition([
     { id: 'musique', children: [{ id: 'concert', parents: ['sortie'] }] },

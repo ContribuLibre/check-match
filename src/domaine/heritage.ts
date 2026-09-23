@@ -1,5 +1,5 @@
 import { agreger, type Contribution } from './agregateurs.ts'
-import type { Grille } from './grille.ts'
+import { sousPolarites, type Grille, type Noeud } from './grille.ts'
 import type { Reponse, ValeurPart, ValeurPolarite } from './types.ts'
 
 /** Clé d’une étoile : une réponse porte toujours sur un couple (nœud, polarité). */
@@ -46,86 +46,207 @@ interface Source extends Contribution {
  * Le grain est la part et non l’étoile : on peut très bien avoir répondu à une
  * branche et pas aux autres.
  *
- * Le parcours suit l’ordre topologique des polarités, puis des nœuds, puis des
+ * ## Deux sens, pas un
+ *
+ * Deux dimensions remontent aussi, automatiquement, parce qu’elles résument au
+ * lieu de poser une question de plus : les branches vers leur regroupement, et
+ * les places particulières vers la polarité qui les englobe. Ce qui est remonté
+ * redescend ensuite vers les places restées vides — sans quoi un sous-nœud
+ * saurait des choses que son propre parent ignore.
+ *
+ * La direction des sujets, elle, ne remonte pas toute seule : renseigner une
+ * rubrique est une prise de position, pas une moyenne. C’est une proposition
+ * qu’on accepte d’un geste (voir `agregation.ts`).
+ *
+ * Le parcours suit l’ordre topologique des nœuds, puis des polarités, puis des
  * parts, si bien que toute source est calculée avant d’être lue.
  */
 export function calculerValeurs(grille: Grille, reponses: Reponses): Valeurs {
   const valeurs: Valeurs = new Map()
 
-  for (const polariteId of grille.ordrePolarites) {
-    const polarite = grille.polarites.get(polariteId)
-    if (!polarite) continue
+  for (const id of grille.ordre) {
+    const noeud = grille.noeuds.get(id)
+    if (!noeud) continue
 
-    for (const id of grille.ordre) {
-      const noeud = grille.noeuds.get(id)
-      if (!noeud || !noeud.polarites.includes(polariteId)) continue
-
-      const propre = reponses.get(cle(id, polariteId))
+    // Descente : de la polarité englobante vers les places particulières.
+    for (const polariteId of grille.ordrePolarites) {
+      if (!noeud.polarites.includes(polariteId)) continue
       const etoileValeurs: ValeurPolarite = {}
       valeurs.set(cle(id, polariteId), etoileValeurs)
-
-      // Ordre du calcul : les regroupements avant les branches qu’ils alimentent.
-      for (const partId of grille.ordreParts) {
-        const part = grille.part(partId)
-        if (!part || !noeud.parts.includes(part.id)) continue
-
-        const palierChoisi = propre?.[part.id]
-        if (palierChoisi !== undefined && part.steps[palierChoisi]) {
-          etoileValeurs[part.id] = {
-            score: part.steps[palierChoisi].score, poids: 1, origine: 'propre', detours: 0,
-          }
-          continue
-        }
-
-        const sources: Source[] = []
-
-        // Dimension des sujets : même place, même branche. Aucun détour.
-        for (const parent of noeud.parents) {
-          const valeur = valeurs.get(cle(parent, polariteId))?.[part.id]
-          if (valeur && valeur.poids > 0) {
-            sources.push({ score: valeur.score, poids: valeur.poids * grille.attenuation, detours: valeur.detours })
-          }
-        }
-
-        // Dimension des polarités : on change de place. Un détour.
-        if (polarite.parent && noeud.polarites.includes(polarite.parent)) {
-          const valeur = valeurs.get(cle(id, polarite.parent))?.[part.id]
-          if (valeur && valeur.poids > 0) {
-            sources.push({
-              score: valeur.score,
-              poids: valeur.poids * grille.attenuationPolarite,
-              detours: valeur.detours + 1,
-            })
-          }
-        }
-
-        // Dimension des parts : on change de branche, selon la répartition
-        // déclarée par la part englobante. Un détour.
-        const partParente = grille.arbreParts.get(part.id)?.parent
-        const repartition = partParente
-          ? grille.arbreParts.get(partParente)?.definition.spread?.[part.id]
-          : undefined
-        if (partParente && repartition) {
-          const valeur = etoileValeurs[partParente]
-          if (valeur && valeur.poids > 0) {
-            sources.push({
-              score: valeur.score,
-              poids: valeur.poids * repartition,
-              detours: valeur.detours + 1,
-            })
-          }
-        }
-
-        etoileValeurs[part.id] = resumer(grille, part.id, sources)
-      }
-
+      descendre(grille, valeurs, noeud, polariteId, reponses.get(cle(id, polariteId)), etoileValeurs)
       // Les parts de regroupement se déduisent de leurs branches quand rien ne
       // les renseigne : c’est un résumé, pas une question de plus à poser.
       remonterVersLesRegroupements(grille, noeud.parts, etoileValeurs)
     }
+
+    // Puis la remontée des places vers ce qui les englobe, et la redescente de
+    // ce qu’elle vient de renseigner.
+    remonterVersLesPolaritesEnglobantes(grille, valeurs, noeud)
   }
 
   return valeurs
+}
+
+/** Une étoile, de ses trois sources d’héritage et de la réponse posée dessus. */
+function descendre(
+  grille: Grille,
+  valeurs: Valeurs,
+  noeud: Noeud,
+  polariteId: string,
+  propre: Reponse | undefined,
+  etoileValeurs: ValeurPolarite,
+): void {
+  const polarite = grille.polarites.get(polariteId)
+  if (!polarite) return
+
+  // Ordre du calcul : les regroupements avant les branches qu’ils alimentent.
+  for (const partId of grille.ordreParts) {
+    const part = grille.part(partId)
+    if (!part || !noeud.parts.includes(part.id)) continue
+
+    const palierChoisi = propre?.[part.id]
+    if (palierChoisi !== undefined && part.steps[palierChoisi]) {
+      etoileValeurs[part.id] = {
+        score: part.steps[palierChoisi].score, poids: 1, origine: 'propre', detours: 0,
+      }
+      continue
+    }
+
+    const sources: Source[] = []
+
+    // Dimension des sujets : même place, même branche. Aucun détour.
+    for (const parent of noeud.parents) {
+      const valeur = valeurs.get(cle(parent, polariteId))?.[part.id]
+      if (valeur && valeur.poids > 0) {
+        sources.push({ score: valeur.score, poids: valeur.poids * grille.attenuation, detours: valeur.detours })
+      }
+    }
+
+    // Dimension des polarités : on change de place. Un détour.
+    if (polarite.parent && noeud.polarites.includes(polarite.parent)) {
+      const valeur = valeurs.get(cle(noeud.id, polarite.parent))?.[part.id]
+      if (valeur && valeur.poids > 0) {
+        sources.push({
+          score: valeur.score,
+          poids: valeur.poids * grille.attenuationPolarite,
+          detours: valeur.detours + 1,
+        })
+      }
+    }
+
+    // Dimension des parts : on change de branche, selon la répartition
+    // déclarée par la part englobante. Un détour.
+    const partParente = grille.arbreParts.get(part.id)?.parent
+    const repartition = partParente
+      ? grille.arbreParts.get(partParente)?.definition.spread?.[part.id]
+      : undefined
+    if (partParente && repartition) {
+      const valeur = etoileValeurs[partParente]
+      if (valeur && valeur.poids > 0) {
+        sources.push({
+          score: valeur.score,
+          poids: valeur.poids * repartition,
+          detours: valeur.detours + 1,
+        })
+      }
+    }
+
+    etoileValeurs[part.id] = resumer(grille, part.id, sources)
+  }
+}
+
+/**
+ * Remonte les places particulières vers la polarité qui les englobe.
+ *
+ * Répondre « en faisant » et « en recevant » dit quelque chose du général, et
+ * c’est même la façon normale de le renseigner : la polarité générale sert
+ * autant à dégrossir avant qu’à résumer après.
+ *
+ * Seules comptent les réponses **propres**, à n’importe quelle profondeur.
+ * Reprendre une valeur héritée ferait remonter ce que le général a lui-même
+ * diffusé vers le bas : il se confirmerait tout seul.
+ *
+ * Le poids est atténué comme pour un héritage descendant — un général déduit
+ * n’engage pas autant qu’un général répondu.
+ */
+function remonterVersLesPolaritesEnglobantes(grille: Grille, valeurs: Valeurs, noeud: Noeud): void {
+  // Des places vers ce qui les englobe : l’inverse de l’ordre de descente.
+  for (const polariteId of [...grille.ordrePolarites].reverse()) {
+    if (!noeud.polarites.includes(polariteId)) continue
+    const etoileValeurs = valeurs.get(cle(noeud.id, polariteId))
+    if (!etoileValeurs) continue
+    const sous = sousPolarites(grille, polariteId).filter((id) => noeud.polarites.includes(id))
+    if (!sous.length) continue
+
+    let renseignee = false
+    for (const partId of noeud.parts) {
+      const deja = etoileValeurs[partId]
+      if (deja && deja.poids > 0) continue
+
+      const sources: Contribution[] = []
+      for (const place of sous) {
+        const valeur = valeurs.get(cle(noeud.id, place))?.[partId]
+        if (valeur?.origine === 'propre') sources.push({ score: valeur.score, poids: valeur.poids })
+      }
+      if (!sources.length) continue
+
+      const score = agreger(grille.agregationDe(partId, 'rollup'), sources)
+      if (score === null) continue
+      etoileValeurs[partId] = {
+        score,
+        poids: moyenneDesPoids(sources) * grille.attenuationPolarite,
+        origine: 'herite',
+        detours: 1,
+      }
+      renseignee = true
+    }
+
+    if (!renseignee) continue
+    remonterVersLesRegroupements(grille, noeud.parts, etoileValeurs)
+    redescendreVersLesPlacesVides(grille, valeurs, noeud, polariteId)
+  }
+}
+
+/**
+ * Redescend ce qu’une remontée vient de renseigner vers les places restées
+ * vides. Sans cela, avoir répondu « en faisant » ne dirait rien « en assistant »
+ * sur le nœud même, alors que ça le dit déjà sur tous ses sous-nœuds — l’enfant
+ * en saurait plus que son parent.
+ *
+ * On ne remplit que le vide : une place qui tient déjà quelque chose le tient
+ * par un chemin plus court.
+ */
+function redescendreVersLesPlacesVides(grille: Grille, valeurs: Valeurs, noeud: Noeud, depuis: string): void {
+  const concernees = new Set(sousPolarites(grille, depuis))
+  for (const polariteId of grille.ordrePolarites) {
+    if (!concernees.has(polariteId) || !noeud.polarites.includes(polariteId)) continue
+    const parent = grille.polarites.get(polariteId)?.parent
+    if (!parent || !noeud.polarites.includes(parent)) continue
+
+    const etoileValeurs = valeurs.get(cle(noeud.id, polariteId))
+    const englobante = valeurs.get(cle(noeud.id, parent))
+    if (!etoileValeurs || !englobante) continue
+
+    let renseignee = false
+    for (const partId of noeud.parts) {
+      const deja = etoileValeurs[partId]
+      if (deja && deja.poids > 0) continue
+      const valeur = englobante[partId]
+      if (!valeur || valeur.poids <= 0) continue
+      etoileValeurs[partId] = {
+        score: valeur.score,
+        poids: valeur.poids * grille.attenuationPolarite,
+        origine: 'herite',
+        detours: valeur.detours + 1,
+      }
+      renseignee = true
+    }
+    if (renseignee) remonterVersLesRegroupements(grille, noeud.parts, etoileValeurs)
+  }
+}
+
+function moyenneDesPoids(sources: Contribution[]): number {
+  return sources.reduce((total, source) => total + source.poids, 0) / sources.length
 }
 
 /**
@@ -176,7 +297,7 @@ function remonterVersLesRegroupements(grille: Grille, partsDuNoeud: string[], et
     if (score === null) continue
     etoileValeurs[part.id] = {
       score,
-      poids: sources.reduce((total, source) => total + source.poids, 0) / sources.length,
+      poids: moyenneDesPoids(sources),
       origine: 'herite',
       detours: detours + 1,
     }

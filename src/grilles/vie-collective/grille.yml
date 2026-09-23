@@ -15,7 +15,6 @@ polarityAttenuation: 0.5
 # Comment résumer plusieurs valeurs en une, par défaut.
 aggregation:
   inheritance: moyenne
-  rollup: moyenne
 
 # Les polarités forment un arbre. Le général ne distingue pas les places : il
 # sert à dégrossir, puis on précise là où les places divergent.

@@ -82,10 +82,12 @@ describe('vie collective', () => {
     expect(etoile(valeurs, 'musique', 'temoin').avis).toEqual({ score: 1, poids: 0.5, origine: 'herite', detours: 1 })
   })
 
-  it('résume l’importance par le maximum, pas par la moyenne', () => {
+  it('résume par ce qui ressort, et moyenne seulement en descendant', () => {
     // Un seul sujet vital rend la rubrique vitale ; la moyenne l’effacerait.
+    // C’est vrai de toutes les parts en remontant, et d’aucune en descendant.
     expect(disponible?.grille.agregationDe('importance', 'rollup')).toBe('max')
-    expect(disponible?.grille.agregationDe('avis', 'rollup')).toBe('moyenne')
+    expect(disponible?.grille.agregationDe('avis', 'rollup')).toBe('max')
+    expect(disponible?.grille.agregationDe('avis', 'inheritance')).toBe('moyenne')
   })
 
   it('porte un nœud à deux parents', () => {

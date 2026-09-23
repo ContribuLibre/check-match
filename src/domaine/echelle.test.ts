@@ -213,7 +213,9 @@ describe('remontée d’une rubrique', () => {
       'salon/general': { cadre: { position: 1 } },
     }))
     const proposition = proposerDepuis(grille, valeurs, 'maison', 'general', 'sujets')
-    expect(proposition.cadre).toMatchObject({ position: 0.5 })
+    // La position suit l’agrégateur de remontée — le maximum par défaut — mais
+    // l’étendue, elle, dit toute la dispersion.
+    expect(proposition.cadre).toMatchObject({ position: 1 })
     expect((proposition.cadre as { etendue: number[] }).etendue[0]).toBe(0)
     expect((proposition.cadre as { etendue: number[] }).etendue[3]).toBe(1)
   })

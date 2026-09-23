@@ -10,7 +10,6 @@ polarityAttenuation: 0.5
 
 aggregation:
   inheritance: moyenne
-  rollup: moyenne
 
 # Une seule place ici : la question n’est pas « en faisant / en recevant », elle
 # est déjà posée par le couple sensibilité / action de chaque sujet.

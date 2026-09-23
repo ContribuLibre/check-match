@@ -358,7 +358,8 @@ describe('agrégateurs configurables', () => {
       ],
     }))
     expect(grille.agregationDe('avis', 'rollup')).toBe('min')
-    expect(grille.agregationDe('importance', 'rollup')).toBe('moyenne')
+    // Les autres suivent le défaut, qui n’est pas le même dans les deux sens.
+    expect(grille.agregationDe('importance', 'rollup')).toBe('max')
     expect(grille.agregationDe('avis', 'inheritance')).toBe('moyenne')
   })
 
@@ -370,13 +371,26 @@ describe('agrégateurs configurables', () => {
 })
 
 describe('remontée', () => {
-  it('résume une rubrique d’après ses éléments', () => {
+  it('résume une rubrique par ce qui en ressort, et non par la moyenne', () => {
+    // Un seul élément auquel on tient rend la rubrique tenue ; la moyenne
+    // l’effacerait sous ceux qui laissent indifférent.
     const valeurs = calculerValeurs(grilleSimple, reponses({
       'instrument/agir': { avis: 3 },
       'chant/agir': { avis: 0 },
     }))
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 3 })
+  })
+
+  it('suit la moyenne quand la grille la demande', () => {
+    const grille = construireGrille(definition([
+      { id: 'musique', children: [{ id: 'instrument' }, { id: 'chant' }] },
+    ], { aggregation: { rollup: 'moyenne' } }))
+    const valeurs = calculerValeurs(grille, reponses({
+      'instrument/agir': { avis: 3 },
+      'chant/agir': { avis: 0 },
+    }))
     // Moyenne 0,5 → palier « ok ».
-    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 2 })
+    expect(proposerDepuis(grille, valeurs, 'musique', 'agir', 'sujets')).toEqual({ avis: 2 })
   })
 
   it('descend chercher les réponses à n’importe quelle profondeur', () => {
@@ -389,7 +403,7 @@ describe('remontée', () => {
       'musique/agir': { avis: 3 },
       'musique/recevoir': { avis: 0 },
     }))
-    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'general', 'polarites')).toEqual({ avis: 2 })
+    expect(proposerDepuis(grilleSimple, valeurs, 'musique', 'general', 'polarites')).toEqual({ avis: 3 })
   })
 
   it('résume selon l’agrégateur demandé', () => {

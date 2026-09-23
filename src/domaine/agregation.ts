@@ -68,16 +68,25 @@ export function proposerDepuis(
     const score = agreger(grille.agregationDe(partId, 'rollup'), sources)
     if (score === null) continue
 
-    if (typeEchelle(part) === 'tension') {
+    // Un triangle se déduit de ses branches, pas de lui-même : plus bas.
+    if (typeEchelle(part) === 'triangle') continue
+
+    if (typeEchelle(part) === 'steps') {
+      proposition[partId] = palierLePlusProche(paliers(part).map((palier) => palier.score), score)
+      continue
+    }
+
+    // Toute échelle continue se propose par une position. Y répondre par un
+    // index de palier ne voudrait rien dire — et c’est ce qui se passait pour
+    // les branches d’un triangle ou d’un yin-yang, qui n’ont pas de crans :
+    // la proposition sortait à zéro, et se relisait comme rien du tout.
+    const etendue = typeEchelle(part) === 'tension'
       // Se situer d’un curseur sur chaque élément dit deux choses de la
       // rubrique : où l’on est en général, et à quel point ça varie selon les
       // cas. La seconde se perdrait à ne garder que la moyenne.
-      const etendue = etendueDepuis(scoresParPart.get(partId) ?? [])
-      proposition[partId] = { position: score, ...(etendue ? { etendue } : {}) }
-      continue
-    }
-    if (typeEchelle(part) === 'triangle') continue
-    proposition[partId] = palierLePlusProche(paliers(part).map((palier) => palier.score), score)
+      ? etendueDepuis(scoresParPart.get(partId) ?? [])
+      : undefined
+    proposition[partId] = { position: score, ...(etendue ? { etendue } : {}) }
   }
 
   // Un triangle se déduit de ses trois branches : leur relief donne le point,

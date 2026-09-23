@@ -61,7 +61,13 @@ export interface Grille {
 }
 
 export const ATTENUATION_PAR_DEFAUT = 0.5
-export const AGREGATION_PAR_DEFAUT: Required<Agregation> = { inheritance: 'moyenne', rollup: 'moyenne' }
+/**
+ * En descendant, plusieurs sources se moyennent. En remontant, non : résumer
+ * une rubrique d’après ses éléments, c’est retenir **ce qui ressort**. Un seul
+ * sujet auquel on tient rend la rubrique tenue ; la moyenne l’effacerait sous
+ * ceux qui laissent indifférent.
+ */
+export const AGREGATION_PAR_DEFAUT: Required<Agregation> = { inheritance: 'moyenne', rollup: 'max' }
 
 export class ErreurGrille extends Error {}
 

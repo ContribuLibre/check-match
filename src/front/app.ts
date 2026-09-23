@@ -1,17 +1,26 @@
 import { peutRemonter, proposerDepuis, type Direction } from '../domaine/agregation.ts'
 import type { Grille } from '../domaine/grille.ts'
 import { calculerValeurs, cle, etoile, type Valeurs } from '../domaine/heritage.ts'
-import type { Textes } from '../domaine/traduction.ts'
+import type { Textes as TextesGrille } from '../domaine/traduction.ts'
 import type { Reponse } from '../domaine/types.ts'
 import { creerStockage, type Stockage } from '../donnees/stockage.ts'
-import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
 import { degradesSvg, etoileSvg } from '../rendu/indicateur.ts'
 import { grilles, type GrilleDisponible } from '../grilles/index.ts'
+import { LANGUES_LIBELLES, textesUi, type Textes } from './i18n.ts'
+import {
+  creerPreferences, LANGUES, NIVEAUX, THEMES,
+  type GestionnairePreferences, type Niveau,
+} from './preferences.ts'
+import { appliquerMiseAJour, surMiseAJourDisponible, versionApplication } from './pwa.ts'
 
 const echapper = (texte: string): string =>
   String(texte).replace(/[&<>"']/g, (caractere) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
   }[caractere] ?? caractere))
+
+const EXTERNE = ' target="_blank" rel="noreferrer noopener"'
+const DEPOT = 'https://github.com/ContribuLibre/check-match'
+const INSPIRATION = 'https://codepen.io/1000i100/pen/dydLLZw'
 
 interface Etat {
   personne: string | null
@@ -21,7 +30,18 @@ interface Etat {
   miseAJour: string | null
 }
 
-export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage({ stockage: localStorage })): void {
+/** Ce que chaque rendu a besoin de savoir, rassemblé pour ne pas le repasser partout. */
+interface Contexte {
+  etat: Etat
+  ui: Textes
+  prefs: GestionnairePreferences
+}
+
+export function demarrer(
+  racine: HTMLElement,
+  stockage: Stockage = creerStockage({ stockage: localStorage }),
+  prefs: GestionnairePreferences = creerPreferences(),
+): void {
   const etat: Etat = {
     personne: stockage.personnes()[0]?.id ?? null,
     disponible: grilles[0]!,
@@ -30,80 +50,63 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
   }
 
   racine.innerHTML = `
-    <header class="entete">
-      <h1>check-match</h1>
-      <label>Réponses de <select data-personne></select></label>
-      <button type="button" data-ajout-personne>+ personne</button>
-      <label>Grille <select data-grille></select></label>
-      <span class="avancement" data-avancement></span>
-    </header>
+    <header class="entete" data-entete></header>
     <main data-arbre></main>
     <footer class="pied" data-pied></footer>
     <aside class="editeur" data-editeur hidden></aside>`
 
   const champs = {
-    personne: racine.querySelector<HTMLSelectElement>('[data-personne]')!,
-    ajout: racine.querySelector<HTMLButtonElement>('[data-ajout-personne]')!,
-    grille: racine.querySelector<HTMLSelectElement>('[data-grille]')!,
-    avancement: racine.querySelector<HTMLElement>('[data-avancement]')!,
+    entete: racine.querySelector<HTMLElement>('[data-entete]')!,
     arbre: racine.querySelector<HTMLElement>('[data-arbre]')!,
     pied: racine.querySelector<HTMLElement>('[data-pied]')!,
     editeur: racine.querySelector<HTMLElement>('[data-editeur]')!,
   }
 
+  const contexte = (): Contexte => ({ etat, ui: textesUi(prefs.langue), prefs })
   const reponses = (): Map<string, Reponse> =>
     etat.personne ? stockage.reponsesCourantes(etat.personne) : new Map()
 
   function afficher(): void {
-    const { grille, textes } = etat.disponible
+    const ctx = contexte()
+    const { grille } = etat.disponible
     const valeurs = calculerValeurs(grille, reponses())
 
-    afficherPersonnes()
-    afficherGrilles()
-    afficherAvancement(grille, valeurs)
-    champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, etat)
-    champs.pied.innerHTML = piedHtml(etat)
-    afficherEditeur(valeurs)
+    // Le panneau de réglages reste ouvert d’un rendu à l’autre : le refermer à
+    // chaque clic empêcherait d’essayer deux réglages de suite.
+    const reglagesOuverts = champs.entete.querySelector<HTMLDetailsElement>('[data-reglages]')?.open ?? false
+    champs.entete.innerHTML = enteteHtml(ctx, stockage, reglagesOuverts)
+    afficherAvancement(grille, valeurs, ctx)
+    champs.arbre.innerHTML = degradesCaches(etat.disponible) + arbreHtml(etat.disponible, valeurs, ctx)
+    champs.pied.innerHTML = piedHtml(ctx)
+    afficherEditeur(valeurs, ctx)
   }
 
-  function afficherPersonnes(): void {
-    const liste = stockage.personnes()
-    champs.personne.innerHTML = liste.length
-      ? liste.map((personne) =>
-        `<option value="${echapper(personne.id)}"${personne.id === etat.personne ? ' selected' : ''}>${echapper(personne.nom)}</option>`).join('')
-      : '<option value="">— personne —</option>'
-  }
-
-  function afficherGrilles(): void {
-    champs.grille.innerHTML = grilles.map((disponible) =>
-      `<option value="${echapper(disponible.grille.id)}"${disponible.grille.id === etat.disponible.grille.id ? ' selected' : ''}>${echapper(disponible.textes.titre)}</option>`).join('')
-  }
-
-  function afficherAvancement(grille: Grille, valeurs: Valeurs): void {
-    let repondus = 0
-    let herites = 0
+  /** Combien d’étoiles sont posées, héritées, encore vides — et sur quel total. */
+  function afficherAvancement(grille: Grille, valeurs: Valeurs, ctx: Contexte): void {
+    const champ = champs.entete.querySelector<HTMLElement>('[data-avancement]')
+    if (!champ) return
+    let repondues = 0
+    let heritees = 0
     let total = 0
     for (const noeud of grille.noeuds.values()) {
-      for (const polarite of noeud.polarites) {
+      for (const polarite of polaritesVisibles(grille, noeud, ctx.prefs.niveau)) {
         total += 1
         const valeursPolarite = Object.values(etoile(valeurs, noeud.id, polarite))
-        if (valeursPolarite.some((valeur) => valeur.origine === 'propre')) repondus += 1
-        else if (valeursPolarite.some((valeur) => valeur.poids > 0)) herites += 1
+        if (valeursPolarite.some((valeur) => valeur.origine === 'propre')) repondues += 1
+        else if (valeursPolarite.some((valeur) => valeur.poids > 0)) heritees += 1
       }
     }
-    champs.avancement.textContent =
-      `${repondus} répondues, ${herites} héritées, ${total - repondus - herites} vides (sur ${total} étoiles)`
+    champ.textContent = ctx.ui.avancement(repondues, heritees, total - repondues - heritees, total)
   }
 
-  function afficherEditeur(valeurs: Valeurs): void {
-    const ouvert = etat.ouvert
-    if (!ouvert || !etat.personne) {
+  function afficherEditeur(valeurs: Valeurs, ctx: Contexte): void {
+    if (!etat.ouvert || !etat.personne) {
       champs.editeur.hidden = true
       champs.editeur.innerHTML = ''
       return
     }
     champs.editeur.hidden = false
-    champs.editeur.innerHTML = editeurHtml(etat.disponible, valeurs, ouvert, stockage, etat.personne)
+    champs.editeur.innerHTML = editeurHtml(etat.disponible, valeurs, etat.ouvert, stockage, etat.personne, ctx)
   }
 
   function enregistrer(reponse: Reponse): void {
@@ -117,35 +120,50 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
     return stockage.derniere(etat.personne, cle(etat.ouvert.noeud, etat.ouvert.polarite))?.reponse ?? {}
   }
 
-  champs.ajout.addEventListener('click', () => {
-    const nom = prompt('Nom de cette série de réponses :')
-    if (!nom?.trim()) return
-    try {
-      etat.personne = stockage.ajouterPersonne(nom).id
+  // --- en-tête ------------------------------------------------------------
+
+  champs.entete.addEventListener('click', (evenement) => {
+    const cible = evenement.target as HTMLElement
+    if (cible.closest('[data-ajout-personne]')) {
+      const nom = prompt(textesUi(prefs.langue).nommerPersonne)
+      if (!nom?.trim()) return
+      try {
+        etat.personne = stockage.ajouterPersonne(nom).id
+        afficher()
+      } catch (erreur) {
+        alert(erreur instanceof Error ? erreur.message : String(erreur))
+      }
+      return
+    }
+    const reglage = cible.closest<HTMLElement>('[data-reglage]')
+    if (reglage) {
+      const champ = reglage.dataset.reglage as 'theme' | 'niveau'
+      prefs.definir(champ, reglage.dataset.valeur as never)
       afficher()
-    } catch (erreur) {
-      alert(erreur instanceof Error ? erreur.message : String(erreur))
     }
   })
 
-  champs.personne.addEventListener('change', (evenement) => {
-    etat.personne = (evenement.target as HTMLSelectElement).value || null
-    etat.ouvert = null
+  champs.entete.addEventListener('change', (evenement) => {
+    const champ = evenement.target as HTMLSelectElement
+    if (champ.matches('[data-personne]')) {
+      etat.personne = champ.value || null
+      etat.ouvert = null
+    } else if (champ.matches('[data-grille]')) {
+      etat.disponible = grilles.find((d) => d.grille.id === champ.value) ?? grilles[0]!
+      etat.ouvert = null
+    } else if (champ.matches('[data-langue]')) {
+      prefs.definir('langue', champ.value as never)
+    }
     afficher()
   })
 
-  champs.grille.addEventListener('change', (evenement) => {
-    const choisie = grilles.find((d) => d.grille.id === (evenement.target as HTMLSelectElement).value)
-    if (choisie) etat.disponible = choisie
-    etat.ouvert = null
-    afficher()
-  })
+  // --- arbre et éditeur ---------------------------------------------------
 
   champs.arbre.addEventListener('click', (evenement) => {
     const bouton = (evenement.target as HTMLElement).closest<HTMLElement>('[data-noeud][data-polarite]')
     if (!bouton) return
     if (!etat.personne) {
-      alert('Créez d’abord une personne : les réponses sont rangées par personne.')
+      alert(textesUi(prefs.langue).personneDabord)
       return
     }
     const noeud = bouton.dataset.noeud!
@@ -162,10 +180,8 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
       afficher()
       return
     }
-    if (cible.closest('[data-effacer]')) {
-      enregistrer({})
-      return
-    }
+    if (cible.closest('[data-effacer]')) return enregistrer({})
+
     const deduire = cible.closest<HTMLElement>('[data-deduire]')
     if (deduire) {
       const valeurs = calculerValeurs(etat.disponible.grille, reponses())
@@ -176,6 +192,7 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
       if (Object.keys(proposition).length) enregistrer(proposition)
       return
     }
+
     const palier = cible.closest<HTMLElement>('[data-palier]')
     if (palier) {
       const part = palier.dataset.part!
@@ -197,41 +214,100 @@ export function demarrer(racine: HTMLElement, stockage: Stockage = creerStockage
   surMiseAJourDisponible((version) => {
     if (version === versionApplication()) return
     etat.miseAJour = version
-    champs.pied.innerHTML = piedHtml(etat)
+    champs.pied.innerHTML = piedHtml(contexte())
   })
 
+  prefs.surChangement(() => { /* le rendu suit déjà chaque action */ })
   afficher()
 }
 
+// --- en-tête --------------------------------------------------------------
+
+function enteteHtml(ctx: Contexte, stockage: Stockage, reglagesOuverts: boolean): string {
+  const { etat, ui, prefs } = ctx
+  const personnes = stockage.personnes()
+
+  const marque = `<div class="marque">
+    <img src="./icons/icon.svg" alt="" width="28" height="28">
+    <span>${echapper(ui.titre)}</span>
+  </div>`
+
+  const qui = `<label class="champ">${echapper(ui.reponsesDe)}
+    <select data-personne aria-label="${echapper(ui.reponsesDe)}">${
+      personnes.length
+        ? personnes.map((personne) =>
+          `<option value="${echapper(personne.id)}"${personne.id === etat.personne ? ' selected' : ''}>${echapper(personne.nom)}</option>`).join('')
+        : `<option value="">— ${echapper(ui.personne)} —</option>`
+    }</select></label>
+    <button type="button" data-ajout-personne>${echapper(ui.ajouterPersonne)}</button>`
+
+  const quelleGrille = `<label class="champ">${echapper(ui.grille)}
+    <select data-grille aria-label="${echapper(ui.grille)}">${grilles.map((disponible) =>
+      `<option value="${echapper(disponible.grille.id)}"${disponible.grille.id === etat.disponible.grille.id ? ' selected' : ''}>${echapper(disponible.textes.titre)}</option>`).join('')}</select></label>`
+
+  const langue = `<label class="champ">${echapper(ui.langue)}
+    <select data-langue aria-label="${echapper(ui.langue)}">${LANGUES.map((code) =>
+      `<option value="${code}"${code === prefs.langue ? ' selected' : ''}>${echapper(LANGUES_LIBELLES[code])}</option>`).join('')}</select></label>`
+
+  const choix = (champ: 'theme' | 'niveau', valeurs: readonly string[], courant: string, libelle: (valeur: string) => string) =>
+    `<div class="choix" role="group" aria-label="${echapper(champ === 'theme' ? ui.theme : ui.niveau)}">${valeurs.map((valeur) =>
+      `<button type="button" class="choix-option${valeur === courant ? ' actif' : ''}"
+        data-reglage="${champ}" data-valeur="${valeur}"
+        aria-pressed="${valeur === courant}">${echapper(libelle(valeur))}</button>`).join('')}</div>`
+
+  const libelleTheme = (valeur: string) =>
+    valeur === 'auto' ? ui.themeAuto : valeur === 'clair' ? ui.themeClair : ui.themeSombre
+  const libelleNiveau = (valeur: string) =>
+    valeur === 'simple' ? ui.niveauSimple : valeur === 'avancee' ? ui.niveauAvancee : ui.niveauComplete
+
+  const reglages = `<details class="reglages" data-reglages${reglagesOuverts ? ' open' : ''}>
+    <summary>⚙ ${echapper(ui.reglages)}</summary>
+    <div class="reglages-panneau">
+      <div class="reglage"><span class="reglage-nom">${echapper(ui.theme)}</span>${choix('theme', THEMES, prefs.theme, libelleTheme)}</div>
+      <div class="reglage"><span class="reglage-nom">${echapper(ui.niveau)}</span>${choix('niveau', NIVEAUX, prefs.niveau, libelleNiveau)}</div>
+    </div>
+  </details>`
+
+  const liens = `<nav class="entete-liens">
+    <a href="${DEPOT}"${EXTERNE}>${echapper(ui.contribuer)}</a>
+    <a href="${INSPIRATION}"${EXTERNE}>${echapper(ui.inspiration)}</a>
+  </nav>`
+
+  return `${marque}${qui}${quelleGrille}${liens}${langue}${reglages}
+    <span class="avancement" data-avancement></span>`
+}
+
+// --- pied de page ---------------------------------------------------------
+
 /**
- * Pied de page : qui l’a fait, sous quelle licence, et quelle version tourne.
- * La version n’est pas une décoration — c’est ce qu’on demande à quelqu’un qui
- * signale un comportement bizarre.
+ * Qui l’a fait, sous quelle licence, et quelle version tourne. La version n’est
+ * pas une décoration : c’est ce qu’on demande à quelqu’un qui signale un
+ * comportement bizarre.
  */
-function piedHtml(etat: Etat): string {
-  const externe = ' target="_blank" rel="noreferrer noopener"'
-  const credits = `<span>Réalisé par <a href="https://framagit.org/1000i100/"${externe}>1000i100</a>,`
-    + ` dopé à l’<a href="https://claude.com/claude-code"${externe}>I.A.</a>`
-    + ` — Licence <a href="https://choosealicense.com/licenses/agpl-3.0/"${externe}>AGPLv3</a>`
-    + ` (<a href="https://github.com/ContribuLibre/check-match"${externe}>Code source</a>)</span>`
+function piedHtml({ etat, ui }: Contexte): string {
+  const credits = `<span>${echapper(ui.realisePar)} <a href="https://framagit.org/1000i100/"${EXTERNE}>1000i100</a>,`
+    + ` ${echapper(ui.dopeA)}<a href="https://claude.com/claude-code"${EXTERNE}>I.A.</a>`
+    + ` — ${echapper(ui.licence)} <a href="https://choosealicense.com/licenses/agpl-3.0/"${EXTERNE}>AGPLv3</a>`
+    + ` (<a href="${DEPOT}"${EXTERNE}>${echapper(ui.codeSource)}</a>)</span>`
 
   const maj = etat.miseAJour
-    ? `<span class="version-fleche" aria-hidden="true">→</span>`
-      + `<button class="version-maj" type="button" data-appliquer-maj`
-      + ` title="Une nouvelle version est prête : cliquer pour l’appliquer et recharger">`
+    ? '<span class="version-fleche" aria-hidden="true">→</span>'
+      + `<button class="version-maj" type="button" data-appliquer-maj title="${echapper(ui.majPrete)}">`
       + `${echapper(etat.miseAJour)}</button>`
     : ''
-  const version = `<div class="version"><span class="version-courante">Version ${echapper(versionApplication())}</span>${maj}</div>`
+  const version = `<div class="version"><span class="version-courante">${echapper(ui.version)} ${echapper(versionApplication())}</span>${maj}</div>`
 
   return `<div class="pied-centre">${credits}</div>${version}`
 }
+
+// --- arbre ----------------------------------------------------------------
 
 /** Les dégradés sont posés une fois pour toute la page, pas dans chaque étoile. */
 function degradesCaches({ grille }: GrilleDisponible): string {
   return `<svg width="0" height="0" aria-hidden="true" class="degrades">${degradesSvg(grille.id, grille.parts)}</svg>`
 }
 
-function titreEtoile(textes: Textes, grille: Grille, valeurs: Valeurs, noeud: string, polarite: string): string {
+function titreEtoile(textes: TextesGrille, ui: Textes, grille: Grille, valeurs: Valeurs, noeud: string, polarite: string): string {
   const etoileValeurs = etoile(valeurs, noeud, polarite)
   const morceaux = grille.parts
     .filter((part) => etoileValeurs[part.id] && etoileValeurs[part.id]!.poids > 0)
@@ -242,23 +318,37 @@ function titreEtoile(textes: Textes, grille: Grille, valeurs: Valeurs, noeud: st
       return `${textes.part(part.id)} : ${textes.palier(part.id, palier.id)}`
     })
   const prefixe = `${textes.noeud(noeud)} — ${textes.polarite(polarite)}`
-  return morceaux.length ? `${prefixe}. ${morceaux.join(', ')}` : `${prefixe}. Rien de renseigné.`
+  return morceaux.length ? `${prefixe}. ${morceaux.join(', ')}` : `${prefixe}. ${ui.rienRenseigne}`
 }
 
-function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): string {
+/**
+ * Les polarités montrées.
+ * En mode simple, la principale seule : une étoile par sujet suffit pour se
+ * situer, et trois colonnes de plus ne feraient que décourager.
+ */
+function polaritesVisibles(grille: Grille, noeud: { polarites: string[] }, niveau: Niveau): string[] {
+  if (niveau !== 'simple') return noeud.polarites
+  const principale = [...grille.polarites.values()].find((polarite) => polarite.principale)?.id
+    ?? grille.polariteRacine
+  return noeud.polarites.filter((polarite) => polarite === principale)
+}
+
+function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, ctx: Contexte): string {
   const { grille, textes } = disponible
+  const { etat, ui, prefs } = ctx
+
   const rendu = (id: string, chemin: string[]): string => {
     const noeud = grille.noeuds.get(id)
     if (!noeud) return ''
     // Un nœud à plusieurs parents apparaît sous chacun : il relève bien des deux.
     const repete = noeud.parents.length > 1
-    const etoiles = noeud.polarites.map((polarite) => {
+    const etoiles = polaritesVisibles(grille, noeud, prefs.niveau).map((polarite) => {
       const valeursPolarite = etoile(valeurs, id, polarite)
       const propre = Object.values(valeursPolarite).some((valeur) => valeur.origine === 'propre')
       const ouvert = etat.ouvert?.noeud === id && etat.ouvert.polarite === polarite
       return `<button type="button" class="etoile-bouton${propre ? ' propre' : ''}${ouvert ? ' ouvert' : ''}"
         data-noeud="${echapper(id)}" data-polarite="${echapper(polarite)}"
-        title="${echapper(titreEtoile(textes, grille, valeurs, id, polarite))}">
+        title="${echapper(titreEtoile(textes, ui, grille, valeurs, id, polarite))}">
         ${etoileSvg(grille.id, branchesDe(grille, noeud.parts), valeursPolarite, { taille: 40, degradesExternes: true })}
         <span class="polarite-nom">${echapper(textes.polarite(polarite))}</span>
       </button>`
@@ -270,7 +360,7 @@ function arbreHtml(disponible: GrilleDisponible, valeurs: Valeurs, etat: Etat): 
       <div class="ligne">
         <div class="intitule">
           <span class="libelle">${echapper(textes.noeud(id))}</span>
-          ${repete ? '<span class="multi" title="Relève de plusieurs rubriques">↔</span>' : ''}
+          ${repete ? `<span class="multi" title="${echapper(ui.plusieursRubriques)}">↔</span>` : ''}
           ${aide ? `<span class="aide">${echapper(aide)}</span>` : ''}
         </div>
         <div class="etoiles">${etoiles}</div>
@@ -297,20 +387,22 @@ function branchesDe(grille: Grille, ids: string[]) {
 }
 
 /**
- * La remontée est proposée sur chaque sens séparément, et seulement là où elle
- * produirait quelque chose : un bouton qui ne ferait rien vaut moins qu’un
+ * La remontée est proposée dans chaque direction séparément, et seulement là où
+ * elle produirait quelque chose : un bouton qui ne fait rien vaut moins qu’un
  * bouton absent.
  */
-function boutonsRemontee(grille: Grille, valeurs: Valeurs, ouvert: { noeud: string; polarite: string }): string {
+function boutonsRemontee(grille: Grille, valeurs: Valeurs, ouvert: { noeud: string; polarite: string }, ui: Textes): string {
   const boutons: string[] = []
   if (peutRemonter(grille, valeurs, ouvert.noeud, ouvert.polarite, 'sujets')) {
-    boutons.push('<button type="button" data-deduire="sujets" title="Résumer d’après ce qui est répondu dans les sous-éléments">Déduire des sous-éléments</button>')
+    boutons.push(`<button type="button" data-deduire="sujets" title="${echapper(ui.deduireSousElementsAide)}">${echapper(ui.deduireSousElements)}</button>`)
   }
   if (peutRemonter(grille, valeurs, ouvert.noeud, ouvert.polarite, 'polarites')) {
-    boutons.push('<button type="button" data-deduire="polarites" title="Résumer d’après ce qui est répondu à chaque place">Déduire des places</button>')
+    boutons.push(`<button type="button" data-deduire="polarites" title="${echapper(ui.deduirePlacesAide)}">${echapper(ui.deduirePlaces)}</button>`)
   }
   return boutons.join('')
 }
+
+// --- éditeur --------------------------------------------------------------
 
 function editeurHtml(
   disponible: GrilleDisponible,
@@ -318,16 +410,28 @@ function editeurHtml(
   ouvert: { noeud: string; polarite: string },
   stockage: Stockage,
   personne: string,
+  ctx: Contexte,
 ): string {
   const { grille, textes } = disponible
+  const { ui, prefs } = ctx
   const noeud = grille.noeuds.get(ouvert.noeud)
   if (!noeud) return ''
   const valeursPolarite = etoile(valeurs, ouvert.noeud, ouvert.polarite)
   const saisie = stockage.derniere(personne, cle(ouvert.noeud, ouvert.polarite))?.reponse ?? {}
   const historique = stockage.historique(personne, cle(ouvert.noeud, ouvert.polarite))
 
-  const parts = partsDe(grille, noeud.parts).map((part) => {
-    const regroupement = (grille.arbreParts.get(part.id)?.enfants ?? []).length > 0
+  const estRegroupement = (id: string) => (grille.arbreParts.get(id)?.enfants ?? []).length > 0
+  // En mode simple, on ne propose que la saisie rapide quand elle existe : c’est
+  // exactement ce à quoi elle sert. Sans regroupement, on retombe sur les branches.
+  const partsAffichees = prefs.montre('avancee')
+    ? partsDe(grille, noeud.parts)
+    : (() => {
+        const rapides = partsDe(grille, noeud.parts).filter((part) => estRegroupement(part.id))
+        return rapides.length ? rapides : branchesDe(grille, noeud.parts)
+      })()
+
+  const parts = partsAffichees.map((part) => {
+    const regroupement = estRegroupement(part.id)
     const valeur = valeursPolarite[part.id]
     const choisi = saisie[part.id]
     const paliers = part.steps.map((palier, index) => {
@@ -339,25 +443,34 @@ function editeurHtml(
     }).join('')
 
     // Dire d’où vient la valeur affichée est indispensable : héritée, elle
-    // n’engage pas la personne de la même façon qu’une réponse posée.
+    // n’engage pas la personne de la même façon qu’une réponse posée. Le détail
+    // chiffré, lui, n’intéresse que qui veut comprendre le calcul.
+    const detail = prefs.montre('complete') && valeur
+      ? ` (${valeur.poids.toFixed(2)}, ${valeur.detours} ${valeur.detours > 1 ? ui.detours : ui.detour})`
+      : ''
     const provenance = choisi !== undefined
-      ? '<span class="provenance propre">réponse directe</span>'
+      ? `<span class="provenance propre">${echapper(ui.reponseDirecte)}</span>`
       : valeur && valeur.poids > 0
-        ? `<span class="provenance herite">hérité (poids ${valeur.poids.toFixed(2)})</span>`
-        : '<span class="provenance vide">non renseigné</span>'
+        ? `<span class="provenance herite">${echapper(ui.herite)}${echapper(detail)}</span>`
+        : `<span class="provenance vide">${echapper(ui.nonRenseigne)}</span>`
 
     return `<div class="part${regroupement ? ' regroupement' : ''}">
       <div class="part-nom" style="--couleur: ${echapper(part.maxColor)}">
-        ${echapper(textes.part(part.id))}${regroupement ? ' <span class="rapide">saisie rapide</span>' : ''} ${provenance}
+        ${echapper(textes.part(part.id))}${regroupement ? ` <span class="rapide">${echapper(ui.saisieRapide)}</span>` : ''} ${provenance}
       </div>
       ${textes.aidePart(part.id) ? `<p class="aide">${echapper(textes.aidePart(part.id))}</p>` : ''}
       <div class="paliers">${paliers}</div>
     </div>`
   }).join('')
 
-  const revisions = historique.length > 1
-    ? `<div class="historique"><h4>${historique.length} révisions</h4><ol>${historique.slice().reverse().map((revision) =>
-      `<li>${new Date(revision.le).toLocaleString('fr-FR')}</li>`).join('')}</ol></div>`
+  const revisions = prefs.montre('complete') && historique.length > 1
+    ? `<div class="historique"><h4>${echapper(ui.revisions(historique.length))}</h4><ol>${
+      historique.slice().reverse().map((revision) =>
+        `<li>${new Date(revision.le).toLocaleString(prefs.langue)}</li>`).join('')}</ol></div>`
+    : ''
+
+  const identifiant = prefs.montre('complete')
+    ? `<code>${echapper(cle(ouvert.noeud, ouvert.polarite))}</code>`
     : ''
 
   return `<header class="editeur-entete">
@@ -365,12 +478,12 @@ function editeurHtml(
       <div>
         <h3>${echapper(textes.noeud(ouvert.noeud))} — ${echapper(textes.polarite(ouvert.polarite))}</h3>
         <p class="aide">${echapper(textes.aidePolarite(ouvert.polarite))}</p>
-        <code>${echapper(cle(ouvert.noeud, ouvert.polarite))}</code>
+        ${identifiant}
       </div>
       <div class="actions">
-        ${boutonsRemontee(grille, valeurs, ouvert)}
-        <button type="button" data-effacer>Effacer</button>
-        <button type="button" data-fermer>Fermer</button>
+        ${prefs.montre('avancee') ? boutonsRemontee(grille, valeurs, ouvert, ui) : ''}
+        <button type="button" data-effacer>${echapper(ui.effacer)}</button>
+        <button type="button" data-fermer>${echapper(ui.fermer)}</button>
       </div>
     </header>
     <div class="parts">${parts}</div>

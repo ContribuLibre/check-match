@@ -14,18 +14,35 @@
   color-scheme: dark light;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --fond: #f5f6f8;
-    --panneau: #fff;
-    --panneau-haut: #eceef2;
-    --encre: #1a1c20;
-    --encre-pale: #5e6572;
-    --trait-ui: #d5d9e0;
-    --accent: #1f6feb;
-    --voile: #fff;
-    --voile-opacite: .8;
-    --trait: #000;
+/* Le thème clair, qu'il soit choisi ou hérité du système. */
+:root[data-theme="clair"],
+:root:not([data-theme]) {
+  --fond: #f5f6f8;
+  --panneau: #fff;
+  --panneau-haut: #eceef2;
+  --encre: #1a1c20;
+  --encre-pale: #5e6572;
+  --trait-ui: #d5d9e0;
+  --accent: #1f6feb;
+  --voile: #fff;
+  --voile-opacite: .8;
+  --trait: #000;
+}
+
+/* Avant que le script ne pose data-theme, on suit le système plutôt que
+   d'imposer le clair : moins de scintillement au chargement. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --fond: #15171c;
+    --panneau: #1e2128;
+    --panneau-haut: #272b34;
+    --encre: #e9eaee;
+    --encre-pale: #99a0ab;
+    --trait-ui: #343a45;
+    --accent: #6db5fe;
+    --voile: #15171c;
+    --voile-opacite: .72;
+    --trait: #4b5160;
   }
 }
 
@@ -56,8 +73,50 @@ body {
   border-bottom: 1px solid var(--trait-ui);
 }
 
-.entete h1 { margin: 0; font-size: 1.05rem; }
-.entete label { display: flex; gap: .4rem; align-items: center; color: var(--encre-pale); font-size: .85rem; }
+.marque { display: flex; gap: .45rem; align-items: center; font-weight: 700; font-size: 1.05rem; }
+.marque img { display: block; border-radius: 6px; }
+
+.champ { display: flex; gap: .4rem; align-items: center; color: var(--encre-pale); font-size: .85rem; }
+
+.entete-liens { display: flex; gap: .8rem; font-size: .85rem; }
+.entete-liens a { color: var(--encre-pale); text-underline-offset: .16em; }
+.entete-liens a:hover { color: var(--accent); }
+
+/* --- réglages ------------------------------------------------------------ */
+
+.reglages { position: relative; }
+.reglages > summary {
+  padding: .3rem .55rem;
+  border: 1px solid var(--trait-ui);
+  border-radius: 6px;
+  background: var(--panneau-haut);
+  font-size: .85rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.reglages > summary::-webkit-details-marker { display: none; }
+.reglages[open] > summary { border-color: var(--accent); }
+
+.reglages-panneau {
+  position: absolute;
+  z-index: 5;
+  inset-inline-end: 0;
+  min-width: 14rem;
+  margin-top: .4rem;
+  padding: .7rem .8rem;
+  display: grid;
+  gap: .7rem;
+  background: var(--panneau);
+  border: 1px solid var(--trait-ui);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px #0006;
+}
+
+.reglage-nom { display: block; margin-bottom: .3rem; color: var(--encre-pale); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+.choix { display: flex; gap: .2rem; }
+.choix-option { flex: 1 1 auto; font-size: .78rem; }
+.choix-option.actif { border-color: var(--accent); background: var(--accent); color: var(--fond); font-weight: 600; }
 
 select, button {
   padding: .3rem .55rem;

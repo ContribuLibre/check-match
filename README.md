@@ -107,13 +107,40 @@ Chaque personne a son propre bac : plusieurs personnes sur le même navigateur n
 s’écrasent pas. Réécrire une réponse l’écrase dans les 24 h ; au-delà, la
 précédente est conservée et une révision s’ajoute, pour suivre les évolutions.
 
+## L’interface
+
+Trois niveaux, choisis dans les réglages de l’en-tête. Le modèle a trois
+dimensions d’héritage et des poids : tout montrer d’emblée à quelqu’un qui veut
+juste cocher quelques items est le meilleur moyen de le faire fuir.
+
+| niveau | ce qu’il montre |
+|---|---|
+| **simple** | la polarité générale seule, et la saisie rapide quand la grille en propose une |
+| **avancée** | toutes les polarités, toutes les parts, les boutons de déduction |
+| **complète** | et ce qui explique le calcul : poids, détours, identifiants, historique |
+
+Thème auto / clair / sombre, et langue de l’interface (fr, en) — les trois
+réglages sont retenus par le navigateur. Le thème est posé avant le premier
+rendu, pour qu’une page réglée en sombre n’apparaisse pas d’abord en clair.
+
+## Hors ligne et mises à jour
+
+L’application s’installe et fonctionne hors ligne. Une nouvelle version
+n’écrase jamais celle qui tourne : elle est téléchargée, attend, et s’annonce
+dans le pied de page comme un lien qu’on clique quand on veut — sauf sur un
+rechargement de page, qui est une demande implicite de version fraîche.
+
+La version affichée (`v0.1.0+442.f5178da.e148668b1c96`) porte la marque, le
+nombre de commits, le sha court et une empreinte du source. C’est ce qu’il faut
+demander à quelqu’un qui signale un comportement bizarre.
+
 ## Organisation
 
 ```
 src/domaine/    graphe, héritage, remontée, agrégateurs — aucune dépendance au DOM
 src/rendu/      géométrie de l’étoile (pure) et rendu SVG
 src/donnees/    stockage des réponses
-src/front/      interface
+src/front/      interface, préférences, i18n, service worker
 src/grilles/    les grilles : structure en YAML + un fichier par langue
 src/CI/         validation des grilles, import de l’ancien format
 ```

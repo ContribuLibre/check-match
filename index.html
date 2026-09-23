@@ -12,6 +12,16 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // Le thème est posé avant le premier rendu : sans ça, une page réglée en
+      // sombre apparaît d’abord en clair, le temps que le module se charge.
+      try {
+        var choix = localStorage.getItem('cm:theme')
+        var sombre = matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.theme =
+          choix === 'clair' || choix === 'sombre' ? choix : (sombre ? 'sombre' : 'clair')
+      } catch (erreur) { /* thème par défaut */ }
+    </script>
     <script type="module" src="/src/front/main.ts"></script>
   </body>
 </html>
